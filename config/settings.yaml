@@ -5,7 +5,9 @@ timezone: Asia/Kolkata
 ai:
   batch_provider: groq       # groq | gemini | claude  (D-006, D-035; gemini/claude adapters not built yet)
   ask_provider: groq         # (D-007)
-  groq_model: llama-3.3-70b-versatile  # 131k context; check limits (research/2026-10-15-groq.md)
+  groq_model: openai/gpt-oss-120b  # llama-3.3-70b is not available on this account (research/2026-10-15-groq.md)
+  max_output_tokens: 2048    # reasoning models spend part of this on thinking
+  reasoning_effort: low
   max_retries: 3
   batch_size: 12             # events per summarize call (10–15)
 

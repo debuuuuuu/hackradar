@@ -22,6 +22,8 @@ class Groq(Provider):
         cfg = config.load("settings")["ai"]
         self.model = cfg["groq_model"]
         self.retries = cfg.get("max_retries", 3)
+        self.max_tokens = cfg.get("max_output_tokens", 2048)
+        self.effort = cfg.get("reasoning_effort", "low")
         key = os.environ.get("GROQ_API_KEY")
         if not key:
             raise AIError("GROQ_API_KEY is not set")
@@ -33,6 +35,8 @@ class Groq(Provider):
         body: dict = {
             "model": self.model,
             "temperature": 0.2,
+            "max_tokens": self.max_tokens,
+            "reasoning_effort": self.effort,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
         }
         if json_mode:

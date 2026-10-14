@@ -28,6 +28,7 @@ def test_complete_sends_auth_json_mode_and_returns_text(monkeypatch):
     assert out == '{"a": 1}'
     assert seen["auth"] == "Bearer test-key"
     assert "json_object" in seen["body"] and "usr" in seen["body"]
+    assert "gpt-oss-120b" in seen["body"] and '"reasoning_effort"' in seen["body"]
 
 
 def test_retries_429_honouring_retry_after(monkeypatch):

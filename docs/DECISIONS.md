@@ -42,7 +42,7 @@ Format: date · decision · why · alternatives rejected · status.
 
 ### D-035 · Groq as the default batch AI provider (amends D-006)
 - **Date:** 2026-10-15
-- **Decision:** `ai.batch_provider: groq` (model `llama-3.3-70b-versatile`) for summaries, scores and extraction.
+- **Decision:** `ai.batch_provider: groq` (model `openai/gpt-oss-120b`; llama-3.3-70b is not available on the account, verified 2026-10-15) for summaries, scores and extraction.
   Gemini stays an optional second adapter (not built). No embeddings from Groq → TF-IDF fallback for similarity.
 - **Why:** Debjit prefers Groq (2026-10-15); one key instead of two; provider switch is one config value.
 - **Alternatives:** Gemini as planned (generous free tier, but also needed Google account steps).
