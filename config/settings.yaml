@@ -6,10 +6,12 @@ ai:
   batch_provider: groq       # groq | gemini | claude  (D-006, D-035; gemini/claude adapters not built yet)
   ask_provider: groq         # (D-007)
   groq_model: openai/gpt-oss-120b  # llama-3.3-70b is not available on this account (research/2026-10-15-groq.md)
-  max_output_tokens: 2048    # reasoning models spend part of this on thinking
+  max_output_tokens: 1500    # reasoning models spend part of this on thinking
   reasoning_effort: low
   max_retries: 3
   batch_size: 12             # events per summarize call (10–15)
+  batch_pause_seconds: 30    # Groq counts reserved output too: ~3.2k tokens/call, limit 8,000/min
+  max_events_per_run: 60     # daily cap on new/changed events enriched (5 batches ~ 75 s)
 
 digest:
   top_n: 5

@@ -124,7 +124,8 @@ def upsert_events(conn: psycopg.Connection, recs: list[EventRecord]) -> list[str
             )
         if changed:
             cur.executemany(
-                f"UPDATE events SET {sets}, updated_at = now(), status = 'open' WHERE id = %s",
+                f"UPDATE events SET {sets}, summary = NULL, kind = NULL, updated_at = now(),"
+                f" status = 'open' WHERE id = %s",
                 [[*_event_values(rec), event_id] for rec, _, event_id in changed],
             )
             cur.executemany(

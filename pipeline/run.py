@@ -11,7 +11,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from pipeline import config, db, digest
+from pipeline import config, db, digest, enrich
 from pipeline.normalize import IST, ist_day_start
 from pipeline.notify import discord
 from pipeline.sources.base import PoliteClient, Source
@@ -100,6 +100,7 @@ def main() -> int:
             run_id = db.start_run(conn, trigger)
             log.info("run %s started (trigger=%s)", run_id, trigger)
             source_counts, errors = fetch_and_store(conn)
+            enrich.enrich_safely(conn, errors)
             sent = send_digest(conn, run_id, errors)
             status = "partial" if errors else "success"
             db.finish_run(conn, run_id, status, source_counts, errors, sent)

@@ -51,7 +51,7 @@ def test_rules_reject_money_dates_and_long_text():
 def test_parse_reply_keeps_valid_drops_bad_and_unknown():
     reply = json.dumps(
         {
-            "summaries": [
+            "events": [
                 {"id": 1, "summary": "Build agents."},
                 {"id": 2, "summary": "Win ₹1,00,000!"},
                 {"id": 99, "summary": "Not asked for."},
@@ -60,20 +60,20 @@ def test_parse_reply_keeps_valid_drops_bad_and_unknown():
             ]
         }
     )
-    assert s.parse_reply(reply, [1, 2, 3]) == {1: "Build agents."}
+    assert s.parse_reply(reply, [1, 2, 3]) == {1: s.Enriched("Build agents.", None)}
 
 
 def test_summarize_batches_and_survives_a_failed_batch(monkeypatch):
     monkeypatch.setattr(s.config, "load", lambda name: {"ai": {"batch_size": 2}})
     provider = Fake(
         [
-            {"summaries": [{"id": 1, "summary": "One."}, {"id": 2, "summary": "Two."}]},
+            {"events": [{"id": 1, "summary": "One."}, {"id": 2, "summary": "Two."}]},
             AIError("rate limited"),
-            {"summaries": [{"id": 5, "summary": "Five."}]},
+            {"events": [{"id": 5, "summary": "Five."}]},
         ]
     )
-    out = s.summarize(provider, [ev(i) for i in range(1, 6)])
-    assert out == {1: "One.", 2: "Two.", 5: "Five."}
+    out = s.summarize(provider, [ev(i) for i in range(1, 6)], sleep=lambda n: None)
+    assert {k: v.summary for k, v in out.items()} == {1: "One.", 2: "Two.", 5: "Five."}
     assert len(provider.prompts) == 3
 
 
@@ -86,5 +86,5 @@ def test_bad_json_reply_raises():
 
 
 def test_parse_reply_normalises_non_breaking_hyphens():
-    reply = json.dumps({"summaries": [{"id": 1, "summary": "A beginner‑friendly event."}]})
-    assert s.parse_reply(reply, [1]) == {1: "A beginner-friendly event."}
+    reply = json.dumps({"events": [{"id": 1, "summary": "A beginner‑friendly event."}]})
+    assert s.parse_reply(reply, [1]) == {1: s.Enriched("A beginner-friendly event.", None)}

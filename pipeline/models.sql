@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS events (
     team_size           text,
     invite_only         boolean     NOT NULL DEFAULT false,
     entry_fee           text,                       -- e.g. '₹200'; NULL = free (D-031)
-    summary             text,                       -- AI-written
+    summary             text,                       -- AI-written (D-036)
+    kind                text        CHECK (kind IN ('hackathon', 'contest', 'other')),  -- AI-assigned (D-036)
     embedding           vector(768),                -- Gemini embedding, 768 dims
     first_seen_at       timestamptz NOT NULL DEFAULT now(),
     updated_at          timestamptz NOT NULL DEFAULT now(),
