@@ -53,9 +53,14 @@ _SELECT = f"""
 """
 
 
-def previous_run_start(conn: psycopg.Connection, current_run_id: int) -> datetime | None:
+def last_digest_at(conn: psycopg.Connection, current_run_id: int) -> datetime | None:
+    """End of the last run that actually sent a digest; "new" means first seen after it.
+
+    Uses finished_at, not started_at, so events inserted during a slow run aren't counted twice,
+    and ignores runs that sent nothing (e.g. local runs without a webhook) so no event is skipped.
+    """
     row = conn.execute(
-        "SELECT max(started_at) FROM runs WHERE id <> %s AND status IN ('success', 'partial')",
+        "SELECT max(finished_at) FROM runs WHERE id <> %s AND notifications_sent > 0",
         (current_run_id,),
     ).fetchone()
     return row[0] if row else None

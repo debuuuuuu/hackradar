@@ -13,3 +13,4 @@ One file per finding/investigation: `YYYY-MM-DD-<topic>.md`. Newest first.
 | 2026-10-14 | [agent-reach](2026-10-14-agent-reach.md) | Only Exa, Jina Reader, RSS; cookie channels off |
 | 2026-10-14 | [github-cron](2026-10-14-github-cron.md) | Delays, 60-day disable; keepalive works, branch-activity rule still unverified; setup-uv pinning |
 | 2026-10-14 | [hosting-and-db](2026-10-14-hosting-and-db.md) | Neon project created (PG18, pgvector ok), Vercel, Discord deferred, Gmail |
+| 2026-10-15 | [first-live-digest](2026-10-15-first-live-digest.md) | First Discord digest delivered; "new" cutoff bug fixed; upsert runtime |

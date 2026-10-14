@@ -193,7 +193,8 @@ Format: date · decision · why · alternatives rejected · status.
 ### D-030 · Phase 1 digest format
 - **Date:** 2026-10-14
 - **Decision:** One Discord webhook message per run: header (IST date, open count) + up to two embeds:
-  **⏰ Closing within 3 days** and **🆕 New** (first seen since the previous successful run, excluding ones already in
+  **⏰ Closing within 3 days** and **🆕 New** (first seen after the end of the last run that sent a digest — amended 2026-10-15, was "since the previous
+  successful run started", see research/2026-10-15-first-live-digest.md — excluding ones already in
   "closing"). Each sorted by the joining deadline `COALESCE(reg_deadline, submission_deadline, end_date)`, max 10
   items (`digest.list_limit`), then "…and N more". Line: linked title, deadline label ("reg closes" / "submit by" /
   "ends", time shown only when the source gives one), location, prize, source. Plain "nothing new" message when both

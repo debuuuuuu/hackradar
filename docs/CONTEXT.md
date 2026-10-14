@@ -5,9 +5,10 @@ _Last updated: 2026-10-14_
 ## 1. Resume here
 
 - **Phase:** 1 · MVP digest, in progress. Phase 0 gate passed 2026-10-14.
-- **Just finished:** Devpost + Unstop live (~300 open hackathons in Neon); Discord webhook digest built and wired
-  into `run.py` (D-030), previewed against real data. 32 tests green.
-- **Next task:** once the webhook is set, send the first live digest, then watch 3 daily cron runs (Phase 1 gate).
+- **Just finished:** first live Discord digest delivered (2026-10-15, run 7, ~309 open events). Fixed the "new"
+  cutoff bug (counted 186, should be ~12) → `digest.last_digest_at()`. 32 tests green.
+- **Next task:** watch 3 daily cron digests (Phase 1 gate: 2026-10-15/16/17 IST). Supabase idea from Debjit
+  (2026-10-15) under discussion — not adopted.
 - **Blockers:** Debjit adds `DISCORD_WEBHOOK_URL` to `.env` (SETUP.md §3) before the digest step;
   Claude then copies it to GitHub Secrets with `gh secret set` (never paste it in chat).
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
@@ -53,7 +54,7 @@ Friends and college peers can join with their own filters, saves and reminders. 
 
 **Working end to end right now:** `daily.yml` (manual or cron) → `python -m pipeline.run` fetches Devpost and
 Unstop (robots-checked, polite), upserts into `events`/`event_sources`, closes past events, writes a `runs` row and
-`data/last_run.json` → keepalive commit to `status` branch. Builds the Discord digest; sends it only when `DISCORD_WEBHOOK_URL` is set (not yet).
+`data/last_run.json` → keepalive commit to `status` branch. Builds and sends the Discord digest (webhook live since 2026-10-15).
 CI (ruff, black, pytest) green on `main`.
 
 ## 4. Stack at a glance

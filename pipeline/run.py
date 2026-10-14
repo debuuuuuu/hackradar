@@ -67,7 +67,7 @@ def fetch_and_store(conn) -> tuple[dict[str, int], list[str]]:
 
 def send_digest(conn, run_id: int, errors: list[str]) -> int:
     """Build and post the Discord digest. Returns messages sent; failures are recorded."""
-    since = digest.previous_run_start(conn, run_id)
+    since = digest.last_digest_at(conn, run_id)
     d = digest.build(conn, since, datetime.now(UTC))
     log.info("digest %s: %d new, %d closing soon", d.day, d.new_total, d.closing_total)
     webhook = os.environ.get("DISCORD_WEBHOOK_URL")
