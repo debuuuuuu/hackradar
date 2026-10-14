@@ -113,6 +113,8 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-030 Phase 1 digest format (closing ≤3 days + new, by deadline).
 - D-031 Event trust signals from source fields (fee, invite-only, organiser, registrations); Supabase rejected.
 - D-032 Calendar: Google template links + per-user ICS feed; no Calendar API.
+- D-033 Luma via curated calendar ICS feeds only (terms forbid unsupported interfaces).
+- D-034 Place filter: home city + radius + metro areas.
 
 ## 6. Known issues and open questions
 

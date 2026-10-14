@@ -39,3 +39,9 @@ _As of 2026-10-15 (IST). Source: GitHub Actions run 38625693804, Neon `runs` tab
   and different deadlines.
 - "CodeSprint by Elite Coders" (Devpost, online) vs "Codesprint 2026" (Unstop, Elite Coders, hybrid Dehradun).
 - So dedupe can't rely on exact title/organiser; keep every source's dates and show the earliest as the one to act on.
+
+## City names are messy (2026-10-15)
+- Open in-person events by `city`: Kalyanpur 17, Greater Noida 15, Delhi 9, Nagpur 9, West Delhi 9, New Delhi 8,
+  Mumbai 6, East Delhi 4, Bangalore Urban 4, Bangalore 2, "Tripura Vasini Palace Grounds, Bengaluru" 1, Pune 3, Karjat 4.
+- A place filter needs normalisation to metro areas (Delhi NCR ≈ 48) and distance from a home city (Pune + 150 km ≈ 14:
+  Pune 3, Karjat 4, Mumbai 6, Thane 1). Geocoding service still to choose (free, no card, research first).

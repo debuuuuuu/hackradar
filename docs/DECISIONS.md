@@ -190,6 +190,26 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** `@v10` failed to resolve; exact pins are also safer against supply-chain changes.
 - **Status:** active
 
+### D-034 · Place filter: home city + radius + metro areas
+- **Date:** 2026-10-15
+- **Decision:** Place preferences = format (online / in person / both), home city + travel radius (default Pune,
+  150 km), and extra cities. All events page gets a Place filter (format segment, near + radius, city chips with
+  counts). City strings are normalised to metro areas (e.g. Delhi NCR) and geocoded once per distinct city.
+- **Why:** Debjit asked for a place filter (2026-10-15). Source city strings are inconsistent (research note).
+- **Alternatives:** exact city match only (misses "West Delhi", "Bangalore Urban").
+- **Status:** active (design done; build with preferences in Phase 2; geocoder to be researched first)
+
+### D-033 · Luma via public calendar ICS feeds only
+- **Date:** 2026-10-15
+- **Decision:** Add Luma as a source using the iCal feeds of a curated list of hackathon-running Luma calendars
+  (`api.lu.ma/ics/get?entity=calendar&id=…`), keyword-filtered to hackathons/buildathons with future dates.
+  Shown as "happens <date>" (no deadline/prize/fee in the feed). Do **not** use the undocumented discover API.
+- **Why:** Debjit asked for Luma (2026-10-15). robots.txt allows the API host, but Luma's terms restrict access to
+  "publicly supported interfaces"; calendar subscription feeds are one, the discover endpoint is not. Search needs login.
+- **Alternatives:** discover API with Pune coordinates (best coverage, 3 Pune hackathons found) — rejected on terms;
+  official Luma API — paid (Luma Plus); one-off events on personal calendars — left to Phase 4 search discovery.
+- **Status:** active (planned, Phase 2 with Devfolio/MLH)
+
 ### D-032 · Calendar: template links + subscribed feed, no Calendar API
 - **Date:** 2026-10-15
 - **Decision:** (1) "Add to Google Calendar" pre-filled template link on every event in Discord, email and dashboard;

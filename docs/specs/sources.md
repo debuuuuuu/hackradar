@@ -80,6 +80,7 @@ per-source on/off flag in `config/sources.yaml` · fixture test from a saved rea
 ## Next sources
 | Source | Order | Notes |
 |---|---|---|
+| Luma | Phase 2 (D-033) | Curated calendar ICS feeds only; start date, no deadline/prize. See research/2026-10-15-luma.md |
 | Hack2Skill | next (D-022) | Strong Indian coverage; robots.txt + endpoints unchecked |
 | DoraHacks | later | Web3-heavy, global |
 | HackerEarth | later | Corporate/hiring hackathons |
