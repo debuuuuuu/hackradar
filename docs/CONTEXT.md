@@ -5,9 +5,9 @@ _Last updated: 2026-10-14_
 ## 1. Resume here
 
 - **Phase:** 1 · MVP digest, in progress. Phase 0 gate passed 2026-10-14.
-- **Just finished:** Devpost + Unstop sources live: **~300 open hackathons** in Neon (49 Devpost, 250 Unstop).
-  robots.txt parsing moved to Protego (D-029). 25 tests green.
-- **Next task:** `notify/discord.py` webhook digest (top N by deadline, "nothing new" message), wire into `run.py`.
+- **Just finished:** Devpost + Unstop live (~300 open hackathons in Neon); Discord webhook digest built and wired
+  into `run.py` (D-030), previewed against real data. 32 tests green.
+- **Next task:** once the webhook is set, send the first live digest, then watch 3 daily cron runs (Phase 1 gate).
 - **Blockers:** Debjit adds `DISCORD_WEBHOOK_URL` to `.env` (SETUP.md §3) before the digest step;
   Claude then copies it to GitHub Secrets with `gh secret set` (never paste it in chat).
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
@@ -53,7 +53,7 @@ Friends and college peers can join with their own filters, saves and reminders. 
 
 **Working end to end right now:** `daily.yml` (manual or cron) → `python -m pipeline.run` fetches Devpost and
 Unstop (robots-checked, polite), upserts into `events`/`event_sources`, closes past events, writes a `runs` row and
-`data/last_run.json` → keepalive commit to `status` branch. No notifications yet.
+`data/last_run.json` → keepalive commit to `status` branch. Builds the Discord digest; sends it only when `DISCORD_WEBHOOK_URL` is set (not yet).
 CI (ruff, black, pytest) green on `main`.
 
 ## 4. Stack at a glance
@@ -108,6 +108,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-027 Pin Actions tags; setup-uv exact version.
 - D-028 Date-only source values stored as 00:00 IST; Devpost field mapping.
 - D-029 Protego for robots.txt (stdlib parser mishandles wildcards).
+- D-030 Phase 1 digest format (closing ≤3 days + new, by deadline).
 
 ## 6. Known issues and open questions
 

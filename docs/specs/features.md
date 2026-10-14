@@ -12,7 +12,8 @@ _Last updated: 2026-10-14_ · Status: **planned**. Each feature lists what a use
   5. **"Because you saved X"** lines (Phase 4).
 - Discord items carry **⭐ Save** and **✖ Not interested** buttons (Phase 3; Phase 1 webhook has no buttons).
 - If no new events: a one-line "nothing new" message, so the user knows it ran.
-- Phase 1 MVP: webhook, sorted by deadline, no AI.
+- Phase 1 MVP (built 2026-10-14, D-030): webhook; sections "⏰ Closing within 3 days" and "🆕 New since last run",
+  each sorted by joining deadline, max 10 + "…and N more"; no AI, no buttons.
 
 ## 2. Saves and status
 - Status flow: **Saved → Registered → Submitted → Done**, plus **Dismissed**.

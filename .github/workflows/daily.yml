@@ -27,6 +27,7 @@ jobs:
         run: uv run python -m pipeline.run
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
       # Runs even if the pipeline failed, so the schedule stays alive.
       - name: Keepalive commit to status branch

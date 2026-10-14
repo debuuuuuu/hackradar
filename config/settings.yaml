@@ -9,6 +9,7 @@ ai:
 
 digest:
   top_n: 5
+  list_limit: 10            # Phase 1: max items per digest section
   closing_soon_days: 3
   ai_picks: 3
 

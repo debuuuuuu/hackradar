@@ -11,8 +11,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from pipeline import config, db
+from pipeline import config, db, digest
 from pipeline.normalize import IST, ist_day_start
+from pipeline.notify import discord
 from pipeline.sources.base import PoliteClient, Source
 from pipeline.sources.devpost import Devpost
 from pipeline.sources.unstop import Unstop
@@ -64,6 +65,24 @@ def fetch_and_store(conn) -> tuple[dict[str, int], list[str]]:
     return counts, errors
 
 
+def send_digest(conn, run_id: int, errors: list[str]) -> int:
+    """Build and post the Discord digest. Returns messages sent; failures are recorded."""
+    since = digest.previous_run_start(conn, run_id)
+    d = digest.build(conn, since, datetime.now(UTC))
+    log.info("digest %s: %d new, %d closing soon", d.day, d.new_total, d.closing_total)
+    webhook = os.environ.get("DISCORD_WEBHOOK_URL")
+    if not webhook:
+        log.warning("DISCORD_WEBHOOK_URL not set; digest not sent")
+        return 0
+    try:
+        discord.send(webhook, discord.render(d))
+    except Exception as e:
+        log.exception("discord send failed")
+        errors.append(f"discord: {type(e).__name__}: {e}")
+        return 0
+    return 1
+
+
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     load_dotenv()
@@ -75,9 +94,9 @@ def main() -> int:
             run_id = db.start_run(conn, trigger)
             log.info("run %s started (trigger=%s)", run_id, trigger)
             source_counts, errors = fetch_and_store(conn)
-            # Phase 1+: digest → send
+            sent = send_digest(conn, run_id, errors)
             status = "partial" if errors else "success"
-            db.finish_run(conn, run_id, status, source_counts, errors)
+            db.finish_run(conn, run_id, status, source_counts, errors, sent)
         log.info("run %s finished: %s", run_id, status)
         return 0
     finally:

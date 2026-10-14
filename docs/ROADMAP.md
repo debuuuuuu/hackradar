@@ -37,8 +37,9 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [x] `normalize.py`: `EventRecord`, date ranges → IST, prize cleaning, content hash + tests (2026-10-14)
 - [x] `db.py`: upsert into `events` and `event_sources` (new/changed/same via content hash) (2026-10-14)
 - [x] Mark past events closed (IST day boundary) (2026-10-14)
-- [ ] `notify/discord.py`: webhook digest, top N sorted by deadline (no AI yet), "nothing new" message
-- [ ] Wire everything in `run.py`; per-source failures logged, never fatal
+- [x] `notify/discord.py` + `digest.py`: webhook digest (New / Closing ≤3 days, sorted by deadline, no AI), "nothing new" message, Discord size limits, 429 retry (D-030) (2026-10-14)
+- [ ] Debjit adds `DISCORD_WEBHOOK_URL` → `.env` + GitHub secret; first live digest
+- [x] Wire everything in `run.py`; per-source and Discord failures logged, never fatal (2026-10-14)
 - [ ] Cron + keepalive live
 - [ ] Watch 3 daily runs; fix anything flaky
 - [ ] **Gate:** 3 consecutive real digests on Discord

@@ -37,14 +37,16 @@ def finish_run(
     status: str,
     source_counts: dict[str, int],
     errors: list[str],
+    notifications_sent: int = 0,
 ) -> None:
     conn.execute(
         """
         UPDATE runs
-           SET finished_at = now(), status = %s, source_counts = %s, errors = %s
+           SET finished_at = now(), status = %s, source_counts = %s, errors = %s,
+               notifications_sent = %s
          WHERE id = %s
         """,
-        (status, Jsonb(source_counts), Jsonb(errors), run_id),
+        (status, Jsonb(source_counts), Jsonb(errors), notifications_sent, run_id),
     )
 
 

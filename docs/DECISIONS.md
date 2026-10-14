@@ -190,6 +190,19 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** `@v10` failed to resolve; exact pins are also safer against supply-chain changes.
 - **Status:** active
 
+### D-030 · Phase 1 digest format
+- **Date:** 2026-10-14
+- **Decision:** One Discord webhook message per run: header (IST date, open count) + up to two embeds:
+  **⏰ Closing within 3 days** and **🆕 New** (first seen since the previous successful run, excluding ones already in
+  "closing"). Each sorted by the joining deadline `COALESCE(reg_deadline, submission_deadline, end_date)`, max 10
+  items (`digest.list_limit`), then "…and N more". Line: linked title, deadline label ("reg closes" / "submit by" /
+  "ends", time shown only when the source gives one), location, prize, source. Plain "nothing new" message when both
+  are empty. Titles escaped for Markdown, capped at 120 chars; `allowed_mentions` empty.
+- **Why:** Phase 1 has no preferences or AI, so deadline order is the most useful ranking. The total across embeds is
+  capped at ~5,600 chars because Discord rejects messages over 6,000 (caught by a unit test).
+- **Alternatives:** one message per event (spammy, rate limits); plain-text content (2,000-char limit).
+- **Status:** active (replaced by per-user ranked digest in Phase 2)
+
 ### D-029 · Protego for robots.txt parsing
 - **Date:** 2026-10-14
 - **Decision:** `PoliteClient` parses robots.txt with Protego instead of `urllib.robotparser`.
