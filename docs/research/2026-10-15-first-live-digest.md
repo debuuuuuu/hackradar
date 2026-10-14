@@ -48,3 +48,11 @@ _As of 2026-10-15 (IST). Source: GitHub Actions run 38625693804, Neon `runs` tab
   Mumbai 6, East Delhi 4, Bangalore Urban 4, Bangalore 2, "Tripura Vasini Palace Grounds, Bengaluru" 1, Pune 3, Karjat 4.
 - A place filter needs normalisation to metro areas (Delhi NCR ≈ 48) and distance from a home city (Pune + 150 km ≈ 14:
   Pune 3, Karjat 4, Mumbai 6, Thane 1). Geocoding service still to choose (free, no card, research first).
+
+## Unstop's "hackathons" feed is not only hackathons (found 2026-10-15)
+- 262 open items; 261 have `type: hackathons, subtype: online_coding_challenge` (1 `general_competition`), so the
+  source's own fields cannot separate them.
+- Seen: BGMI / Valorant tournaments, Poster Exhibition, Business Plan Competition, Robo Sumo / Robo Soccer, CTFs,
+  quizzes, pitch contests. Roughly half the titles lack any hackathon-like word (131 of 261 match a loose keyword list).
+- Proposed (Phase 2, needs Debjit's OK): AI tags each event `kind` = hackathon | coding contest | other, as a
+  separate field, never touching dates/prizes; digest and dashboard get a "hackathons only" default.

@@ -53,7 +53,9 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 
 - [x] `ai/` provider interface + `groq.py` with retry/429 handling and tests (D-035) (2026-10-15)
 - [ ] `gemini.py` (optional), `claude.py` stub
-- [ ] Prompts: summarize, score (in `ai/prompts/`)
+- [x] Summarize: `ai/summarize.py` (batched, rule-checked: no dates/money, untrusted-text delimiters), tested live on 12 events (2026-10-15)
+- [ ] Score prompt; store summaries in `events.summary` for new/changed events only; wire into `run.py`
+- [ ] Event `kind` tag (hackathon / contest / other) to filter Unstop's non-hackathons (needs Debjit's OK)
 - [ ] Batch summaries (10–15 events/call), only new/changed events; retry with backoff on 429
 - [ ] Per-user scoring for the owner (rule filters first, then AI score)
 - [ ] `sources/devfolio.py` + fixture test
