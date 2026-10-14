@@ -26,3 +26,6 @@ web/dist/
 Thumbs.db
 .vscode/
 .idea/
+
+# Pipeline output (lives on the status branch, D-023)
+data/last_run.json

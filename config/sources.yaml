@@ -1,0 +1,15 @@
+# Per-source switches. Each source fails independently. Details: docs/specs/sources.md
+
+devpost:
+  enabled: false   # Phase 1
+unstop:
+  enabled: false   # Phase 1
+devfolio:
+  enabled: false   # Phase 2
+mlh:
+  enabled: false   # Phase 2
+hack2skill:
+  enabled: false   # after core four (D-022)
+discovery:
+  enabled: false   # Phase 4
+  max_queries_per_day: 10

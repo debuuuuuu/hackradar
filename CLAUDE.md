@@ -58,11 +58,13 @@ saves and reminders, for Debjit and friends. Full context lives in `docs/`.
 
 ## Common commands
 
-_Not built yet — fill in during Phase 0/1._
+Python 3.12 managed by `uv` (pinned in `.python-version`, locked in `uv.lock`).
 
 ```bash
-# python -m pipeline.run            # run the daily pipeline locally
-# pytest                            # run tests
-# ruff check . && black --check .   # lint
-# gh workflow run daily.yml         # trigger the daily job manually
+uv sync                                   # install deps into .venv
+uv run python -m pipeline.db init         # apply pipeline/models.sql to DATABASE_URL (idempotent)
+uv run python -m pipeline.run             # run the daily pipeline locally (reads .env)
+uv run pytest -q                          # tests
+uv run ruff check . && uv run black --check .   # lint
+gh workflow run daily.yml && gh run watch # trigger the daily job manually
 ```
