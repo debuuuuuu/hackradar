@@ -66,6 +66,9 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 
 **Gate:** a saved event gets its 7/3/1-day reminders.
 
+- [ ] "Add to Google Calendar" link on digest items and emails (D-032)
+- [ ] Per-user calendar feed (`.ics`, tokenized URL) of saved events + `/calendar` command (D-032)
+
 - [ ] **Spike first:** Vercel Python function + Discord deferred response + follow-up (D-020)
 - [ ] `bot/` Vercel function `/api/interactions`: signature verification, PING, button handlers
 - [ ] Discord bot (not webhook) digest with ⭐ Save / ✖ Not interested buttons

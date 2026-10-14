@@ -112,6 +112,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-029 Protego for robots.txt (stdlib parser mishandles wildcards).
 - D-030 Phase 1 digest format (closing ≤3 days + new, by deadline).
 - D-031 Event trust signals from source fields (fee, invite-only, organiser, registrations); Supabase rejected.
+- D-032 Calendar: Google template links + per-user ICS feed; no Calendar API.
 
 ## 6. Known issues and open questions
 

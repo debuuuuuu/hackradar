@@ -190,6 +190,17 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** `@v10` failed to resolve; exact pins are also safer against supply-chain changes.
 - **Status:** active
 
+### D-032 · Calendar: template links + subscribed feed, no Calendar API
+- **Date:** 2026-10-15
+- **Decision:** (1) "Add to Google Calendar" pre-filled template link on every event in Discord, email and dashboard;
+  (2) `.ics` download; (3) per-user private calendar feed of saved events (Phase 3). No Google Calendar API.
+- **Why:** Debjit asked for adding events to Google Calendar from chat, website or email. Template links and ICS feeds
+  are free, need no login, and work from all three channels. The feed keeps dates current when a source changes them.
+- **Alternatives:** Google Calendar API inserts — rejected: per-friend OAuth plus Google app verification for
+  calendar scopes, for little gain. Feed refresh lag in Google Calendar is reportedly 12–24 h (**unverified**);
+  reminders on Discord/email cover same-day changes.
+- **Status:** active (planned, Phase 3)
+
 ### D-031 · Event trust signals (rules on source data, no new service)
 - **Date:** 2026-10-15
 - **Decision:** "Is this event real/safe?" is answered by deterministic rules on fields the platforms already

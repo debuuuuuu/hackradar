@@ -27,6 +27,15 @@ _Last updated: 2026-10-14_ · Status: **planned**. Each feature lists what a use
 - Change from: Discord buttons, `/save`, `/status`, dashboard, email links (signed).
 - Dismissed events are hidden from future digests and push similar events down.
 
+## 2a. Calendar (D-032, planned)
+- **Add to Google Calendar** link on every event: Discord digest (link button), email, dashboard. Pre-filled
+  `calendar.google.com/calendar/render?action=TEMPLATE` URL; no API, no login. Date = joining deadline
+  (reg close, else submission); date-only sources → all-day entry. Title, source link, "confirm on the event page".
+- **.ics download** for Apple/Outlook (dashboard, email).
+- **Personal calendar feed** (Phase 3 with saves): private tokenized URL per user listing saved events' key dates;
+  subscribe once in Google Calendar, date changes flow through. Discord `/calendar` returns the URL (ephemeral).
+- Not doing: Google Calendar API writes (per-user OAuth + Google app verification for calendar scopes).
+
 ## 3. Reminders
 - Default offsets 7, 3, 1 days before + same-day morning alert (D-019). Per-user override via
   `/reminders 7,3,1` or dashboard.
@@ -53,11 +62,14 @@ All reply with an ACK within 3 s; slow ones use a deferred response + follow-up 
 | `/save <event>` / `/status <event> <status>` | Change status |
 | `/filters show\|add\|remove` | Manage themes, locations, modes, etc. |
 | `/reminders 7,3,1` | Set reminder offsets |
+| `/calendar` | Your private calendar-feed URL (ephemeral reply) |
 | `/digest now` | Send the latest stored digest |
 | `/pause`, `/resume` | Toggle `digest_enabled` |
 | `/join` | Onboard a new user |
 
 ## 6. Dashboard (React on Vercel, Phase 5)
+- Design: direction D "Today" + 5 AM email chosen as the base (2026-10-15), canvas
+  https://claude.ai/artifact/SDLHqTM56wgrjpXHTgdbAx (private). Needs polish before build.
 - Login: Discord OAuth; each user sees only their own saves and settings.
 - Pages:
   - **All events** — search; filter by theme, mode, location, deadline
