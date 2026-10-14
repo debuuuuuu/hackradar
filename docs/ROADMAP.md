@@ -32,7 +32,8 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 
 - [x] `sources/base.py`: `Source` interface + polite HTTP client (User-Agent, retries/backoff, ~1 req/s/host, robots check) (2026-10-14)
 - [x] `sources/devpost.py` with pagination (40/page) + fixture test; 48 live events stored (2026-10-14)
-- [ ] `sources/unstop.py` (`/api/public/*` only) + fixture test
+- [x] `sources/unstop.py` (`/api/public/*` only) + fixture test; 250 live events stored (2026-10-14)
+- [x] robots.txt parsing switched to Protego (wildcards, longest match) (D-029) (2026-10-14)
 - [x] `normalize.py`: `EventRecord`, date ranges → IST, prize cleaning, content hash + tests (2026-10-14)
 - [x] `db.py`: upsert into `events` and `event_sources` (new/changed/same via content hash) (2026-10-14)
 - [x] Mark past events closed (IST day boundary) (2026-10-14)

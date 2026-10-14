@@ -1,0 +1,1926 @@
+{
+ "data": {
+  "current_page": 1,
+  "data": [
+   {
+    "id": 1770284,
+    "public_url": "hackathons/innovathon-faculty-of-engineering-and-technology-agra-college-x-nimblux-nimblux-1770284",
+    "title": "InnovaThon - Faculty of Engineering and Technology Agra College X Nimblux",
+    "organization_id": 1973187,
+    "type": "hackathons",
+    "subtype": "online_coding_challenge",
+    "regn_open": 1,
+    "updated_at": "2026-10-14T20:46:37+05:30",
+    "region": "hybrid",
+    "visibility": "public",
+    "short_id": "U9R7hQu",
+    "logoUrl2": "https://d8it4huxumps7.cloudfront.net/uploads/images/150x150/uploadedManual-6acf56aad9ac5_neon_innovathon_hackathon_banner.jpg",
+    "organisation": {
+     "id": 1973187,
+     "name": "NIMBLUX",
+     "public_url": "c/nimblux-1973187",
+     "logoUrl": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-kmz9U8IJGM423167509jRs90Ov3U2.png",
+     "logoUrl2": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-kmz9U8IJGM423167509jRs90Ov3U2.png",
+     "show_evaluator_login_link": false,
+     "official_email_domains": null,
+     "tier": null
+    },
+    "seo_url": "https://unstop.com/hackathons/innovathon-faculty-of-engineering-and-technology-agra-college-x-nimblux-nimblux-1770284",
+    "status": "LIVE",
+    "tags": [],
+    "thumb": null,
+    "isPaid": false,
+    "festival": null,
+    "prizes": [],
+    "address_with_country_logo": {
+     "id": 1867072,
+     "address": "Faculty of Engineering & Technology Agra College, Agra",
+     "city": "Agra",
+     "state": "Uttar Pradesh",
+     "country": {
+      "id": 94,
+      "name": "India",
+      "alpha_2": "in",
+      "alpha_3": "ind",
+      "iso": "IN",
+      "iso3": "IND",
+      "numcode": 356,
+      "phonecode": "+91   ",
+      "logos": {
+       "very_small": "https://d8it4huxumps7.cloudfront.net/images/flags/16x16/in.png",
+       "small": "https://d8it4huxumps7.cloudfront.net/images/flags/24x24/in.png",
+       "medium": "https://d8it4huxumps7.cloudfront.net/images/flags/32x32/in.png",
+       "large": "https://d8it4huxumps7.cloudfront.net/images/flags/48x48/in.png",
+       "xlarge": "https://d8it4huxumps7.cloudfront.net/images/flags/64x64/in.png",
+       "xxlarge": "https://d8it4huxumps7.cloudfront.net/images/flags/128x128/in.png"
+      }
+     },
+     "zip": null,
+     "lat": null,
+     "lng": null,
+     "addressable_id": 1770284,
+     "addressable_type": "App\\Model\\Opportunity",
+     "created_at": "2026-10-14T15:49:10+05:30",
+     "updated_at": "2026-10-14T20:46:15+05:30",
+     "deleted_at": null,
+     "address_title": "event_location",
+     "city_id": 57601,
+     "sort_order": 1,
+     "state_code": null,
+     "country_code": null
+    },
+    "short_url": "https://unstop.com/o/U9R7hQu",
+    "workfunction": [
+     {
+      "id": 2004,
+      "name": "Software Development",
+      "description": "",
+      "created_at": "2026-02-06T23:31:46+05:30",
+      "updated_at": "2026-02-06T23:31:46+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1770284,
+       "subject_id": 2004,
+       "id": 6552616,
+       "ai_generated": true
+      }
+     }
+    ],
+    "assignedTag": {
+     "tag": null
+    },
+    "opportunity_config": {
+     "id": 1463806,
+     "opportunity_id": 1770284,
+     "banner_config": "{\"color\":\"color-bg7\",\"text\":\"InnovaThon - Faculty of Engineering and Technology Agra College X Nimblux\",\"type\":7,\"banner_data\":[2]}",
+     "show_registrations_count": 1,
+     "show_impressions": 1,
+     "show_team_size": 1,
+     "show_region": 1
+    },
+    "payment_services": [],
+    "filters": [
+     {
+      "id": 420,
+      "name": "All",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "all",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/all.svg"
+     }
+    ],
+    "required_skills": [
+     {
+      "id": 645879,
+      "skill": "Creative Thinking",
+      "skill_name": "Creative Thinking",
+      "pivot": {
+       "entity_id": 1770284,
+       "subject_id": 645879,
+       "id": 6552611,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 1373,
+      "skill": "Problem Solving",
+      "skill_name": "Problem Solving",
+      "pivot": {
+       "entity_id": 1770284,
+       "subject_id": 1373,
+       "id": 6552612,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 645189,
+      "skill": "Technical Skills",
+      "skill_name": "Technical Skills",
+      "pivot": {
+       "entity_id": 1770284,
+       "subject_id": 645189,
+       "id": 6552613,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 647511,
+      "skill": "Teamwork and Collaboration",
+      "skill_name": "Teamwork and Collaboration",
+      "pivot": {
+       "entity_id": 1770284,
+       "subject_id": 647511,
+       "id": 6552614,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 647066,
+      "skill": "Public Speaking and Presentation Skills",
+      "skill_name": "Public Speaking and Presentation Skills",
+      "pivot": {
+       "entity_id": 1770284,
+       "subject_id": 647066,
+       "id": 6552615,
+       "ai_generated": true
+      }
+     }
+    ],
+    "locations": [],
+    "end_date": "2026-11-21T18:01:00+05:30",
+    "approved_date": "2026-10-14 20:46:37 GMT+0530",
+    "viewsCount": 1,
+    "registerCount": 10,
+    "regnRequirements": {
+     "opportunity_id": 1770284,
+     "start_regn_dt": "2026-10-14T16:00:00+05:30",
+     "end_regn_dt": "2026-11-15T00:00:00+05:30",
+     "show_deadline": 1,
+     "min_team_size": 2,
+     "max_team_size": 4,
+     "work_location_type": "city",
+     "eligibility": null,
+     "reg_status": "STARTED",
+     "remainingDaysArray": {
+      "durations": "1",
+      "text": "month left"
+     },
+     "remain_days": "1 month left",
+     "remaining_time": 2684171
+    }
+   },
+   {
+    "id": 1770355,
+    "public_url": "hackathons/artificial-arcade-atharva-university-mumbai-1770355",
+    "title": "Artificial Arcade",
+    "organization_id": 1846157,
+    "type": "hackathons",
+    "subtype": "online_coding_challenge",
+    "regn_open": 1,
+    "updated_at": "2026-10-14T18:57:20+05:30",
+    "region": "offline",
+    "visibility": "public",
+    "short_id": "cktwrAl",
+    "logoUrl2": "https://d8it4huxumps7.cloudfront.net/uploads/images/150x150/uploadedManual-6acf793e6dcac_frame_1000005221.png",
+    "organisation": {
+     "id": 1846157,
+     "name": "Atharva University Mumbai",
+     "public_url": "c/atharva-university-mumbai-1846157",
+     "logoUrl": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-2N4iZpFrS4534441506lWEAeiLYHA.png",
+     "logoUrl2": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-2N4iZpFrS4534441506lWEAeiLYHA.png",
+     "show_evaluator_login_link": false,
+     "official_email_domains": null,
+     "tier": null
+    },
+    "seo_url": "https://unstop.com/hackathons/artificial-arcade-atharva-university-mumbai-1770355",
+    "status": "LIVE",
+    "tags": [],
+    "thumb": null,
+    "isPaid": false,
+    "festival": null,
+    "prizes": [],
+    "address_with_country_logo": {
+     "id": 1867302,
+     "address": "Atharva University Mumbai",
+     "city": "Malad",
+     "state": "Maharashtra",
+     "country": {
+      "id": 94,
+      "name": "India",
+      "alpha_2": "in",
+      "alpha_3": "ind",
+      "iso": "IN",
+      "iso3": "IND",
+      "numcode": 356,
+      "phonecode": "+91   ",
+      "logos": {
+       "very_small": "https://d8it4huxumps7.cloudfront.net/images/flags/16x16/in.png",
+       "small": "https://d8it4huxumps7.cloudfront.net/images/flags/24x24/in.png",
+       "medium": "https://d8it4huxumps7.cloudfront.net/images/flags/32x32/in.png",
+       "large": "https://d8it4huxumps7.cloudfront.net/images/flags/48x48/in.png",
+       "xlarge": "https://d8it4huxumps7.cloudfront.net/images/flags/64x64/in.png",
+       "xxlarge": "https://d8it4huxumps7.cloudfront.net/images/flags/128x128/in.png"
+      }
+     },
+     "zip": null,
+     "lat": null,
+     "lng": null,
+     "addressable_id": 1770355,
+     "addressable_type": "App\\Model\\Opportunity",
+     "created_at": "2026-10-14T18:15:09+05:30",
+     "updated_at": "2026-10-14T18:56:46+05:30",
+     "deleted_at": null,
+     "address_title": "event_location",
+     "city_id": 147808,
+     "sort_order": 1,
+     "state_code": null,
+     "country_code": null
+    },
+    "short_url": "https://unstop.com/o/cktwrAl",
+    "workfunction": [
+     {
+      "id": 2004,
+      "name": "Software Development",
+      "description": "",
+      "created_at": "2026-02-06T23:31:46+05:30",
+      "updated_at": "2026-02-06T23:31:46+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1770355,
+       "subject_id": 2004,
+       "id": 6551491,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 2015,
+      "name": "Online Gaming & Esports",
+      "description": "",
+      "created_at": "2026-02-06T23:31:46+05:30",
+      "updated_at": "2026-02-06T23:31:46+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1770355,
+       "subject_id": 2015,
+       "id": 6551492,
+       "ai_generated": true
+      }
+     }
+    ],
+    "assignedTag": {
+     "tag": null
+    },
+    "opportunity_config": {
+     "id": 1463869,
+     "opportunity_id": 1770355,
+     "banner_config": "{\"color\":\"color-bg3\",\"text\":\"Artificial Arcade\",\"type\":7,\"banner_data\":[2]}",
+     "show_registrations_count": 1,
+     "show_impressions": 1,
+     "show_team_size": 1,
+     "show_region": 1
+    },
+    "payment_services": [],
+    "filters": [
+     {
+      "id": 422,
+      "name": "Engineering Students",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "engineering",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/engineering.svg"
+     },
+     {
+      "id": 424,
+      "name": "Postgraduate",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "postgraduate",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/postgraduate.svg"
+     },
+     {
+      "id": 426,
+      "name": "Undergraduate",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "undergraduate",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/undergraduate.svg"
+     }
+    ],
+    "required_skills": [
+     {
+      "id": 643892,
+      "skill": "Game Design",
+      "skill_name": "Game Design",
+      "pivot": {
+       "entity_id": 1770355,
+       "subject_id": 643892,
+       "id": 6551486,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 645880,
+      "skill": "Creativity",
+      "skill_name": "Creativity",
+      "pivot": {
+       "entity_id": 1770355,
+       "subject_id": 645880,
+       "id": 6551487,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 1373,
+      "skill": "Problem Solving",
+      "skill_name": "Problem Solving",
+      "pivot": {
+       "entity_id": 1770355,
+       "subject_id": 1373,
+       "id": 6551488,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 647511,
+      "skill": "Teamwork and Collaboration",
+      "skill_name": "Teamwork and Collaboration",
+      "pivot": {
+       "entity_id": 1770355,
+       "subject_id": 647511,
+       "id": 6551489,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 647612,
+      "skill": "Unity Engine",
+      "skill_name": "Unity Engine",
+      "pivot": {
+       "entity_id": 1770355,
+       "subject_id": 647612,
+       "id": 6551490,
+       "ai_generated": true
+      }
+     }
+    ],
+    "locations": [],
+    "end_date": "2026-10-30T17:00:00+05:30",
+    "approved_date": "2026-10-14 18:57:20 GMT+0530",
+    "viewsCount": 1,
+    "registerCount": 5,
+    "regnRequirements": {
+     "opportunity_id": 1770355,
+     "start_regn_dt": "2026-10-14T00:00:00+05:30",
+     "end_regn_dt": "2026-10-20T00:00:00+05:30",
+     "show_deadline": 1,
+     "min_team_size": 2,
+     "max_team_size": 3,
+     "work_location_type": "city",
+     "eligibility": "{\"sector\":[\"students\"],\"engineering\":[{\"course\":\"btech\",\"type\":\"engineering\",\"programme\":[\"all\"],\"passoutYear\":[\"all\"],\"specialization\":[\"all\"],\"duration\":4},{\"course\":\"mtech\",\"type\":\"engineering\",\"programme\":[\"all\"],\"passoutYear\":[\"all\"],\"specialization\":[\"all\"],\"duration\":2},{\"course\":\"bca\",\"type\":\"engineering\",\"programme\":[\"all\"],\"passoutYear\":[\"all\"],\"specialization\":[\"all\"],\"duration\":3},{\"course\":\"mca\",\"type\":\"engineering\",\"programme\":[\"all\"],\"passoutYear\":[\"all\"],\"specialization\":[\"all\"],\"duration\":2},{\"course\":\"mca1\",\"type\":\"engineering\",\"programme\":[\"all\"],\"passoutYear\":[\"all\"],\"specialization\":[\"all\"],\"duration\":3},{\"course\":\"diploma\",\"type\":\"engineering\",\"programme\":[\"all\"],\"passoutYear\":[\"all\"],\"specialization\":[\"all\"],\"duration\":0}],\"bSchools\":[],\"arts\":[],\"medicine\":[],\"law\":[],\"others\":[\"all\"],\"experience\":[\"all\"],\"studentPassoutYearsSelected\":[\"all\"],\"fresherPassoutYearsSelected\":[\"all\"],\"schoolFilteredClasses\":[\"all\"],\"minMarks\":{\"high_school_perc\":0,\"high_school_cgpa\":0},\"locations\":[],\"location_type\":\"all\",\"professionalEligibility\":null,\"fresherEligibility\":null}",
+     "reg_status": "STARTED",
+     "remainingDaysArray": {
+      "durations": 5,
+      "text": " days left"
+     },
+     "remain_days": "5 days left",
+     "remaining_time": 437637
+    }
+   },
+   {
+    "id": 1770422,
+    "public_url": "hackathons/buildlab-2026-frontend-arena-1770422",
+    "title": "BuildLab 2026",
+    "organization_id": 1992104,
+    "type": "hackathons",
+    "subtype": "online_coding_challenge",
+    "regn_open": 1,
+    "updated_at": "2026-10-14T20:36:41+05:30",
+    "region": "online",
+    "visibility": "public",
+    "short_id": "6j71Mx9",
+    "logoUrl2": "https://d8it4huxumps7.cloudfront.net/uploads/images/150x150/uploadedManual-6acf8f531efd1_fa_logo.png",
+    "organisation": {
+     "id": 1992104,
+     "name": "Frontend Arena",
+     "public_url": "c/frontend-arena-1992104",
+     "logoUrl": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-RMmMryjk67436215400Wlc48KqEnW.png",
+     "logoUrl2": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-RMmMryjk67436215400Wlc48KqEnW.png",
+     "show_evaluator_login_link": false,
+     "official_email_domains": null,
+     "tier": null
+    },
+    "seo_url": "https://unstop.com/hackathons/buildlab-2026-frontend-arena-1770422",
+    "status": "LIVE",
+    "tags": [],
+    "thumb": null,
+    "isPaid": false,
+    "festival": null,
+    "prizes": [],
+    "address_with_country_logo": {
+     "id": 1867368,
+     "address": "",
+     "city": "",
+     "state": "",
+     "country": null,
+     "zip": null,
+     "lat": null,
+     "lng": null,
+     "addressable_id": 1770422,
+     "addressable_type": "App\\Model\\Opportunity",
+     "created_at": "2026-10-14T19:55:51+05:30",
+     "updated_at": "2026-10-14T20:35:32+05:30",
+     "deleted_at": null,
+     "address_title": "event_location",
+     "city_id": null,
+     "sort_order": 1,
+     "state_code": null,
+     "country_code": null
+    },
+    "short_url": "https://unstop.com/o/6j71Mx9",
+    "workfunction": [
+     {
+      "id": 2005,
+      "name": "Frontend Development",
+      "description": "",
+      "created_at": "2026-02-06T23:31:46+05:30",
+      "updated_at": "2026-02-06T23:31:46+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1770422,
+       "subject_id": 2005,
+       "id": 6552543,
+       "ai_generated": true
+      }
+     }
+    ],
+    "assignedTag": {
+     "tag": null
+    },
+    "opportunity_config": {
+     "id": 1463914,
+     "opportunity_id": 1770422,
+     "banner_config": "{\"color\":\"color-bg3\",\"text\":\"BuildLab 2026\",\"type\":5,\"banner_data\":[3]}",
+     "show_registrations_count": 1,
+     "show_impressions": 1,
+     "show_team_size": 1,
+     "show_region": 1
+    },
+    "payment_services": [],
+    "filters": [
+     {
+      "id": 421,
+      "name": "Experienced Professionals",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "corporate",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/corporate.svg"
+     }
+    ],
+    "required_skills": [
+     {
+      "id": 644778,
+      "skill": "React.js",
+      "skill_name": "React.js",
+      "pivot": {
+       "entity_id": 1770422,
+       "subject_id": 644778,
+       "id": 6552538,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 1481,
+      "skill": "UI/UX Design",
+      "skill_name": "UI/UX Design",
+      "pivot": {
+       "entity_id": 1770422,
+       "subject_id": 1481,
+       "id": 6552539,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 646494,
+      "skill": "JavaScript",
+      "skill_name": "JavaScript",
+      "pivot": {
+       "entity_id": 1770422,
+       "subject_id": 646494,
+       "id": 6552540,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 645265,
+      "skill": "TypeScript",
+      "skill_name": "TypeScript",
+      "pivot": {
+       "entity_id": 1770422,
+       "subject_id": 645265,
+       "id": 6552541,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 1373,
+      "skill": "Problem Solving",
+      "skill_name": "Problem Solving",
+      "pivot": {
+       "entity_id": 1770422,
+       "subject_id": 1373,
+       "id": 6552542,
+       "ai_generated": true
+      }
+     }
+    ],
+    "locations": [],
+    "end_date": "2026-10-25T17:00:00+05:30",
+    "approved_date": "2026-10-14 20:36:41 GMT+0530",
+    "viewsCount": 1,
+    "registerCount": 3,
+    "regnRequirements": {
+     "opportunity_id": 1770422,
+     "start_regn_dt": "2026-10-14T00:00:00+05:30",
+     "end_regn_dt": "2026-10-24T10:00:00+05:30",
+     "show_deadline": 1,
+     "min_team_size": 1,
+     "max_team_size": 1,
+     "work_location_type": "city",
+     "eligibility": "{\"sector\":[\"corporates\"],\"engineering\":[],\"bSchools\":[],\"arts\":[],\"medicine\":[],\"law\":[],\"others\":[\"all\"],\"experience\":[\"all\"],\"studentPassoutYearsSelected\":[\"all\"],\"fresherPassoutYearsSelected\":[\"all\"],\"schoolFilteredClasses\":[\"all\"],\"minMarks\":{\"high_school_perc\":0,\"high_school_cgpa\":0},\"locations\":[],\"location_type\":\"all\",\"professionalEligibility\":null,\"fresherEligibility\":null}",
+     "reg_status": "STARTED",
+     "remainingDaysArray": {
+      "durations": 9,
+      "text": " days left"
+     },
+     "remain_days": "9 days left",
+     "remaining_time": 819453
+    }
+   },
+   {
+    "id": 1759619,
+    "public_url": "hackathons/the-arcticathon-bidaya-1759619",
+    "title": "The Arcticathon ",
+    "organization_id": 2034400,
+    "type": "hackathons",
+    "subtype": "online_coding_challenge",
+    "regn_open": 1,
+    "updated_at": "2026-10-04T11:22:54+05:30",
+    "region": "online",
+    "visibility": "public",
+    "short_id": "Mg9KfTh",
+    "logoUrl2": "https://d8it4huxumps7.cloudfront.net/uploads/images/150x150/6ac1e928a417d_organisation_image-MzLeFlNSjY1429117067oIBMaf5KsO.png",
+    "organisation": {
+     "id": 2034400,
+     "name": "Bidaya",
+     "public_url": "c/bidaya-2034400",
+     "logoUrl": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-MzLeFlNSjY1429117067oIBMaf5KsO.png",
+     "logoUrl2": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-MzLeFlNSjY1429117067oIBMaf5KsO.png",
+     "show_evaluator_login_link": false,
+     "official_email_domains": null,
+     "tier": null
+    },
+    "seo_url": "https://unstop.com/hackathons/the-arcticathon-bidaya-1759619",
+    "status": "LIVE",
+    "tags": [],
+    "thumb": null,
+    "isPaid": false,
+    "festival": null,
+    "prizes": [
+     {
+      "id": 3859977,
+      "rank": "All eligible participants.",
+      "cash": 100000,
+      "currency": "fa-dollar",
+      "certificate": 1,
+      "entity_id": 1759619,
+      "entity_type": "App\\Model\\Opportunity",
+      "others": "$100,000 Total Prize Pool, Every participant will receive funding toward purchasing a domain for their project, with the total value of domain funding distributed across eligible participants. Participants can use their allocation to register a domain and take their project online.",
+      "currencyCode": null,
+      "cash_postfix": null,
+      "max_cash": null,
+      "pre_placement_internship": 0,
+      "pre_placement_opportunity": 0
+     },
+     {
+      "id": 3859978,
+      "rank": "1-10",
+      "cash": null,
+      "currency": "fa-rupee",
+      "certificate": 1,
+      "entity_id": 1759619,
+      "entity_type": "App\\Model\\Opportunity",
+      "others": "Special Certificate + Bidaya Trebuchet Placement Priority.",
+      "currencyCode": null,
+      "cash_postfix": null,
+      "max_cash": null,
+      "pre_placement_internship": 0,
+      "pre_placement_opportunity": 0
+     }
+    ],
+    "address_with_country_logo": {
+     "id": 1851122,
+     "address": "",
+     "city": "",
+     "state": "",
+     "country": null,
+     "zip": null,
+     "lat": null,
+     "lng": null,
+     "addressable_id": 1759619,
+     "addressable_type": "App\\Model\\Opportunity",
+     "created_at": "2026-09-22T14:09:47+05:30",
+     "updated_at": "2026-10-04T11:20:32+05:30",
+     "deleted_at": null,
+     "address_title": "event_location",
+     "city_id": null,
+     "sort_order": 1,
+     "state_code": null,
+     "country_code": null
+    },
+    "short_url": "https://unstop.com/o/Mg9KfTh",
+    "workfunction": [
+     {
+      "id": 2008,
+      "name": "Web Development",
+      "description": "",
+      "created_at": "2026-02-06T23:31:46+05:30",
+      "updated_at": "2026-02-06T23:31:46+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1759619,
+       "subject_id": 2008,
+       "id": 6404733,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 2014,
+      "name": "Quizzes & Treasure Hunt",
+      "description": "",
+      "created_at": "2026-02-06T23:31:46+05:30",
+      "updated_at": "2026-02-06T23:31:46+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1759619,
+       "subject_id": 2014,
+       "id": 6404734,
+       "ai_generated": true
+      }
+     }
+    ],
+    "assignedTag": {
+     "tag": null
+    },
+    "opportunity_config": {
+     "id": 1455906,
+     "opportunity_id": 1759619,
+     "banner_config": "{\"color\":\"color-bg8\",\"text\":\"The Arcticathon\",\"type\":7,\"banner_data\":[2]}",
+     "show_registrations_count": 1,
+     "show_impressions": 1,
+     "show_team_size": 1,
+     "show_region": 1
+    },
+    "payment_services": [],
+    "filters": [
+     {
+      "id": 427,
+      "name": "School Students",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "school",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/school.svg"
+     }
+    ],
+    "required_skills": [
+     {
+      "id": 644778,
+      "skill": "React.js",
+      "skill_name": "React.js",
+      "pivot": {
+       "entity_id": 1759619,
+       "subject_id": 644778,
+       "id": 6404728,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 646494,
+      "skill": "JavaScript",
+      "skill_name": "JavaScript",
+      "pivot": {
+       "entity_id": 1759619,
+       "subject_id": 646494,
+       "id": 6404729,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 645559,
+      "skill": "API Integration",
+      "skill_name": "API Integration",
+      "pivot": {
+       "entity_id": 1759619,
+       "subject_id": 645559,
+       "id": 6404730,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 645880,
+      "skill": "Creativity",
+      "skill_name": "Creativity",
+      "pivot": {
+       "entity_id": 1759619,
+       "subject_id": 645880,
+       "id": 6404731,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 643918,
+      "skill": "GitHub",
+      "skill_name": "GitHub",
+      "pivot": {
+       "entity_id": 1759619,
+       "subject_id": 643918,
+       "id": 6404732,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 645880,
+      "skill": "Creativity",
+      "skill_name": "Creativity",
+      "pivot": {
+       "entity_id": 1759619,
+       "subject_id": 645880,
+       "id": 6404716,
+       "ai_generated": false
+      }
+     },
+     {
+      "id": 647050,
+      "skill": "Project Management",
+      "skill_name": "Project Management",
+      "pivot": {
+       "entity_id": 1759619,
+       "subject_id": 647050,
+       "id": 6404717,
+       "ai_generated": false
+      }
+     }
+    ],
+    "locations": [],
+    "end_date": "2027-01-31T00:00:00+05:30",
+    "approved_date": "2026-10-04 11:22:54 GMT+0530",
+    "viewsCount": 20457,
+    "registerCount": 27,
+    "regnRequirements": {
+     "opportunity_id": 1759619,
+     "start_regn_dt": "2026-09-21T00:00:00+05:30",
+     "end_regn_dt": "2027-01-31T00:00:00+05:30",
+     "show_deadline": 1,
+     "min_team_size": 1,
+     "max_team_size": 1,
+     "work_location_type": "city",
+     "eligibility": "{\"sector\":[\"school\"],\"engineering\":[],\"bSchools\":[],\"arts\":[],\"medicine\":[],\"law\":[],\"others\":[\"all\"],\"experience\":[\"all\"],\"studentPassoutYearsSelected\":[2028,2029,2030,2031,2032],\"fresherPassoutYearsSelected\":[\"all\"],\"schoolFilteredClasses\":[6,7,8,9,10,11,12],\"minMarks\":{\"high_school_perc\":0,\"high_school_cgpa\":0},\"locations\":[],\"location_type\":\"all\",\"professionalEligibility\":null,\"fresherEligibility\":null}",
+     "reg_status": "STARTED",
+     "remainingDaysArray": {
+      "durations": "3",
+      "text": "months left"
+     },
+     "remain_days": "3 months left",
+     "remaining_time": 9336833
+    }
+   },
+   {
+    "id": 1767954,
+    "public_url": "hackathons/pitchcraft-30-guru-tegh-bahadur-4th-centenary-engineering-college-delhi-1767954",
+    "title": "PitchCraft 3.0",
+    "organization_id": 641353,
+    "type": "hackathons",
+    "subtype": "online_coding_challenge",
+    "regn_open": 1,
+    "updated_at": "2026-10-13T12:06:21+05:30",
+    "region": "offline",
+    "visibility": "public",
+    "short_id": "LJOHjtn",
+    "logoUrl2": "https://d8it4huxumps7.cloudfront.net/uploads/images/150x150/uploadedManual-6acd9e0d8c361_lee.jpg",
+    "organisation": {
+     "id": 641353,
+     "name": "Guru Tegh Bahadur 4th Centenary Engineering College, Delhi",
+     "public_url": "c/guru-tegh-bahadur-4-centenary-engineering-college-641353",
+     "logoUrl": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-4irwHEF3zs9283690348emNtJPdSn.png",
+     "logoUrl2": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-4irwHEF3zs9283690348emNtJPdSn.png",
+     "show_evaluator_login_link": false,
+     "official_email_domains": null,
+     "tier": null
+    },
+    "seo_url": "https://unstop.com/hackathons/pitchcraft-30-guru-tegh-bahadur-4th-centenary-engineering-college-delhi-1767954",
+    "status": "LIVE",
+    "tags": [],
+    "thumb": null,
+    "isPaid": false,
+    "festival": null,
+    "prizes": [
+     {
+      "id": 3861423,
+      "rank": "1st Rank",
+      "cash": 5000,
+      "currency": "fa-rupee",
+      "certificate": 1,
+      "entity_id": 1767954,
+      "entity_type": "App\\Model\\Opportunity",
+      "others": "Trophy and Goodies",
+      "currencyCode": null,
+      "cash_postfix": null,
+      "max_cash": null,
+      "pre_placement_internship": 0,
+      "pre_placement_opportunity": 0
+     },
+     {
+      "id": 3861424,
+      "rank": "2nd Rank",
+      "cash": 4000,
+      "currency": "fa-rupee",
+      "certificate": 1,
+      "entity_id": 1767954,
+      "entity_type": "App\\Model\\Opportunity",
+      "others": "Trophy and Goodies",
+      "currencyCode": null,
+      "cash_postfix": null,
+      "max_cash": null,
+      "pre_placement_internship": 0,
+      "pre_placement_opportunity": 0
+     },
+     {
+      "id": 3861425,
+      "rank": "3rd Rank",
+      "cash": 3000,
+      "currency": "fa-rupee",
+      "certificate": 1,
+      "entity_id": 1767954,
+      "entity_type": "App\\Model\\Opportunity",
+      "others": "Trophy and Goodies",
+      "currencyCode": null,
+      "cash_postfix": null,
+      "max_cash": null,
+      "pre_placement_internship": 0,
+      "pre_placement_opportunity": 0
+     }
+    ],
+    "address_with_country_logo": {
+     "id": 1863081,
+     "address": "Guru Tegh Bahadur 4th Centenary Engineering College",
+     "city": "West Delhi",
+     "state": "Delhi",
+     "country": {
+      "id": 94,
+      "name": "India",
+      "alpha_2": "in",
+      "alpha_3": "ind",
+      "iso": "IN",
+      "iso3": "IND",
+      "numcode": 356,
+      "phonecode": "+91   ",
+      "logos": {
+       "very_small": "https://d8it4huxumps7.cloudfront.net/images/flags/16x16/in.png",
+       "small": "https://d8it4huxumps7.cloudfront.net/images/flags/24x24/in.png",
+       "medium": "https://d8it4huxumps7.cloudfront.net/images/flags/32x32/in.png",
+       "large": "https://d8it4huxumps7.cloudfront.net/images/flags/48x48/in.png",
+       "xlarge": "https://d8it4huxumps7.cloudfront.net/images/flags/64x64/in.png",
+       "xxlarge": "https://d8it4huxumps7.cloudfront.net/images/flags/128x128/in.png"
+      }
+     },
+     "zip": null,
+     "lat": null,
+     "lng": null,
+     "addressable_id": 1767954,
+     "addressable_type": "App\\Model\\Opportunity",
+     "created_at": "2026-10-08T23:27:16+05:30",
+     "updated_at": "2026-10-13T12:09:05+05:30",
+     "deleted_at": null,
+     "address_title": "event_location",
+     "city_id": 134404,
+     "sort_order": 1,
+     "state_code": null,
+     "country_code": null
+    },
+    "short_url": "https://unstop.com/o/LJOHjtn",
+    "workfunction": [
+     {
+      "id": 2022,
+      "name": "Conferences",
+      "description": "",
+      "created_at": "2026-02-06T23:31:46+05:30",
+      "updated_at": "2026-02-06T23:31:46+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1767954,
+       "subject_id": 2022,
+       "id": 6532457,
+       "ai_generated": true
+      }
+     }
+    ],
+    "assignedTag": {
+     "tag": null
+    },
+    "opportunity_config": {
+     "id": 1461960,
+     "opportunity_id": 1767954,
+     "banner_config": "{\"color\":\"color-bg8\",\"text\":\"PitchCraft 3.0\",\"type\":6,\"banner_data\":[7]}",
+     "show_registrations_count": 1,
+     "show_impressions": 1,
+     "show_team_size": 1,
+     "show_region": 1
+    },
+    "payment_services": [],
+    "filters": [
+     {
+      "id": 422,
+      "name": "Engineering Students",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "engineering",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/engineering.svg"
+     },
+     {
+      "id": 424,
+      "name": "Postgraduate",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "postgraduate",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/postgraduate.svg"
+     },
+     {
+      "id": 426,
+      "name": "Undergraduate",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "undergraduate",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/undergraduate.svg"
+     },
+     {
+      "id": 4022,
+      "name": "Management",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     },
+     {
+      "id": 4023,
+      "name": "Medical",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     },
+     {
+      "id": 4024,
+      "name": "Law",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     },
+     {
+      "id": 4025,
+      "name": "Arts, Commerce, Sciences & Others",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     }
+    ],
+    "required_skills": [
+     {
+      "id": 1373,
+      "skill": "Problem Solving",
+      "skill_name": "Problem Solving",
+      "pivot": {
+       "entity_id": 1767954,
+       "subject_id": 1373,
+       "id": 6532452,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 646358,
+      "skill": "Ideation",
+      "skill_name": "Ideation",
+      "pivot": {
+       "entity_id": 1767954,
+       "subject_id": 646358,
+       "id": 6532453,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 647066,
+      "skill": "Public Speaking and Presentation Skills",
+      "skill_name": "Public Speaking and Presentation Skills",
+      "pivot": {
+       "entity_id": 1767954,
+       "subject_id": 647066,
+       "id": 6532454,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 647513,
+      "skill": "Technical and feasibility studies",
+      "skill_name": "Technical and feasibility studies",
+      "pivot": {
+       "entity_id": 1767954,
+       "subject_id": 647513,
+       "id": 6532455,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 645879,
+      "skill": "Creative Thinking",
+      "skill_name": "Creative Thinking",
+      "pivot": {
+       "entity_id": 1767954,
+       "subject_id": 645879,
+       "id": 6532456,
+       "ai_generated": true
+      }
+     }
+    ],
+    "locations": [],
+    "end_date": "2026-10-22T17:30:00+05:30",
+    "approved_date": "2026-10-13 02:05:12 GMT+0530",
+    "viewsCount": 6678,
+    "registerCount": 46,
+    "regnRequirements": {
+     "opportunity_id": 1767954,
+     "start_regn_dt": "2026-10-08T00:00:00+05:30",
+     "end_regn_dt": "2026-10-20T00:22:21+05:30",
+     "show_deadline": 1,
+     "min_team_size": 2,
+     "max_team_size": 4,
+     "work_location_type": "city",
+     "eligibility": "{\"sector\":[\"students\"],\"engineering\":[],\"bSchools\":[],\"arts\":[],\"medicine\":[],\"law\":[],\"others\":[\"all\"],\"experience\":[\"all\"],\"studentPassoutYearsSelected\":[\"all\"],\"fresherPassoutYearsSelected\":[\"all\"],\"schoolFilteredClasses\":[\"all\"],\"minMarks\":{\"high_school_perc\":0,\"high_school_cgpa\":0},\"locations\":[],\"location_type\":\"all\",\"professionalEligibility\":null,\"fresherEligibility\":null}",
+     "reg_status": "STARTED",
+     "remainingDaysArray": {
+      "durations": 5,
+      "text": " days left"
+     },
+     "remain_days": "5 days left",
+     "remaining_time": 439191
+    }
+   },
+   {
+    "id": 1770219,
+    "public_url": "hackathons/obsidian-labs-ctf-2026-jeopardy-style-cybersecurity-challenge-obsidian-labs-1770219",
+    "title": "Obsidian Labs CTF 2026- Jeopardy-Style Cybersecurity Challenge ",
+    "organization_id": 2088105,
+    "type": "hackathons",
+    "subtype": "online_coding_challenge",
+    "regn_open": 1,
+    "updated_at": "2026-10-14T19:04:17+05:30",
+    "region": "online",
+    "visibility": "public",
+    "short_id": "h2Cgflk",
+    "logoUrl2": "https://d8it4huxumps7.cloudfront.net/uploads/images/150x150/6acf837b423b9_organisation_image-0SBKGB3Itg130931115lgFgsAyqPW.png",
+    "organisation": {
+     "id": 2088105,
+     "name": "Obsidian Labs",
+     "public_url": "c/obsidian-labs-2088105",
+     "logoUrl": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-0SBKGB3Itg130931115lgFgsAyqPW.png",
+     "logoUrl2": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-0SBKGB3Itg130931115lgFgsAyqPW.png",
+     "show_evaluator_login_link": false,
+     "official_email_domains": null,
+     "tier": null
+    },
+    "seo_url": "https://unstop.com/hackathons/obsidian-labs-ctf-2026-jeopardy-style-cybersecurity-challenge-obsidian-labs-1770219",
+    "status": "LIVE",
+    "tags": [],
+    "thumb": null,
+    "isPaid": false,
+    "festival": null,
+    "prizes": [
+     {
+      "id": 3862317,
+      "rank": " Top 3",
+      "cash": null,
+      "currency": "fa-rupee",
+      "certificate": 0,
+      "entity_id": 1770219,
+      "entity_type": "App\\Model\\Opportunity",
+      "others": "Exclusive Rewards & Winner Certificates",
+      "currencyCode": null,
+      "cash_postfix": null,
+      "max_cash": null,
+      "pre_placement_internship": 0,
+      "pre_placement_opportunity": 0
+     }
+    ],
+    "address_with_country_logo": {
+     "id": 1866923,
+     "address": "",
+     "city": "",
+     "state": "",
+     "country": null,
+     "zip": null,
+     "lat": null,
+     "lng": null,
+     "addressable_id": 1770219,
+     "addressable_type": "App\\Model\\Opportunity",
+     "created_at": "2026-10-14T13:01:32+05:30",
+     "updated_at": "2026-10-14T18:58:27+05:30",
+     "deleted_at": null,
+     "address_title": "event_location",
+     "city_id": null,
+     "sort_order": 1,
+     "state_code": null,
+     "country_code": null
+    },
+    "short_url": "https://unstop.com/o/h2Cgflk",
+    "workfunction": [
+     {
+      "id": 2014,
+      "name": "Quizzes & Treasure Hunt",
+      "description": "",
+      "created_at": "2026-02-06T23:31:46+05:30",
+      "updated_at": "2026-02-06T23:31:46+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1770219,
+       "subject_id": 2014,
+       "id": 6551505,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 2092,
+      "name": "Cyber Security",
+      "description": "",
+      "created_at": "2026-04-09T00:17:10+05:30",
+      "updated_at": "2026-04-09T00:17:10+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1770219,
+       "subject_id": 2092,
+       "id": 6551506,
+       "ai_generated": true
+      }
+     }
+    ],
+    "assignedTag": {
+     "tag": null
+    },
+    "opportunity_config": {
+     "id": 1463759,
+     "opportunity_id": 1770219,
+     "banner_config": "{\"color\":\"color-bg4\",\"text\":\"Obsidian Labs CTF 2026 | Jeopardy-Style Cybersecurity Challenge \\u2013 All Skill Levels\",\"type\":1,\"banner_data\":[8]}",
+     "show_registrations_count": 1,
+     "show_impressions": 1,
+     "show_team_size": 1,
+     "show_region": 1
+    },
+    "payment_services": [],
+    "filters": [
+     {
+      "id": 420,
+      "name": "All",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "all",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/all.svg"
+     }
+    ],
+    "required_skills": [
+     {
+      "id": 647718,
+      "skill": "Web Application Security Testing",
+      "skill_name": "Web Application Security Testing",
+      "pivot": {
+       "entity_id": 1770219,
+       "subject_id": 647718,
+       "id": 6551500,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 645981,
+      "skill": "Digital Forensics",
+      "skill_name": "Digital Forensics",
+      "pivot": {
+       "entity_id": 1770219,
+       "subject_id": 645981,
+       "id": 6551501,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 646862,
+      "skill": "Open Source Intelligence (OSINT)",
+      "skill_name": "Open Source Intelligence (OSINT)",
+      "pivot": {
+       "entity_id": 1770219,
+       "subject_id": 646862,
+       "id": 6551502,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 644836,
+      "skill": "Reverse Engineering",
+      "skill_name": "Reverse Engineering",
+      "pivot": {
+       "entity_id": 1770219,
+       "subject_id": 644836,
+       "id": 6551503,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 647699,
+      "skill": "Vulnerability Assessment",
+      "skill_name": "Vulnerability Assessment",
+      "pivot": {
+       "entity_id": 1770219,
+       "subject_id": 647699,
+       "id": 6551504,
+       "ai_generated": true
+      }
+     }
+    ],
+    "locations": [],
+    "end_date": "2026-10-31T20:00:00+05:30",
+    "approved_date": "2026-10-14 18:17:42 GMT+0530",
+    "viewsCount": 1,
+    "registerCount": 68,
+    "regnRequirements": {
+     "opportunity_id": 1770219,
+     "start_regn_dt": "2026-10-14T00:00:00+05:30",
+     "end_regn_dt": "2026-10-30T23:59:00+05:30",
+     "show_deadline": 1,
+     "min_team_size": 1,
+     "max_team_size": 1,
+     "work_location_type": "city",
+     "eligibility": null,
+     "reg_status": "STARTED",
+     "remainingDaysArray": {
+      "durations": 16,
+      "text": " days left"
+     },
+     "remain_days": "16 days left",
+     "remaining_time": 1387917
+    }
+   },
+   {
+    "id": 1768100,
+    "public_url": "hackathons/ooty-hacks-hackhere-1768100",
+    "title": "Ooty Hacks",
+    "organization_id": 1930593,
+    "type": "hackathons",
+    "subtype": "online_coding_challenge",
+    "regn_open": 1,
+    "updated_at": "2026-10-13T17:30:21+05:30",
+    "region": "hybrid",
+    "visibility": "public",
+    "short_id": "35SLJhq",
+    "logoUrl2": "https://d8it4huxumps7.cloudfront.net/uploads/images/150x150/6ace1d55c2a7e_organisation_image-n4FCytWDxs789928907Z9b8i4iU6j.png",
+    "organisation": {
+     "id": 1930593,
+     "name": "Hackhere",
+     "public_url": "c/hackhere-1930593",
+     "logoUrl": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-n4FCytWDxs789928907Z9b8i4iU6j.png",
+     "logoUrl2": "https://d8it4huxumps7.cloudfront.net/images/partners/new_organisation_image-n4FCytWDxs789928907Z9b8i4iU6j.png",
+     "show_evaluator_login_link": false,
+     "official_email_domains": null,
+     "tier": null
+    },
+    "seo_url": "https://unstop.com/hackathons/ooty-hacks-hackhere-1768100",
+    "status": "LIVE",
+    "tags": [],
+    "thumb": null,
+    "isPaid": true,
+    "festival": null,
+    "prizes": [
+     {
+      "id": 3861179,
+      "rank": "1st Prize ",
+      "cash": null,
+      "currency": "fa-rupee",
+      "certificate": 0,
+      "entity_id": 1768100,
+      "entity_type": "App\\Model\\Opportunity",
+      "others": "Internship",
+      "currencyCode": null,
+      "cash_postfix": null,
+      "max_cash": null,
+      "pre_placement_internship": 0,
+      "pre_placement_opportunity": 1
+     },
+     {
+      "id": 3861180,
+      "rank": "2nd Prize",
+      "cash": null,
+      "currency": "fa-rupee",
+      "certificate": 0,
+      "entity_id": 1768100,
+      "entity_type": "App\\Model\\Opportunity",
+      "others": "Internship",
+      "currencyCode": null,
+      "cash_postfix": null,
+      "max_cash": null,
+      "pre_placement_internship": 0,
+      "pre_placement_opportunity": 1
+     },
+     {
+      "id": 3861181,
+      "rank": "3rd Prize",
+      "cash": null,
+      "currency": "fa-rupee",
+      "certificate": 0,
+      "entity_id": 1768100,
+      "entity_type": "App\\Model\\Opportunity",
+      "others": "Internship",
+      "currencyCode": null,
+      "cash_postfix": null,
+      "max_cash": null,
+      "pre_placement_internship": 0,
+      "pre_placement_opportunity": 1
+     },
+     {
+      "id": 3861182,
+      "rank": "Participation",
+      "cash": null,
+      "currency": "fa-rupee",
+      "certificate": 1,
+      "entity_id": 1768100,
+      "entity_type": "App\\Model\\Opportunity",
+      "others": "",
+      "currencyCode": null,
+      "cash_postfix": null,
+      "max_cash": null,
+      "pre_placement_internship": 0,
+      "pre_placement_opportunity": 0
+     },
+     {
+      "id": 3861183,
+      "rank": "Participants",
+      "cash": null,
+      "currency": "fa-rupee",
+      "certificate": 0,
+      "entity_id": 1768100,
+      "entity_type": "App\\Model\\Opportunity",
+      "others": "Goodies",
+      "currencyCode": null,
+      "cash_postfix": null,
+      "max_cash": null,
+      "pre_placement_internship": 0,
+      "pre_placement_opportunity": 0
+     }
+    ],
+    "address_with_country_logo": {
+     "id": 1863179,
+     "address": "To be announced Later",
+     "city": "Ooty",
+     "state": "Tamil Nadu",
+     "country": {
+      "id": 94,
+      "name": "India",
+      "alpha_2": "in",
+      "alpha_3": "ind",
+      "iso": "IN",
+      "iso3": "IND",
+      "numcode": 356,
+      "phonecode": "+91   ",
+      "logos": {
+       "very_small": "https://d8it4huxumps7.cloudfront.net/images/flags/16x16/in.png",
+       "small": "https://d8it4huxumps7.cloudfront.net/images/flags/24x24/in.png",
+       "medium": "https://d8it4huxumps7.cloudfront.net/images/flags/32x32/in.png",
+       "large": "https://d8it4huxumps7.cloudfront.net/images/flags/48x48/in.png",
+       "xlarge": "https://d8it4huxumps7.cloudfront.net/images/flags/64x64/in.png",
+       "xxlarge": "https://d8it4huxumps7.cloudfront.net/images/flags/128x128/in.png"
+      }
+     },
+     "zip": null,
+     "lat": null,
+     "lng": null,
+     "addressable_id": 1768100,
+     "addressable_type": "App\\Model\\Opportunity",
+     "created_at": "2026-10-09T09:39:40+05:30",
+     "updated_at": "2026-10-13T17:30:22+05:30",
+     "deleted_at": null,
+     "address_title": "event_location",
+     "city_id": 133301,
+     "sort_order": 1,
+     "state_code": null,
+     "country_code": null
+    },
+    "short_url": "https://unstop.com/o/35SLJhq",
+    "workfunction": [
+     {
+      "id": 1855,
+      "name": "Applied AI",
+      "description": "",
+      "created_at": "2026-02-06T23:31:46+05:30",
+      "updated_at": "2026-02-06T23:31:46+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1768100,
+       "subject_id": 1855,
+       "id": 6536926,
+       "ai_generated": true
+      }
+     }
+    ],
+    "assignedTag": {
+     "tag": null
+    },
+    "opportunity_config": {
+     "id": 1462024,
+     "opportunity_id": 1768100,
+     "banner_config": "{\"color\":\"color-bg2\",\"text\":\"Ooty Hacks\",\"type\":7,\"banner_data\":[2]}",
+     "show_registrations_count": 1,
+     "show_impressions": 1,
+     "show_team_size": 1,
+     "show_region": 1
+    },
+    "payment_services": [
+     {
+      "id": 735557,
+      "amount": 1000,
+      "required": 1,
+      "entity_id": 1768100,
+      "entity_type": "App\\Model\\Opportunity"
+     }
+    ],
+    "filters": [
+     {
+      "id": 422,
+      "name": "Engineering Students",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "engineering",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/engineering.svg"
+     },
+     {
+      "id": 424,
+      "name": "Postgraduate",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "postgraduate",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/postgraduate.svg"
+     },
+     {
+      "id": 426,
+      "name": "Undergraduate",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "undergraduate",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/undergraduate.svg"
+     },
+     {
+      "id": 4022,
+      "name": "Management",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     },
+     {
+      "id": 4023,
+      "name": "Medical",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     },
+     {
+      "id": 4024,
+      "name": "Law",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     },
+     {
+      "id": 4025,
+      "name": "Arts, Commerce, Sciences & Others",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     }
+    ],
+    "required_skills": [
+     {
+      "id": 645580,
+      "skill": "Artificial Intelligence (AI)",
+      "skill_name": "Artificial Intelligence (AI)",
+      "pivot": {
+       "entity_id": 1768100,
+       "subject_id": 645580,
+       "id": 6536921,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 646619,
+      "skill": "Machine Learning Concepts",
+      "skill_name": "Machine Learning Concepts",
+      "pivot": {
+       "entity_id": 1768100,
+       "subject_id": 646619,
+       "id": 6536922,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 647003,
+      "skill": "Predictive Modeling",
+      "skill_name": "Predictive Modeling",
+      "pivot": {
+       "entity_id": 1768100,
+       "subject_id": 647003,
+       "id": 6536923,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 646368,
+      "skill": "Image Recognition",
+      "skill_name": "Image Recognition",
+      "pivot": {
+       "entity_id": 1768100,
+       "subject_id": 646368,
+       "id": 6536924,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 643296,
+      "skill": "Autonomous Systems",
+      "skill_name": "Autonomous Systems",
+      "pivot": {
+       "entity_id": 1768100,
+       "subject_id": 643296,
+       "id": 6536925,
+       "ai_generated": true
+      }
+     }
+    ],
+    "locations": [],
+    "end_date": "2026-11-25T00:00:00+05:30",
+    "approved_date": "2026-10-13 17:27:52 GMT+0530",
+    "viewsCount": 6494,
+    "registerCount": 0,
+    "regnRequirements": {
+     "opportunity_id": 1768100,
+     "start_regn_dt": "2026-10-09T00:00:00+05:30",
+     "end_regn_dt": "2026-11-25T00:00:00+05:30",
+     "show_deadline": 1,
+     "min_team_size": 1,
+     "max_team_size": 4,
+     "work_location_type": "city",
+     "eligibility": "{\"sector\":[\"students\"],\"engineering\":[],\"bSchools\":[],\"arts\":[],\"medicine\":[],\"law\":[],\"others\":[\"all\"],\"experience\":[\"all\"],\"studentPassoutYearsSelected\":[\"all\"],\"fresherPassoutYearsSelected\":[\"all\"],\"schoolFilteredClasses\":[\"all\"],\"minMarks\":{\"high_school_perc\":0,\"high_school_cgpa\":0},\"locations\":[],\"location_type\":\"all\",\"professionalEligibility\":null,\"fresherEligibility\":null}",
+     "reg_status": "STARTED",
+     "remainingDaysArray": {
+      "durations": "1",
+      "text": "month left"
+     },
+     "remain_days": "1 month left",
+     "remaining_time": 3548253
+    }
+   },
+   {
+    "id": 1769921,
+    "public_url": "hackathons/data-verse-x-10-chandigarh-university-cu-ajitgarh-punjab-1769921",
+    "title": "Data Verse X 1.0",
+    "organization_id": 779315,
+    "type": "hackathons",
+    "subtype": "online_coding_challenge",
+    "regn_open": 1,
+    "updated_at": "2026-10-14T15:39:22+05:30",
+    "region": "offline",
+    "visibility": "public",
+    "short_id": "UtELjwJ",
+    "logoUrl2": "https://d8it4huxumps7.cloudfront.net/uploads/images/150x150/uploadedManual-6ace48d942d52_whatsapp_image_2026-09-02_at_10_46_43_pm_1.jpeg",
+    "organisation": {
+     "id": 779315,
+     "name": "Chandigarh University (CU), Ajitgarh, Punjab",
+     "public_url": "c/chandigarth-university-779315",
+     "logoUrl": "https://d8it4huxumps7.cloudfront.net/images/partners/partners75/6579597135725_Screenshot_2023-12-13_at_12.37.47_PM.png",
+     "logoUrl2": "https://d8it4huxumps7.cloudfront.net/images/partners/partners125/6579597135725_Screenshot_2023-12-13_at_12.37.47_PM.png",
+     "show_evaluator_login_link": false,
+     "official_email_domains": "@cuchd.in, @unstop.com, @cgc.edu.in",
+     "tier": null
+    },
+    "seo_url": "https://unstop.com/hackathons/data-verse-x-10-chandigarh-university-cu-ajitgarh-punjab-1769921",
+    "status": "LIVE",
+    "tags": [],
+    "thumb": null,
+    "isPaid": true,
+    "festival": null,
+    "prizes": [],
+    "address_with_country_logo": {
+     "id": 1866406,
+     "address": "Chandigarh Univeristy",
+     "city": "Mohali",
+     "state": "Punjab",
+     "country": {
+      "id": 94,
+      "name": "India",
+      "alpha_2": "in",
+      "alpha_3": "ind",
+      "iso": "IN",
+      "iso3": "IND",
+      "numcode": 356,
+      "phonecode": "+91   ",
+      "logos": {
+       "very_small": "https://d8it4huxumps7.cloudfront.net/images/flags/16x16/in.png",
+       "small": "https://d8it4huxumps7.cloudfront.net/images/flags/24x24/in.png",
+       "medium": "https://d8it4huxumps7.cloudfront.net/images/flags/32x32/in.png",
+       "large": "https://d8it4huxumps7.cloudfront.net/images/flags/48x48/in.png",
+       "xlarge": "https://d8it4huxumps7.cloudfront.net/images/flags/64x64/in.png",
+       "xxlarge": "https://d8it4huxumps7.cloudfront.net/images/flags/128x128/in.png"
+      }
+     },
+     "zip": null,
+     "lat": null,
+     "lng": null,
+     "addressable_id": 1769921,
+     "addressable_type": "App\\Model\\Opportunity",
+     "created_at": "2026-10-13T19:43:25+05:30",
+     "updated_at": "2026-10-14T15:39:00+05:30",
+     "deleted_at": null,
+     "address_title": "event_location",
+     "city_id": 132980,
+     "sort_order": 1,
+     "state_code": null,
+     "country_code": null
+    },
+    "short_url": "https://unstop.com/o/UtELjwJ",
+    "workfunction": [
+     {
+      "id": 1904,
+      "name": "Data Analysis",
+      "description": "",
+      "created_at": "2026-02-06T23:31:46+05:30",
+      "updated_at": "2026-02-06T23:31:46+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1769921,
+       "subject_id": 1904,
+       "id": 6547890,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 1905,
+      "name": "Data Science",
+      "description": "",
+      "created_at": "2026-02-06T23:31:46+05:30",
+      "updated_at": "2026-02-06T23:31:46+05:30",
+      "work_function_name": null,
+      "batch_id": 11,
+      "pivot": {
+       "entity_id": 1769921,
+       "subject_id": 1905,
+       "id": 6547891,
+       "ai_generated": true
+      }
+     }
+    ],
+    "assignedTag": {
+     "tag": null
+    },
+    "opportunity_config": {
+     "id": 1463531,
+     "opportunity_id": 1769921,
+     "banner_config": "{\"color\":\"color-bg2\",\"text\":\"Data Verse X 1.0\",\"type\":2,\"banner_data\":[3]}",
+     "show_registrations_count": 1,
+     "show_impressions": 1,
+     "show_team_size": 1,
+     "show_region": 1
+    },
+    "payment_services": [
+     {
+      "id": 739497,
+      "amount": 200,
+      "required": 1,
+      "entity_id": 1769921,
+      "entity_type": "App\\Model\\Opportunity"
+     }
+    ],
+    "filters": [
+     {
+      "id": 422,
+      "name": "Engineering Students",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "engineering",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/engineering.svg"
+     },
+     {
+      "id": 424,
+      "name": "Postgraduate",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "postgraduate",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/postgraduate.svg"
+     },
+     {
+      "id": 426,
+      "name": "Undergraduate",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": "undergraduate",
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/undergraduate.svg"
+     },
+     {
+      "id": 4022,
+      "name": "Management",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     },
+     {
+      "id": 4023,
+      "name": "Medical",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     },
+     {
+      "id": 4024,
+      "name": "Law",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     },
+     {
+      "id": 4025,
+      "name": "Arts, Commerce, Sciences & Others",
+      "type": "eligible",
+      "subtype": null,
+      "file_name": null,
+      "domain_id": 0,
+      "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+     }
+    ],
+    "required_skills": [
+     {
+      "id": 645929,
+      "skill": "Data Interpretation",
+      "skill_name": "Data Interpretation",
+      "pivot": {
+       "entity_id": 1769921,
+       "subject_id": 645929,
+       "id": 6547885,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 643610,
+      "skill": "Data Storytelling",
+      "skill_name": "Data Storytelling",
+      "pivot": {
+       "entity_id": 1769921,
+       "subject_id": 643610,
+       "id": 6547886,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 643583,
+      "skill": "Dashboard Development",
+      "skill_name": "Dashboard Development",
+      "pivot": {
+       "entity_id": 1769921,
+       "subject_id": 643583,
+       "id": 6547887,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 643585,
+      "skill": "Data Analysis Tools",
+      "skill_name": "Data Analysis Tools",
+      "pivot": {
+       "entity_id": 1769921,
+       "subject_id": 643585,
+       "id": 6547888,
+       "ai_generated": true
+      }
+     },
+     {
+      "id": 644673,
+      "skill": "Presentation Design",
+      "skill_name": "Presentation Design",
+      "pivot": {
+       "entity_id": 1769921,
+       "subject_id": 644673,
+       "id": 6547889,
+       "ai_generated": true
+      }
+     }
+    ],
+    "locations": [],
+    "end_date": "2026-10-23T17:30:00+05:30",
+    "approved_date": "2026-10-14 15:39:22 GMT+0530",
+    "viewsCount": 1983,
+    "registerCount": 18,
+    "regnRequirements": {
+     "opportunity_id": 1769921,
+     "start_regn_dt": "2026-10-14T00:00:00+05:30",
+     "end_regn_dt": "2026-10-19T23:59:00+05:30",
+     "show_deadline": 1,
+     "min_team_size": 3,
+     "max_team_size": 5,
+     "work_location_type": "city",
+     "eligibility": "{\"sector\":[\"students\"],\"engineering\":[],\"bSchools\":[],\"arts\":[],\"medicine\":[],\"law\":[],\"others\":[\"all\"],\"experience\":[\"all\"],\"studentPassoutYearsSelected\":[\"all\"],\"fresherPassoutYearsSelected\":[\"all\"],\"schoolFilteredClasses\":[\"all\"],\"minMarks\":{\"high_school_perc\":0,\"high_school_cgpa\":0},\"locations\":[],\"location_type\":\"all\",\"professionalEligibility\":null,\"fresherEligibility\":null}",
+     "reg_status": "STARTED",
+     "remainingDaysArray": {
+      "durations": 5,
+      "text": " days left"
+     },
+     "remain_days": "5 days left",
+     "remaining_time": 437793
+    }
+   }
+  ],
+  "first_page_url": "https://unstop.com/api/public/opportunity/search-result?&opportunity=hackathons&per_page=100&oppstatus=open&page=1",
+  "from": 1,
+  "last_page": 1,
+  "last_page_url": "https://unstop.com/api/public/opportunity/search-result?&opportunity=hackathons&per_page=100&oppstatus=open&page=3",
+  "links": [],
+  "next_page_url": null,
+  "path": "https://unstop.com/api/public/opportunity/search-result?",
+  "per_page": 100,
+  "prev_page_url": null,
+  "to": 93,
+  "total": 8
+ }
+}

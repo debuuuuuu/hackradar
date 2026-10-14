@@ -3,7 +3,7 @@
 devpost:
   enabled: true    # Phase 1
 unstop:
-  enabled: false   # Phase 1
+  enabled: true    # Phase 1
 devfolio:
   enabled: false   # Phase 2
 mlh:

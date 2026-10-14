@@ -37,13 +37,32 @@ per-source on/off flag in `config/sources.yaml` · fixture test from a saved rea
   (the hash uses normalized fields only).
 - **Fixture:** `tests/fixtures/devpost/open_page2_2026-10-14.json` (real page 2, 8 items).
 
-### Unstop — Phase 1
-- **Endpoint:** `/api/public/*` search endpoints only (robots.txt allows these). Exact path todo.
-- **Never:** register/login pages.
-- **robots.txt:** https://unstop.com/robots.txt — "allows /api/public/" per planning; re-verify.
-- **Fields:** todo. Expect registration deadline, start/end, mode, location, prize, eligibility, team size.
-- **Quirks:** Unstop lists many non-hackathon "opportunities" — filter by type.
-- **Fixture:** todo
+### Unstop — Phase 1 ✅ built 2026-10-14 (`pipeline/sources/unstop.py`)
+- **Endpoint (verified 2026-10-14):**
+  `GET https://unstop.com/api/public/opportunity/search-result?opportunity=hackathons&oppstatus=open&per_page=100&page=N`
+  (send `Accept: application/json`). Laravel pagination; stop when `page >= last_page`. `total` overcounts
+  (276 vs 250 real) and pages come back short — don't rely on either.
+- **robots.txt (checked 2026-10-14):** `Allow: /api/public/*`, `Disallow: /api/*`, `Disallow: /competitions/*/register`.
+  Needs a wildcard-aware parser → Protego (D-029). **Never** call other `/api/*` paths or register pages.
+- **Field mapping:**
+
+  | Unstop field | → events | Notes |
+  |---|---|---|
+  | `id` | source_id | |
+  | `seo_url` | event_sources.url | `https://unstop.com/hackathons/<slug>-<id>` |
+  | `title`, `organisation.name` | title, organizer | |
+  | `region` | mode | online / offline / hybrid |
+  | `address_with_country_logo.city`, `.country.name` | city, country | only for offline/hybrid; often empty |
+  | `regnRequirements.end_regn_dt` | reg_deadline | exact ISO, +05:30 |
+  | `end_date` | end_date | exact ISO, +05:30 |
+  | `prizes[].cash` + `currency` | prize_text | summed per currency: `₹12,000`, `$100 + ₹7,000`; no cash → null |
+  | `workfunction[].name` + `required_skills[].skill_name` | themes | deduped, order kept |
+  | `filters[type=eligible].name` | eligibility | e.g. "Engineering Students, Undergraduate" |
+  | `regnRequirements.min/max_team_size` | team_size | `"2-4"`, `"1"` |
+
+- **Not available in listing:** event start date, submission deadline. `isPaid` (paid registration) only in raw_json.
+- **Fixture:** `tests/fixtures/unstop/open_hackathons_2026-10-14.json` — 8 real items covering hybrid, offline,
+  online, dollar prize, multi-rank rupee prize, non-cash prize, solo, paid; HTML `details` removed.
 
 ### Devfolio — Phase 2
 - **Endpoint:** listing page (exact URL/API todo).

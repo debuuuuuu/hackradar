@@ -15,8 +15,9 @@ from pipeline import config, db
 from pipeline.normalize import IST, ist_day_start
 from pipeline.sources.base import PoliteClient, Source
 from pipeline.sources.devpost import Devpost
+from pipeline.sources.unstop import Unstop
 
-SOURCES: dict[str, type[Source]] = {"devpost": Devpost}
+SOURCES: dict[str, type[Source]] = {"devpost": Devpost, "unstop": Unstop}
 LAST_RUN_PATH = Path("data/last_run.json")
 
 log = logging.getLogger("hackradar")

@@ -5,9 +5,9 @@ _Last updated: 2026-10-14_
 ## 1. Resume here
 
 - **Phase:** 1 · MVP digest, in progress. Phase 0 gate passed 2026-10-14.
-- **Just finished:** `sources/base.py` (polite client), `sources/devpost.py`, `normalize.py`, DB upsert + close-past.
-  Live run stored **48 open Devpost hackathons**; a rerun reports all `same`. 21 tests green.
-- **Next task:** `sources/unstop.py` (`/api/public/*` only) + fixture test; then `notify/discord.py` webhook digest.
+- **Just finished:** Devpost + Unstop sources live: **~300 open hackathons** in Neon (49 Devpost, 250 Unstop).
+  robots.txt parsing moved to Protego (D-029). 25 tests green.
+- **Next task:** `notify/discord.py` webhook digest (top N by deadline, "nothing new" message), wire into `run.py`.
 - **Blockers:** Debjit adds `DISCORD_WEBHOOK_URL` to `.env` (SETUP.md §3) before the digest step;
   Claude then copies it to GitHub Secrets with `gh secret set` (never paste it in chat).
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
@@ -51,8 +51,8 @@ Friends and college peers can join with their own filters, saves and reminders. 
 | 5 | Dashboard + friends | 3 friends get their own digests and reminders | ⬜ |
 | 6 | Portfolio polish | Repo public-ready, demo ready | ⬜ |
 
-**Working end to end right now:** `daily.yml` (manual or cron) → `python -m pipeline.run` fetches Devpost
-(robots-checked, polite), upserts into `events`/`event_sources`, closes past events, writes a `runs` row and
+**Working end to end right now:** `daily.yml` (manual or cron) → `python -m pipeline.run` fetches Devpost and
+Unstop (robots-checked, polite), upserts into `events`/`event_sources`, closes past events, writes a `runs` row and
 `data/last_run.json` → keepalive commit to `status` branch. No notifications yet.
 CI (ruff, black, pytest) green on `main`.
 
@@ -63,7 +63,7 @@ CI (ruff, black, pytest) green on `main`.
 | Scheduler | GitHub Actions cron `17 23 * * *` UTC (04:47 IST) + `workflow_dispatch` | Runs often 30–60 min late → digest lands ~5 AM IST |
 | Keepalive | Daily commit of `last_run.json` to a `status` branch | Unverified that a non-default-branch commit counts; test in Phase 0 |
 | Pipeline | Python 3.12 via `uv` (D-025), `psycopg` 3, `httpx`, `selectolax`/BeautifulSoup | Playwright only if unavoidable |
-| Sources | Devpost, Unstop (`/api/public/*`), Devfolio, MLH | Next: Hack2Skill; later DoraHacks, HackerEarth |
+| Sources | Devpost ✅, Unstop ✅ (`/api/public/*`), Devfolio, MLH | Next: Hack2Skill; later DoraHacks, HackerEarth |
 | LinkedIn/X discovery | Tavily (1,000 credits/mo) | Exa via Agent Reach → Serper (2,500 one-time) |
 | Page reading | Jina Reader (via Agent Reach) | Agent Reach login channels OFF |
 | AI batch | Gemini Flash / Flash-Lite, 10–15 events/call | Groq |
@@ -107,6 +107,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-026 Schema details (timestamptz, vector(768), pg_trgm, offset 0 = same day, date_value in reminder key).
 - D-027 Pin Actions tags; setup-uv exact version.
 - D-028 Date-only source values stored as 00:00 IST; Devpost field mapping.
+- D-029 Protego for robots.txt (stdlib parser mishandles wildcards).
 
 ## 6. Known issues and open questions
 
@@ -124,8 +125,9 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
   request before ACK, or work moved elsewhere.
 - **Exa no-key access from GitHub Actions IPs** is unverified; test in Phase 4.
 - **Hack2Skill robots.txt / endpoints** not yet checked.
-- **Upsert speed:** first insert of 48 events took ~31 s from Pune (~3 round trips per event to Singapore).
-  Fine for now; batch the inserts if Unstop or later sources push the runtime up.
+- **Upsert speed:** ~0.6 s per new event from Pune (several round trips to Singapore): 250 new Unstop events
+  took ~2.5 min. Unchanged events are cheaper. Batch if daily runtime grows too much.
+- **Unstop listing lacks event start date and submission deadline** — only registration deadline and end date.
 - **Neon storage limit:** API reports 1 GiB branch limit; plan says 0.5 GB — budget for 0.5 GB until checked.
 - All free-tier numbers in research notes are as of 2026-10-14 from the planning session and marked unverified
   until re-checked against official pages.
@@ -144,7 +146,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 | [research/README.md](research/README.md) | Index of research notes |
 | [sessions/README.md](sessions/README.md) | Index of session logs |
 
-**Newest research (2026-10-14):** [Devpost API](research/2026-10-14-devpost-api.md) · [sources & robots.txt](research/2026-10-14-sources-and-robots.md) ·
+**Newest research (2026-10-14):** [Unstop API](research/2026-10-14-unstop-api.md) · [Devpost API](research/2026-10-14-devpost-api.md) · [sources & robots.txt](research/2026-10-14-sources-and-robots.md) ·
 [free AI tiers](research/2026-10-14-free-ai-tiers.md) · [search APIs](research/2026-10-14-search-apis.md) ·
 [WhatsApp options](research/2026-10-14-whatsapp-options.md) · [Agent Reach](research/2026-10-14-agent-reach.md) ·
 [GitHub cron behaviour](research/2026-10-14-github-cron.md) · [hosting & DB](research/2026-10-14-hosting-and-db.md)

@@ -7,9 +7,9 @@ import time
 from abc import ABC, abstractmethod
 from typing import Any
 from urllib.parse import urlsplit
-from urllib.robotparser import RobotFileParser
 
 import httpx
+from protego import Protego
 
 from pipeline import config
 from pipeline.normalize import EventRecord
@@ -42,7 +42,7 @@ class PoliteClient:
             transport=transport,
         )
         self._last_request: dict[str, float] = {}
-        self._robots: dict[str, RobotFileParser] = {}
+        self._robots: dict[str, Protego | None] = {}  # None = no robots.txt, allow all
 
     def close(self) -> None:
         self._client.close()
@@ -65,14 +65,13 @@ class PoliteClient:
         parts = urlsplit(url)
         origin = f"{parts.scheme}://{parts.netloc}"
         if origin not in self._robots:
-            parser = RobotFileParser()
+            # Protego, not urllib.robotparser: stdlib ignores `*` wildcards and longest-match
+            # precedence, so it would allow e.g. Unstop's disallowed /api/* paths (D-029).
             resp = self._request(f"{origin}/robots.txt", check_status=False)
-            if resp.status_code >= 400:
-                parser.allow_all = True  # no robots.txt → everything allowed (RFC 9309)
-            else:
-                parser.parse(resp.text.splitlines())
-            self._robots[origin] = parser
-        return self._robots[origin].can_fetch(self.user_agent, url)
+            # 4xx → no robots.txt → everything allowed (RFC 9309)
+            self._robots[origin] = None if resp.status_code >= 400 else Protego.parse(resp.text)
+        robots = self._robots[origin]
+        return robots is None or robots.can_fetch(url, self.user_agent)
 
     def _request(self, url: str, check_status: bool = True, **kwargs: Any) -> httpx.Response:
         host = urlsplit(url).netloc

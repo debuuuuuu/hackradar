@@ -190,6 +190,13 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** `@v10` failed to resolve; exact pins are also safer against supply-chain changes.
 - **Status:** active
 
+### D-029 · Protego for robots.txt parsing
+- **Date:** 2026-10-14
+- **Decision:** `PoliteClient` parses robots.txt with Protego instead of `urllib.robotparser`.
+- **Why:** Unstop's robots.txt relies on `*` wildcards and longest-match precedence (`Allow: /api/public/*` vs `Disallow: /api/*`). The stdlib parser supports neither and reported disallowed paths (`/api/private/x`, `/competitions/*/register`) as allowed. Protego (Scrapy's parser, RFC 9309) handled every test case correctly. Covered by `test_robots_wildcards_and_longest_match`.
+- **Alternatives:** stdlib parser (wrong); hand-written matcher (more code to maintain).
+- **Status:** active
+
 ### D-028 · Date-only source values stored as 00:00 IST; Devpost mapping
 - **Date:** 2026-10-14
 - **Decision:** When a source gives only a date (Devpost), store it as `timestamptz` at 00:00 IST of that day and show the date only. An event closes when its last known date is before the start of today (IST), so it stays open on its deadline day. Devpost: submission period → `start_date` + `submission_deadline` (= `end_date`); `reg_deadline` null (registration stays open until the submission deadline); location free text → `city`.

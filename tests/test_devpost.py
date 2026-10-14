@@ -106,3 +106,28 @@ def test_sends_user_agent():
     with make_client(handler) as client:
         Devpost().fetch(client)
     assert agents and all(a.startswith("HackRadarBot/") for a in agents)
+
+
+def test_robots_wildcards_and_longest_match():
+    # Real Unstop rules (2026-10-14): stdlib robotparser wrongly allows /api/private and /register.
+    robots = (
+        "User-agent: *\nAllow: /hackathons/\nAllow: /api/public/*\n"
+        "Disallow: /api/*\nDisallow: /competitions/*/register\n"
+    )
+    fetched = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/robots.txt":
+            return httpx.Response(200, text=robots)
+        fetched.append(request.url.path)
+        return httpx.Response(200, json={})
+
+    with make_client(handler) as client:
+        client.get("https://unstop.com/api/public/opportunity/search-result")
+        for url in (
+            "https://unstop.com/api/private/x",
+            "https://unstop.com/competitions/a-1/register",
+        ):
+            with pytest.raises(RobotsDisallowed):
+                client.get(url)
+    assert fetched == ["/api/public/opportunity/search-result"]

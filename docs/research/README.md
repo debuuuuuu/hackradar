@@ -4,6 +4,7 @@ One file per finding/investigation: `YYYY-MM-DD-<topic>.md`. Newest first.
 
 | Date | Note | Summary |
 |---|---|---|
+| 2026-10-14 | [unstop-api](2026-10-14-unstop-api.md) | 250 open via /api/public; `total` overcounts; stdlib robotparser wrong → Protego |
 | 2026-10-14 | [devpost-api](2026-10-14-devpost-api.md) | Verified: default 9/page (40 works), 3 date formats, robots allows all |
 | 2026-10-14 | [sources-and-robots](2026-10-14-sources-and-robots.md) | Access path + robots.txt status per source (unverified) |
 | 2026-10-14 | [free-ai-tiers](2026-10-14-free-ai-tiers.md) | Gemini/Groq free tiers; Gemini free data may train models |
