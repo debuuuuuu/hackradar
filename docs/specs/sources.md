@@ -67,15 +67,21 @@ per-source on/off flag in `config/sources.yaml` · fixture test from a saved rea
 - **Fixture:** `tests/fixtures/unstop/open_hackathons_2026-10-14.json` — 8 real items covering hybrid, offline,
   online, dollar prize, multi-rank rupee prize, non-cash prize, solo, paid; HTML `details` removed.
 
-### Devfolio — Phase 2
-- **Endpoint:** listing page (exact URL/API todo).
-- **robots.txt:** https://devfolio.co/robots.txt — "allows all" per planning; re-verify.
-- **Fields:** todo. **Fixture:** todo.
+### Devfolio — Phase 2 (endpoint verified 2026-10-15)
+- **Endpoint:** `GET https://api.devfolio.co/api/hackathons?filter=application_open&page=N` → `{result, count, pages}`
+  (14 open on 2026-10-15). No auth.
+- **robots.txt:** devfolio.co and api.devfolio.co allow all (verified 2026-10-15). Terms silent on automation.
+- **Fields:** name, slug, starts_at, ends_at, is_online, city/state/country, themes, prizes, team_min/team_size,
+  participants_count, verified, devfolio_official, `hackathon_setting.reg_ends_at` (**registration deadline**).
+- **Drop from raw:** `hackathon_setting.contact_email`. **Fixture:** todo.
+- Details: research/2026-10-15-phase2-sources.md
 
-### MLH — Phase 2
-- **Endpoint:** season events page; listing **moved to the mlh.com domain** — current URL not yet found.
-- **robots.txt:** https://www.mlh.com/robots.txt — to verify.
-- **Fields:** name, dates, location, in-person/digital. **Fixture:** todo.
+### MLH — Phase 2 (endpoint verified 2026-10-15)
+- **Endpoint:** `https://www.mlh.com/seasons/2027/events`; parse embedded JSON
+  `<script data-page="app" type="application/json">` → `props.upcomingEvents[]`.
+- **robots.txt:** allows `/` (verified 2026-10-15). Terms: personal, non-commercial use only → title/date/link only.
+- **Fields:** name, slug, startsAt, endsAt, location, formatType, websiteUrl, region, venueAddress{city,state,country}.
+- **Coverage:** 1 of 66 upcoming in India (2026-10-15) → low priority. **Fixture:** todo.
 
 ## Next sources
 | Source | Order | Notes |

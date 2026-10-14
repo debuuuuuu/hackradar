@@ -56,7 +56,7 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [ ] Batch summaries (10–15 events/call), only new/changed events; retry with backoff on 429
 - [ ] Per-user scoring for the owner (rule filters first, then AI score)
 - [ ] `sources/devfolio.py` + fixture test
-- [ ] `sources/mlh.py` (find current mlh.com listing URL) + fixture test
+- [ ] `sources/mlh.py` (`www.mlh.com/seasons/2027/events` embedded JSON; filter IN + online) + fixture test
 - [ ] `dedupe.py`: fuzzy title + organizer + overlapping dates; keep all source URLs; tests
 - [ ] "Listed on 2+ platforms" trust badge from dedupe (D-031)
 - [ ] `sources/luma.py`: curated calendar ICS feeds, hackathon keyword + future filter, fixture test (D-033)

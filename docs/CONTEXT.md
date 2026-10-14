@@ -1,17 +1,18 @@
 # HackRadar — CONTEXT (single source of truth)
 
-_Last updated: 2026-10-14_
+_Last updated: 2026-10-15_
 
 ## 1. Resume here
 
 - **Phase:** 1 · MVP digest, in progress. Phase 0 gate passed 2026-10-14.
-- **Just finished:** first live Discord digest delivered (2026-10-15, run 7, ~309 open events). Fixed the "new"
-  cutoff bug (counted 186, should be ~12) → `digest.last_digest_at()`. Trust signals on every line (D-031,
-  migration 0002 applied to Neon). 34 tests green.
-- **Next task:** watch 3 daily cron digests (Phase 1 gate: 2026-10-15/16/17 IST). Supabase idea (for verifying
-  events) answered with D-031 instead — not adopted.
-- **Blockers:** Debjit adds `DISCORD_WEBHOOK_URL` to `.env` (SETUP.md §3) before the digest step;
-  Claude then copies it to GitHub Secrets with `gh secret set` (never paste it in chat).
+- **Just finished (2026-10-15):** first live Discord digest; "new" cutoff fix; trust signals (D-031); batched
+  upserts (run 155 s → 15 s); calendar plan (D-032); Luma via ICS (D-033); place filter (D-034); dashboard design
+  direction D (canvas https://claude.ai/artifact/SDLHqTM56wgrjpXHTgdbAx, private); Phase 2 source research.
+  34 tests green.
+- **Next task:** check each 04:47 IST cron digest on 15, 16, 17 Oct (Phase 1 gate): `gh run list --workflow
+  daily.yml`, the Discord channel, the `runs` table. Fix anything flaky. Then Phase 2 (ROADMAP).
+- **Blockers for Phase 2 (Debjit):** Gemini API key (Google AI Studio) and Gmail app password → `.env`; Claude
+  copies them to GitHub Secrets with `gh secret set` (never pasted in chat).
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
 
 ## 2. Project summary
@@ -54,7 +55,7 @@ Friends and college peers can join with their own filters, saves and reminders. 
 | 6 | Portfolio polish | Repo public-ready, demo ready | ⬜ |
 
 **Working end to end right now:** `daily.yml` (manual or cron) → `python -m pipeline.run` fetches Devpost and
-Unstop (robots-checked, polite), upserts into `events`/`event_sources`, closes past events, writes a `runs` row and
+Unstop (robots-checked, polite), batch-upserts into `events`/`event_sources`, closes past events, writes a `runs` row and
 `data/last_run.json` → keepalive commit to `status` branch. Builds and sends the Discord digest (webhook live since 2026-10-15).
 CI (ruff, black, pytest) green on `main`.
 
@@ -124,7 +125,10 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - **Date boundary:** cron fires 23:17 UTC = 04:47 IST the next day. All "today" logic must use IST.
 - **Devpost `/api/hackathons` is undocumented** (it's what devpost.com's own frontend calls). May change
   without notice; fixture tests + zero-results alert cover it.
-- **MLH listing moved to mlh.com** — current listing URL not yet confirmed (unverified).
+- **MLH listing** is `www.mlh.com/seasons/2027/events` (embedded JSON); only 1 of 66 upcoming events in India.
+- **Luma terms** allow only "publicly supported interfaces" → curated calendar ICS feeds only (D-033).
+- **GeoNames download server disallows all bots** → never fetch at runtime; one-time manual download if chosen.
+- **City names from sources are messy** (West/New/East Delhi, Bangalore Urban) → normalise for the place filter.
 - **Neon cold start** after scale-to-zero is ~hundreds of ms to a few seconds (unverified exact number),
   not "ms". Matters for Discord commands → use deferred responses (D-020).
 - **Vercel Python + deferred Discord replies:** unverified whether a Python function can keep working after
@@ -132,8 +136,8 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
   request before ACK, or work moved elsewhere.
 - **Exa no-key access from GitHub Actions IPs** is unverified; test in Phase 4.
 - **Hack2Skill robots.txt / endpoints** not yet checked.
-- **Upsert speed:** ~0.6 s per new event from Pune (several round trips to Singapore): 250 new Unstop events
-  took ~2.5 min. Unchanged events are cheaper. Batch if daily runtime grows too much.
+- **Upsert speed:** fixed 2026-10-15 with batched upserts (whole local run 155 s → 15 s).
+- **Cross-platform duplicates exist** (Multimodal AI on Devpost + Unstop, different deadlines) → Phase 2 dedupe.
 - **Unstop listing lacks event start date and submission deadline** — only registration deadline and end date.
 - **Neon storage limit:** API reports 1 GiB branch limit; plan says 0.5 GB — budget for 0.5 GB until checked.
 - All free-tier numbers in research notes are as of 2026-10-14 from the planning session and marked unverified
@@ -158,7 +162,9 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 [WhatsApp options](research/2026-10-14-whatsapp-options.md) · [Agent Reach](research/2026-10-14-agent-reach.md) ·
 [GitHub cron behaviour](research/2026-10-14-github-cron.md) · [hosting & DB](research/2026-10-14-hosting-and-db.md)
 
-**Newest sessions:** [2026-10-14 Phase 0 setup](sessions/2026-10-14-phase0-setup.md) · [2026-10-14 docs bootstrap](sessions/2026-10-14-docs-bootstrap.md)
+**Newest research (2026-10-15):** [first live digest](research/2026-10-15-first-live-digest.md) · [Luma](research/2026-10-15-luma.md) · [Phase 2 sources](research/2026-10-15-phase2-sources.md)
+
+**Newest sessions:** [2026-10-15 Phase 1 live](sessions/2026-10-15-phase1-live.md) · [2026-10-14 Phase 0 setup](sessions/2026-10-14-phase0-setup.md) · [2026-10-14 docs bootstrap](sessions/2026-10-14-docs-bootstrap.md)
 
 **Original planning docs (repo root, kept for reference):** `HackRadar — Project Plan.md`, `HACKRADAR_MASTER_PROMPT.md`.
 
