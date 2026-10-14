@@ -117,6 +117,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-033 Luma via curated calendar ICS feeds only (terms forbid unsupported interfaces).
 - D-034 Place filter: home city + radius + metro areas.
 - D-035 Groq is the default batch AI provider (Gemini optional); no embeddings from Groq.
+- D-036 Daily enrichment: AI summary + kind (hackathon/contest/other) stored per event; digest doesn't use them yet.
 
 ## 6. Known issues and open questions
 

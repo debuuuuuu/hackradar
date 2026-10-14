@@ -40,6 +40,19 @@ Format: date · decision · why · alternatives rejected · status.
 - **Alternatives:** Supabase (pauses) — rejected; SQLite in repo (no concurrent access from Vercel) — rejected.
 - **Status:** active
 
+### D-036 · Daily AI enrichment: summary + kind, stored per event
+- **Date:** 2026-10-15
+- **Decision:** After fetching, `pipeline/enrich.py` asks the AI for a 1-2 sentence `summary` and a `kind`
+  (hackathon | contest | other) for open events that have none (new, or changed → reset to NULL). Max 60 events per
+  run (`ai.max_events_per_run`), 12 per call, 30 s pause between calls. Saved after every batch; a dropped Neon
+  connection is replaced. Never fatal: no key or AI error → events stay un-enriched, error recorded, digest still sends.
+  Summaries mentioning money/dates are discarded (dates/prizes come from the source only). Migration 0003.
+- **Why:** ~half of Unstop's "hackathons" feed are contests/other (research/2026-10-15-first-live-digest.md); the
+  digest needs a kind filter and summaries. Debjit: work on what is actually needed (2026-10-15).
+- **Alternatives:** classify by title keywords (131/261 would match a loose list; brittle); fetch Devpost pages for
+  descriptions (extra requests, later).
+- **Status:** active. Digest does not use `kind`/`summary` yet.
+
 ### D-035 · Groq as the default batch AI provider (amends D-006)
 - **Date:** 2026-10-15
 - **Decision:** `ai.batch_provider: groq` (model `openai/gpt-oss-120b`; llama-3.3-70b is not available on the account, verified 2026-10-15) for summaries, scores and extraction.
