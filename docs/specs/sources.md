@@ -97,4 +97,6 @@ per-source on/off flag in `config/sources.yaml` · fixture test from a saved rea
 - **Read:** Jina Reader fetches each public result page as clean text.
 - **Extract:** AI pulls title, dates, registration link, themes. Posts without a registration link are dropped.
 - **Trust:** shown as ⚠️ unverified until matched to a platform listing or official domain; link-alive check (D-031).
+- **Stop rule:** drop results whose event date is past, posts older than ~90 days, and posts without a registration link;
+  finished events are never shown (research/2026-10-15-linkedin-search-test.md).
 - **Never:** logged-in LinkedIn/X/Reddit access (Agent Reach cookie channels stay off, D-009).

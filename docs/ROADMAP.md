@@ -87,6 +87,7 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 
 **Gate:** `/ask` answers correctly via deferred response, ACK always < 3 s (D-020).
 
+- [ ] Discovery filter (Debjit 2026-10-15): drop anything not in the future (IST), older than ~90 days, or without a registration link; never show finished hackathons
 - [ ] Test Exa no-key access from a GitHub Actions runner; research note
 - [ ] `sources/discovery.py`: Tavily (~10 queries/day) → Exa → Serper; Jina Reader fetch
 - [ ] AI extraction prompt for discovered posts; drop posts without a registration link
