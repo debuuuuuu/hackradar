@@ -14,8 +14,8 @@ Do steps in the phase they are needed — no need to set everything up on day on
 | 1 | GitHub repo | 0 | — | — | — | — |
 | 2 | Neon Postgres | 0 | `DATABASE_URL` | ✓ | ✓ | ✓ |
 | 3 | Discord webhook | 1 | `DISCORD_WEBHOOK_URL` | ✓ | | ✓ |
-| 4 | Gemini | 2 | `GEMINI_API_KEY` | ✓ | ✓ | ✓ |
-| 5 | Groq | 2 | `GROQ_API_KEY` | ✓ | ✓ | ✓ |
+| 4 | Gemini (optional, D-035) | 2 | `GEMINI_API_KEY` | ✓ | ✓ | ✓ |
+| 5 | Groq (main AI, D-035) | 2 | `GROQ_API_KEY` | ✓ | ✓ | ✓ |
 | 6 | Gmail App Password | 2 | `SMTP_USER`, `SMTP_APP_PASSWORD` | ✓ | | ✓ |
 | 7 | Discord application/bot | 3 | `DISCORD_BOT_TOKEN`, `DISCORD_PUBLIC_KEY`, `DISCORD_APP_ID` | ✓ | ✓ | ✓ |
 | 8 | Encryption key | 3 | `ENCRYPTION_KEY` | ✓ | ✓ | ✓ |

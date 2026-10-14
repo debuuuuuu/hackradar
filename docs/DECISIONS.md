@@ -40,6 +40,14 @@ Format: date · decision · why · alternatives rejected · status.
 - **Alternatives:** Supabase (pauses) — rejected; SQLite in repo (no concurrent access from Vercel) — rejected.
 - **Status:** active
 
+### D-035 · Groq as the default batch AI provider (amends D-006)
+- **Date:** 2026-10-15
+- **Decision:** `ai.batch_provider: groq` (model `llama-3.3-70b-versatile`) for summaries, scores and extraction.
+  Gemini stays an optional second adapter (not built). No embeddings from Groq → TF-IDF fallback for similarity.
+- **Why:** Debjit prefers Groq (2026-10-15); one key instead of two; provider switch is one config value.
+- **Alternatives:** Gemini as planned (generous free tier, but also needed Google account steps).
+- **Status:** active; free limits and no-card signup **unverified** (research/2026-10-15-groq.md)
+
 ### D-006 · Gemini for batch AI; provider swappable
 - **Date:** 2026-10-14 (planning)
 - **Decision:** Gemini Flash / Flash-Lite for summaries/scores/extraction, 10–15 events per call. Groq fallback. Claude possible later. One config value selects the provider via adapters in `pipeline/ai/`.

@@ -11,7 +11,7 @@ _Last updated: 2026-10-15_
   34 tests green.
 - **Next task:** check each 04:47 IST cron digest on 15, 16, 17 Oct (Phase 1 gate): `gh run list --workflow
   daily.yml`, the Discord channel, the `runs` table. Fix anything flaky. Then Phase 2 (ROADMAP).
-- **Blockers for Phase 2 (Debjit):** Gemini API key (Google AI Studio) and Gmail app password → `.env`; Claude
+- **Blockers for Phase 2 (Debjit):** Groq API key (console.groq.com; if it asks for a card, stop) and Gmail app password → `.env`; Claude
   copies them to GitHub Secrets with `gh secret set` (never pasted in chat).
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
 
@@ -116,6 +116,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-032 Calendar: Google template links + per-user ICS feed; no Calendar API.
 - D-033 Luma via curated calendar ICS feeds only (terms forbid unsupported interfaces).
 - D-034 Place filter: home city + radius + metro areas.
+- D-035 Groq is the default batch AI provider (Gemini optional); no embeddings from Groq.
 
 ## 6. Known issues and open questions
 
