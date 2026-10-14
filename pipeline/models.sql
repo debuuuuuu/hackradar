@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS events (
     eligibility         text,
     team_size           text,
     invite_only         boolean     NOT NULL DEFAULT false,
+    entry_fee           text,                       -- e.g. '₹200'; NULL = free (D-031)
     summary             text,                       -- AI-written
     embedding           vector(768),                -- Gemini embedding, 768 dims
     first_seen_at       timestamptz NOT NULL DEFAULT now(),
@@ -41,6 +42,7 @@ CREATE TABLE IF NOT EXISTS event_sources (
     url           text        NOT NULL,
     raw_json      jsonb,
     content_hash  text        NOT NULL,
+    registrations integer,                          -- refreshed every run, not hashed (D-031)
     first_seen_at timestamptz NOT NULL DEFAULT now(),
     last_seen_at  timestamptz NOT NULL DEFAULT now(),
     UNIQUE (source, source_id)

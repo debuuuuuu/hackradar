@@ -45,12 +45,15 @@ class EventRecord:
     eligibility: str | None = None
     team_size: str | None = None
     invite_only: bool = False
+    entry_fee: str | None = None  # paid registration, e.g. '₹200'
+    registrations: int | None = field(default=None, compare=False)  # changes daily, not hashed
     raw: dict = field(default_factory=dict, compare=False, repr=False)
 
     def content_hash(self) -> str:
-        """Hash of normalized fields only; volatile raw fields ("9 days left") don't count."""
+        """Hash of normalized fields only; volatile fields ("9 days left", counts) don't count."""
         fields = asdict(self)
         fields.pop("raw")
+        fields.pop("registrations")
         blob = json.dumps(fields, sort_keys=True, default=str, ensure_ascii=False)
         return hashlib.sha256(blob.encode()).hexdigest()
 

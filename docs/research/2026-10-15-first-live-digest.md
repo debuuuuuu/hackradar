@@ -24,3 +24,11 @@ _As of 2026-10-15 (IST). Source: GitHub Actions run 38625693804, Neon `runs` tab
 ## Gotcha
 - `.env` line had a space after `=`. python-dotenv strips it; values copied to GitHub Secrets must be trimmed
   (`tr -d ' \r\n"'`).
+
+## Trust fields (verified 2026-10-15 against live data)
+- Unstop `isPaid: true` = required registration fee: `payment_services: [{amount: 200, required: 1, ...}]`.
+  No currency field (assumed INR — **unverified** for non-Indian listings). 58 of 262 Unstop listings paid.
+- Unstop `organisation.{name, tier, official_email_domains}`, `approved_date`, `registerCount`, `viewsCount`.
+- Devpost `organization_name`, `managed_by_devpost_badge`, `registrations_count`, `invite_only` (6 open).
+- Open events on 2026-10-15: 0 without organiser, 0 with inconsistent dates.
+- Adding `entry_fee` to the hashed fields made every event "changed" once (run 8); harmless.

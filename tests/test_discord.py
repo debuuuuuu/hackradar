@@ -17,6 +17,7 @@ def item(**kw) -> DigestItem:
         city=None,
         prize_text="₹12,000",
         source="unstop",
+        organizer="Hack Club",
     )
     return DigestItem(**(base | kw))
 
@@ -30,6 +31,21 @@ def test_format_item_escapes_markdown_and_shows_details():
     line = discord.format_item(item())
     assert line.startswith(r"**[Hack \[AI\] \*2026\*](https://unstop.com/hackathons/x-1)**")
     assert "submit by 18 Oct · Online · ₹12,000 · unstop" in line
+
+
+def test_trust_signals():
+    clean = discord.format_item(item(registrations=1234))
+    assert "by Hack Club · submit by 18 Oct" in clean
+    assert "👥 1,234" in clean
+    assert clean.count("\n") == 1  # no flag line when nothing to flag
+
+    risky = item(organizer=None, entry_fee="₹350", invite_only=True, dates_suspect=True)
+    flags = discord.format_item(risky).split("\n")[2]
+    assert flags == (
+        "💰 ₹350 entry fee · 🔒 invite-only · ⚠️ no organiser listed"
+        " · ⚠️ dates look inconsistent, check the page"
+    )
+    assert discord.trust_flags(item(entry_fee="paid")) == ["💰 paid entry"]
 
 
 def test_deadline_shows_time_only_when_known():

@@ -41,6 +41,8 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [x] `DISCORD_WEBHOOK_URL` in `.env` + GitHub secret; first live digest delivered, run 7 (2026-10-15)
 - [x] Wire everything in `run.py`; per-source and Discord failures logged, never fatal (2026-10-14)
 - [ ] Cron + keepalive live
+- [x] Fix digest "new" cutoff (last run that sent a digest, by finished_at) (2026-10-15)
+- [x] Trust signals on digest lines: organiser, 👥 registrations, 💰 fee / 🔒 invite-only / ⚠️ flags (D-031) (2026-10-15)
 - [ ] Watch 3 daily runs; fix anything flaky
 - [ ] **Gate:** 3 consecutive real digests on Discord
 
@@ -55,6 +57,7 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [ ] `sources/devfolio.py` + fixture test
 - [ ] `sources/mlh.py` (find current mlh.com listing URL) + fixture test
 - [ ] `dedupe.py`: fuzzy title + organizer + overlapping dates; keep all source URLs; tests
+- [ ] "Listed on 2+ platforms" trust badge from dedupe (D-031)
 - [ ] `notify/email.py`: Gmail SMTP HTML digest
 - [ ] Digest sections: top 5, closing ≤3 days, AI picks, other options
 - [ ] **Gate:** ranked digest, zero duplicates over a week of runs

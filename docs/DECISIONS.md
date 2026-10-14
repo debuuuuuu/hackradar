@@ -190,6 +190,24 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** `@v10` failed to resolve; exact pins are also safer against supply-chain changes.
 - **Status:** active
 
+### D-031 · Event trust signals (rules on source data, no new service)
+- **Date:** 2026-10-15
+- **Decision:** "Is this event real/safe?" is answered by deterministic rules on fields the platforms already
+  publish, shown on each digest line: organiser ("by X"), 👥 registration count, and a flag line for
+  💰 entry fee (Unstop `isPaid` + `payment_services[].amount`), 🔒 invite-only, ⚠️ no organiser listed,
+  ⚠️ inconsistent dates (end < start, or registration closes after the end). A header subtext says data is copied
+  from the platform listing. Flags inform; nothing is hidden. New columns: `events.entry_fee` (hashed),
+  `event_sources.registrations` (refreshed every run, not hashed). Migration `0002_trust_fields.sql`.
+  Phase 2 adds: "listed on 2+ platforms" confirmation (with dedupe). Phase 4 adds: web-discovered events marked
+  ⚠️ unverified until they match a platform listing or official domain, plus a link-alive check for them.
+- **Why:** Debjit wants events verified (2026-10-15). ~22% of open Unstop listings (58/262) charge a fee — the
+  main thing to warn about. Platform API presence already proves the listing exists, so no per-event HTTP check
+  for platform events (would add ~300 requests/day). AI never judges legitimacy (dates/prizes rule, CLAUDE.md).
+- **Alternatives:** Supabase (suggested by Debjit for "verification") — rejected: it is a database/auth host and
+  cannot verify events; we already have Postgres on Neon, and a second DB adds sync work. Hiding paid events —
+  rejected; some are legit college fests, the user decides.
+- **Status:** active
+
 ### D-030 · Phase 1 digest format
 - **Date:** 2026-10-14
 - **Decision:** One Discord webhook message per run: header (IST date, open count) + up to two embeds:

@@ -75,8 +75,21 @@ def parse(item: dict[str, Any]) -> EventRecord:
         themes=tuple(dict.fromkeys(themes)),  # dedupe, keep order
         eligibility=", ".join(eligible) or None,
         team_size=_team_size(regn.get("min_team_size"), regn.get("max_team_size")),
+        entry_fee=entry_fee(item),
+        registrations=item.get("registerCount"),
         raw=item,
     )
+
+
+def entry_fee(item: dict[str, Any]) -> str | None:
+    """Required registration fee from `isPaid` + `payment_services[].amount` (no currency; INR)."""
+    if not item.get("isPaid"):
+        return None
+    services = item.get("payment_services") or ()
+    amounts = sorted({int(p["amount"]) for p in services if p.get("amount")})
+    if not amounts:
+        return "paid"
+    return f"₹{amounts[0]:,}" if len(amounts) == 1 else f"₹{amounts[0]:,}–₹{amounts[-1]:,}"
 
 
 def prize_total(prizes) -> str | None:

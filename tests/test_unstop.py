@@ -51,6 +51,13 @@ def test_parses_real_fixture():
     assert by_id["1759619"].eligibility == "School Students"
     assert by_id["1770355"].eligibility == "Engineering Students, Postgraduate, Undergraduate"
 
+    # Trust signals (D-031): isPaid + payment_services amount; registerCount
+    assert by_id["1768100"].entry_fee == "₹1,000"
+    assert by_id["1769921"].entry_fee == "₹200"
+    assert hybrid.entry_fee is None
+    assert hybrid.registrations == 10 and by_id["1769921"].registrations == 18
+    assert hybrid.organizer
+
 
 def test_paginates_by_last_page_and_dedupes():
     item = json.loads(FIXTURE.read_text(encoding="utf-8"))["data"]["data"][0]

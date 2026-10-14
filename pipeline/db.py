@@ -52,7 +52,7 @@ def finish_run(
 
 _EVENT_FIELDS = (
     "title organizer mode city country reg_deadline start_date end_date submission_deadline "
-    "prize_text themes eligibility team_size invite_only"
+    "prize_text themes eligibility team_size invite_only entry_fee"
 ).split()
 
 
@@ -80,19 +80,28 @@ def upsert_event(conn: psycopg.Connection, rec: EventRecord) -> str:
             ).fetchone()[0]
             conn.execute(
                 """
-                INSERT INTO event_sources (event_id, source, source_id, url, raw_json, content_hash)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO event_sources
+                       (event_id, source, source_id, url, raw_json, content_hash, registrations)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
-                (event_id, rec.source, rec.source_id, rec.url, Jsonb(rec.raw), content_hash),
+                (
+                    event_id,
+                    rec.source,
+                    rec.source_id,
+                    rec.url,
+                    Jsonb(rec.raw),
+                    content_hash,
+                    rec.registrations,
+                ),
             )
             return "new"
 
         event_id, old_hash = row
         if old_hash == content_hash:
             conn.execute(
-                "UPDATE event_sources SET last_seen_at = now()"
+                "UPDATE event_sources SET last_seen_at = now(), registrations = %s"
                 " WHERE source = %s AND source_id = %s",
-                (rec.source, rec.source_id),
+                (rec.registrations, rec.source, rec.source_id),
             )
             return "same"
 
@@ -104,10 +113,11 @@ def upsert_event(conn: psycopg.Connection, rec: EventRecord) -> str:
         conn.execute(
             """
             UPDATE event_sources
-               SET url = %s, raw_json = %s, content_hash = %s, last_seen_at = now()
+               SET url = %s, raw_json = %s, content_hash = %s, last_seen_at = now(),
+                   registrations = %s
              WHERE source = %s AND source_id = %s
             """,
-            (rec.url, Jsonb(rec.raw), content_hash, rec.source, rec.source_id),
+            (rec.url, Jsonb(rec.raw), content_hash, rec.registrations, rec.source, rec.source_id),
         )
         return "changed"
 

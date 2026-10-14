@@ -39,6 +39,8 @@ def test_parses_real_fixture():
     assert stanford.start_date.isoformat() == "2026-09-20T00:00:00+05:30"
     assert stanford.submission_deadline.isoformat() == "2026-10-18T00:00:00+05:30"
     assert stanford.prize_text == "$2,700"
+    assert stanford.registrations == 19
+    assert stanford.organizer and stanford.entry_fee is None
 
     dc = by_id["31218"]  # 'Oct 12 - 24, 2026'
     assert dc.submission_deadline.date().isoformat() == "2026-10-24"

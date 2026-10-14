@@ -67,5 +67,6 @@ def parse(item: dict[str, Any]) -> EventRecord:
         prize_text=clean_prize(item.get("prize_amount")),
         themes=tuple(t["name"] for t in item.get("themes") or ()),
         invite_only=bool(item.get("invite_only")),
+        registrations=item.get("registrations_count"),
         raw=item,
     )

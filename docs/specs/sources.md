@@ -30,6 +30,8 @@ per-source on/off flag in `config/sources.yaml` · fixture test from a saved rea
   | `prize_amount` | prize_text | HTML `$<span data-currency-value>138,000</span>`; `$`/`₹`/`€`; `0` → null |
   | `themes[].name` | themes | |
   | `invite_only` | invite_only | 6 of 48 on 2026-10-14 |
+  | `organization_name` | organizer | |
+  | `registrations_count` | event_sources.registrations | refreshed every run, not hashed (D-031) |
 
 - **Not available:** registration deadline (registration stays open until the submission deadline →
   `reg_deadline` null), eligibility, team size, exact deadline time/timezone.
@@ -60,7 +62,8 @@ per-source on/off flag in `config/sources.yaml` · fixture test from a saved rea
   | `filters[type=eligible].name` | eligibility | e.g. "Engineering Students, Undergraduate" |
   | `regnRequirements.min/max_team_size` | team_size | `"2-4"`, `"1"` |
 
-- **Not available in listing:** event start date, submission deadline. `isPaid` (paid registration) only in raw_json.
+- **Not available in listing:** event start date, submission deadline. `isPaid` + `payment_services[].amount` → `entry_fee` (e.g. `₹200`; no currency field, assumed INR; 58 of 262 open
+  listings on 2026-10-15). `registerCount` → `event_sources.registrations` (D-031).
 - **Fixture:** `tests/fixtures/unstop/open_hackathons_2026-10-14.json` — 8 real items covering hybrid, offline,
   online, dollar prize, multi-rank rupee prize, non-cash prize, solo, paid; HTML `details` removed.
 
@@ -86,4 +89,5 @@ per-source on/off flag in `config/sources.yaml` · fixture test from a saved rea
   `site:linkedin.com/posts hackathon Pune 2026`, `site:x.com hackathon India registration`.
 - **Read:** Jina Reader fetches each public result page as clean text.
 - **Extract:** AI pulls title, dates, registration link, themes. Posts without a registration link are dropped.
+- **Trust:** shown as ⚠️ unverified until matched to a platform listing or official domain; link-alive check (D-031).
 - **Never:** logged-in LinkedIn/X/Reddit access (Agent Reach cookie channels stay off, D-009).

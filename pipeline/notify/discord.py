@@ -17,6 +17,10 @@ log = logging.getLogger(__name__)
 DESCRIPTION_LIMIT = 4000
 EMBEDS_TOTAL_BUDGET = 5600  # headroom under 6000 for titles
 TITLE_MAX = 120
+ORGANIZER_MAX = 60
+DISCLAIMER = (
+    "Dates, prizes and fees are copied from each platform's listing. Confirm on the event page."
+)
 COLOR_NEW = 0x5865F2
 COLOR_CLOSING = 0xED4245
 KIND_LABEL = {"reg": "reg closes", "submit": "submit by", "ends": "ends"}
@@ -42,11 +46,32 @@ def format_item(item: DigestItem) -> str:
     if item.mode == "hybrid":
         where = f"Hybrid · {item.city}" if item.city else "Hybrid"
     parts = [format_deadline(item), where]
+    if item.organizer:
+        parts.insert(0, f"by {escape(item.organizer[:ORGANIZER_MAX])}")
     if item.prize_text:
         parts.append(item.prize_text)
+    if item.registrations:
+        parts.append(f"👥 {item.registrations:,}")
     parts.append(item.source)
     title = item.title if len(item.title) <= TITLE_MAX else item.title[: TITLE_MAX - 1] + "…"
-    return f"**[{escape(title)}]({item.url})**\n{' · '.join(parts)}"
+    line = f"**[{escape(title)}]({item.url})**\n{' · '.join(parts)}"
+    flags = trust_flags(item)
+    return f"{line}\n{' · '.join(flags)}" if flags else line
+
+
+def trust_flags(item: DigestItem) -> list[str]:
+    """Things to check before joining (D-031). Rules on source data only, never AI."""
+    flags = []
+    if item.entry_fee:
+        fee = "paid entry" if item.entry_fee == "paid" else f"{item.entry_fee} entry fee"
+        flags.append(f"💰 {fee}")
+    if item.invite_only:
+        flags.append("🔒 invite-only")
+    if not item.organizer:
+        flags.append("⚠️ no organiser listed")
+    if item.dates_suspect:
+        flags.append("⚠️ dates look inconsistent, check the page")
+    return flags
 
 
 def _section(title: str, items: list[DigestItem], total: int, color: int, budget: int) -> dict:
@@ -67,6 +92,7 @@ def _section(title: str, items: list[DigestItem], total: int, color: int, budget
 def render(digest: Digest) -> dict:
     """Webhook payload for one digest."""
     header = f"🛰️ **HackRadar** · {digest.day} · {digest.open_total} open hackathons tracked"
+    header += f"\n-# {DISCLAIMER}"
     if digest.empty:
         return {"content": f"{header}\nNothing new today and nothing closing in the next 3 days."}
     sections = []

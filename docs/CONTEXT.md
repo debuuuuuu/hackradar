@@ -6,9 +6,10 @@ _Last updated: 2026-10-14_
 
 - **Phase:** 1 · MVP digest, in progress. Phase 0 gate passed 2026-10-14.
 - **Just finished:** first live Discord digest delivered (2026-10-15, run 7, ~309 open events). Fixed the "new"
-  cutoff bug (counted 186, should be ~12) → `digest.last_digest_at()`. 32 tests green.
-- **Next task:** watch 3 daily cron digests (Phase 1 gate: 2026-10-15/16/17 IST). Supabase idea from Debjit
-  (2026-10-15) under discussion — not adopted.
+  cutoff bug (counted 186, should be ~12) → `digest.last_digest_at()`. Trust signals on every line (D-031,
+  migration 0002 applied to Neon). 34 tests green.
+- **Next task:** watch 3 daily cron digests (Phase 1 gate: 2026-10-15/16/17 IST). Supabase idea (for verifying
+  events) answered with D-031 instead — not adopted.
 - **Blockers:** Debjit adds `DISCORD_WEBHOOK_URL` to `.env` (SETUP.md §3) before the digest step;
   Claude then copies it to GitHub Secrets with `gh secret set` (never paste it in chat).
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
@@ -110,6 +111,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-028 Date-only source values stored as 00:00 IST; Devpost field mapping.
 - D-029 Protego for robots.txt (stdlib parser mishandles wildcards).
 - D-030 Phase 1 digest format (closing ≤3 days + new, by deadline).
+- D-031 Event trust signals from source fields (fee, invite-only, organiser, registrations); Supabase rejected.
 
 ## 6. Known issues and open questions
 

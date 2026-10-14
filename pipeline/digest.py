@@ -24,6 +24,12 @@ class DigestItem:
     city: str | None
     prize_text: str | None
     source: str
+    # Trust signals (D-031), all straight from the source listing.
+    organizer: str | None = None
+    registrations: int | None = None
+    entry_fee: str | None = None
+    invite_only: bool = False
+    dates_suspect: bool = False  # end before start, or registration closes after the end
 
 
 @dataclass(frozen=True)
@@ -45,9 +51,11 @@ _SELECT = f"""
            CASE WHEN e.reg_deadline IS NOT NULL THEN 'reg'
                 WHEN e.submission_deadline IS NOT NULL THEN 'submit'
                 WHEN e.end_date IS NOT NULL THEN 'ends' END,
-           e.mode, e.city, e.prize_text, s.source
+           e.mode, e.city, e.prize_text, s.source,
+           e.organizer, s.registrations, e.entry_fee, e.invite_only,
+           COALESCE(e.end_date < e.start_date OR e.reg_deadline > e.end_date, false)
       FROM events e
-      JOIN LATERAL (SELECT url, source FROM event_sources
+      JOIN LATERAL (SELECT url, source, registrations FROM event_sources
                      WHERE event_id = e.id ORDER BY first_seen_at LIMIT 1) s ON true
      WHERE e.status = 'open'
 """

@@ -15,6 +15,13 @@ _Last updated: 2026-10-14_ · Status: **planned**. Each feature lists what a use
 - Phase 1 MVP (built 2026-10-14, D-030): webhook; sections "⏰ Closing within 3 days" and "🆕 New since last run",
   each sorted by joining deadline, max 10 + "…and N more"; no AI, no buttons.
 
+## 1a. Event trust (D-031, built 2026-10-15)
+- Each digest line: "by <organiser>", 👥 registrations (when > 0), source name and link.
+- Flag line when needed: 💰 `₹200 entry fee` · 🔒 invite-only · ⚠️ no organiser listed · ⚠️ dates look inconsistent.
+- Header subtext: dates, prizes and fees are copied from the platform listing; confirm on the event page.
+- Flags inform only; nothing is hidden. Rules on source fields only — AI never judges legitimacy.
+- Later: "on 2+ platforms" badge (Phase 2, dedupe); ⚠️ unverified for web-discovered events (Phase 4).
+
 ## 2. Saves and status
 - Status flow: **Saved → Registered → Submitted → Done**, plus **Dismissed**.
 - Change from: Discord buttons, `/save`, `/status`, dashboard, email links (signed).

@@ -46,3 +46,10 @@ def test_content_hash_ignores_raw():
     b = EventRecord("devpost", "1", "u", "T", raw={"time_left_to_submission": "8 days left"})
     c = EventRecord("devpost", "1", "u", "T2")
     assert a.content_hash() == b.content_hash() != c.content_hash()
+
+
+def test_content_hash_ignores_registration_count():
+    a = EventRecord("unstop", "1", "u", "T", registrations=10)
+    b = EventRecord("unstop", "1", "u", "T", registrations=11)
+    assert a.content_hash() == b.content_hash()
+    assert a.content_hash() != EventRecord("unstop", "1", "u", "T", entry_fee="₹200").content_hash()
