@@ -20,6 +20,9 @@ _As of 2026-10-15 (IST). Source: GitHub Actions run 38625693804, Neon `runs` tab
 - The Unstop step took ~3.5 min although only 21 of 251 listings were new/changed: each upsert is several
   round trips from the US-hosted runner to Neon Singapore. Acceptable now (whole job ~5 min, far below
   free-minute limits); batch upserts if sources grow.
+- **Fixed 2026-10-15:** `db.upsert_events` does one lookup query per source, then pipelined `executemany`
+  writes in one transaction. Local run (Pune → Neon Singapore): whole pipeline 155 s → **14.6 s** (run 9);
+  storing is ~1 s, the rest is polite 1 req/s fetching. Paths verified in a rolled-back transaction.
 
 ## Gotcha
 - `.env` line had a space after `=`. python-dotenv strips it; values copied to GitHub Secrets must be trimmed

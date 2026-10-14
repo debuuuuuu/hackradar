@@ -57,7 +57,13 @@ def fetch_and_store(conn) -> tuple[dict[str, int], list[str]]:
                 errors.append(f"{source.name}: {type(e).__name__}: {e}")
                 counts[source.name] = 0
                 continue
-            outcomes = Counter(db.upsert_event(conn, rec) for rec in records)
+            try:
+                outcomes = Counter(db.upsert_events(conn, records))
+            except Exception as e:
+                log.exception("storing %s failed", source.name)
+                errors.append(f"{source.name} store: {type(e).__name__}: {e}")
+                counts[source.name] = 0
+                continue
             counts[source.name] = len(records)
             log.info("%s: %d listings %s", source.name, len(records), dict(outcomes))
     today = ist_day_start(datetime.now(IST).date())

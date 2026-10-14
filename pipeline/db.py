@@ -60,66 +60,92 @@ def _event_values(rec: EventRecord) -> list:
     return [list(rec.themes) if f == "themes" else getattr(rec, f) for f in _EVENT_FIELDS]
 
 
-def upsert_event(conn: psycopg.Connection, rec: EventRecord) -> str:
-    """Insert or update one source listing. Returns 'new', 'changed' or 'same'.
+def upsert_events(conn: psycopg.Connection, recs: list[EventRecord]) -> list[str]:
+    """Insert or update one source's listings in one transaction.
 
+    Returns 'new', 'changed' or 'same' per record, in order. One lookup query plus batched
+    (pipelined) writes, because per-row round trips to Neon made a 250-listing source take minutes.
     Phase 1: one event per (source, source_id). Cross-source dedupe arrives in Phase 2.
     """
-    content_hash = rec.content_hash()
-    with conn.transaction():
-        row = conn.execute(
-            "SELECT event_id, content_hash FROM event_sources WHERE source = %s AND source_id = %s",
-            (rec.source, rec.source_id),
-        ).fetchone()
+    if not recs:
+        return []
+    sources = {r.source for r in recs}
+    assert len(sources) == 1, f"one source per call, got {sources}"
+    source = sources.pop()
+    hashes = [r.content_hash() for r in recs]
+    rows = conn.execute(
+        "SELECT source_id, event_id, content_hash FROM event_sources"
+        " WHERE source = %s AND source_id = ANY(%s)",
+        (source, [r.source_id for r in recs]),
+    ).fetchall()
+    known = {sid: (event_id, old_hash) for sid, event_id, old_hash in rows}
 
-        if row is None:
-            cols = ", ".join(_EVENT_FIELDS)
-            marks = ", ".join(["%s"] * len(_EVENT_FIELDS))
-            event_id = conn.execute(
-                f"INSERT INTO events ({cols}) VALUES ({marks}) RETURNING id", _event_values(rec)
-            ).fetchone()[0]
-            conn.execute(
+    outcomes: list[str] = []
+    new: list[tuple[EventRecord, str]] = []
+    changed: list[tuple[EventRecord, str, int]] = []
+    same: list[EventRecord] = []
+    for rec, content_hash in zip(recs, hashes, strict=True):
+        if rec.source_id not in known:
+            known[rec.source_id] = (None, content_hash)  # a repeat in this batch counts as 'same'
+            new.append((rec, content_hash))
+            outcomes.append("new")
+        elif known[rec.source_id][1] == content_hash:
+            same.append(rec)
+            outcomes.append("same")
+        else:
+            changed.append((rec, content_hash, known[rec.source_id][0]))
+            outcomes.append("changed")
+
+    cols = ", ".join(_EVENT_FIELDS)
+    marks = ", ".join(["%s"] * len(_EVENT_FIELDS))
+    sets = ", ".join(f"{f} = %s" for f in _EVENT_FIELDS)
+    with conn.transaction(), conn.cursor() as cur:
+        if new:
+            cur.executemany(
+                f"INSERT INTO events ({cols}) VALUES ({marks}) RETURNING id",
+                [_event_values(rec) for rec, _ in new],
+                returning=True,
+            )
+            event_ids = []
+            while True:
+                event_ids.append(cur.fetchone()[0])
+                if not cur.nextset():
+                    break
+            cur.executemany(
                 """
                 INSERT INTO event_sources
                        (event_id, source, source_id, url, raw_json, content_hash, registrations)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
-                (
-                    event_id,
-                    rec.source,
-                    rec.source_id,
-                    rec.url,
-                    Jsonb(rec.raw),
-                    content_hash,
-                    rec.registrations,
-                ),
+                [
+                    (eid, r.source, r.source_id, r.url, Jsonb(r.raw), h, r.registrations)
+                    for eid, (r, h) in zip(event_ids, new, strict=True)
+                ],
             )
-            return "new"
-
-        event_id, old_hash = row
-        if old_hash == content_hash:
-            conn.execute(
+        if changed:
+            cur.executemany(
+                f"UPDATE events SET {sets}, updated_at = now(), status = 'open' WHERE id = %s",
+                [[*_event_values(rec), event_id] for rec, _, event_id in changed],
+            )
+            cur.executemany(
+                """
+                UPDATE event_sources
+                   SET url = %s, raw_json = %s, content_hash = %s, last_seen_at = now(),
+                       registrations = %s
+                 WHERE source = %s AND source_id = %s
+                """,
+                [
+                    (r.url, Jsonb(r.raw), h, r.registrations, r.source, r.source_id)
+                    for r, h, _ in changed
+                ],
+            )
+        if same:
+            cur.executemany(
                 "UPDATE event_sources SET last_seen_at = now(), registrations = %s"
                 " WHERE source = %s AND source_id = %s",
-                (rec.registrations, rec.source, rec.source_id),
+                [(r.registrations, r.source, r.source_id) for r in same],
             )
-            return "same"
-
-        sets = ", ".join(f"{f} = %s" for f in _EVENT_FIELDS)
-        conn.execute(
-            f"UPDATE events SET {sets}, updated_at = now(), status = 'open' WHERE id = %s",
-            [*_event_values(rec), event_id],
-        )
-        conn.execute(
-            """
-            UPDATE event_sources
-               SET url = %s, raw_json = %s, content_hash = %s, last_seen_at = now(),
-                   registrations = %s
-             WHERE source = %s AND source_id = %s
-            """,
-            (rec.url, Jsonb(rec.raw), content_hash, rec.registrations, rec.source, rec.source_id),
-        )
-        return "changed"
+    return outcomes
 
 
 def close_past_events(conn: psycopg.Connection, today_ist_start: datetime) -> int:

@@ -43,6 +43,7 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [ ] Cron + keepalive live
 - [x] Fix digest "new" cutoff (last run that sent a digest, by finished_at) (2026-10-15)
 - [x] Trust signals on digest lines: organiser, 👥 registrations, 💰 fee / 🔒 invite-only / ⚠️ flags (D-031) (2026-10-15)
+- [x] Batch upserts per source (one lookup + pipelined writes); store failure skips only that source (2026-10-15)
 - [ ] Watch 3 daily runs; fix anything flaky
 - [ ] **Gate:** 3 consecutive real digests on Discord
 
