@@ -32,3 +32,10 @@ _As of 2026-10-15 (IST). Source: GitHub Actions run 38625693804, Neon `runs` tab
 - Devpost `organization_name`, `managed_by_devpost_badge`, `registrations_count`, `invite_only` (6 open).
 - Open events on 2026-10-15: 0 without organiser, 0 with inconsistent dates.
 - Adding `entry_fee` to the hashed fields made every event "changed" once (run 8); harmless.
+
+## Cross-platform duplicates (found 2026-10-15, input for Phase 2 dedupe)
+- "Multimodal AI Hackathon 2026" is on Devpost (organiser "Kamand Prompt, IIT Mandi", submit 15 Oct) **and** Unstop
+  (organiser "Indian Institute of Technology (IIT), Mandi", 21 Oct 23:52). Same event, different organiser strings
+  and different deadlines.
+- "CodeSprint by Elite Coders" (Devpost, online) vs "Codesprint 2026" (Unstop, Elite Coders, hybrid Dehradun).
+- So dedupe can't rely on exact title/organiser; keep every source's dates and show the earliest as the one to act on.
