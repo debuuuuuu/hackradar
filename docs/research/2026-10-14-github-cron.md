@@ -19,3 +19,18 @@
 
 ## Next
 - Phase 0: answer both open questions; update D-023 if the fallback is needed.
+
+## Update 2026-10-14 (Phase 0)
+- **Keepalive works mechanically:** run 38579261227 (workflow_dispatch) committed `data/last_run.json` to an
+  orphan `status` branch (only that file on the branch).
+- **Does a non-default-branch commit count as activity? Still unverified.** GitHub docs only say "no repository
+  activity in 60 days" without defining activity; community keepalive tools say "no commit in the repository".
+  Sources: https://docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows ·
+  https://dev.to/gautamkrishnar/how-to-prevent-github-from-suspending-your-cronjob-based-triggers-knf
+- **Mitigation:** during active development `main` gets commits anyway, so risk only appears after 60 quiet
+  days. Fallbacks if it gets disabled: switch the keepalive to `main` (D-023 alt), or re-enable via API from
+  another repo (pattern: https://github.com/PhrozenByte/gh-workflow-immortality). Roadmap task in Phase 6.
+- **setup-uv has no floating major tags** (`@v10` fails "unable to find version"); pin exact (`v10.2.0`).
+  actions/checkout does publish `v7`. Found 2026-10-14.
+- **`ubuntu-latest` migrates to Ubuntu 26 from 2026-10-19** (runner annotation). Watch for breakage.
+- Runner Python from uv: 3.12.3.

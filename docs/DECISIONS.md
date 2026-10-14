@@ -161,3 +161,31 @@ Format: date · decision · why · alternatives rejected · status.
 - **Date:** 2026-10-14 (planning)
 - **Decision:** CallMeBot keys and emails encrypted with a key held in GitHub Secrets / Vercel env. Personal data never sent to AI.
 - **Status:** active
+
+### D-025 · Python 3.12 managed by uv
+- **Date:** 2026-10-14
+- **Decision:** Python 3.12 everywhere (local + CI), managed by `uv`: `.python-version` pins 3.12, `uv.lock` locks deps, CI runs `uv sync --frozen`.
+- **Why:** Matches the plan and CI; 3.12 was already installed locally; uv is fast and gives reproducible installs.
+- **Alternatives:** 3.13 everywhere; plain pip + venv + requirements.txt.
+- **Status:** active (resolves the 3.12 vs 3.13 open issue)
+
+### D-026 · Schema details for models.sql
+- **Date:** 2026-10-14
+- **Decision:**
+  - Dates stored as `timestamptz`; displayed in IST.
+  - `embedding vector(768)` via pgvector (Gemini embeddings requested at 768 dims; exact model chosen in Phase 4).
+  - `pg_trgm` GIN index on `events.title` for fuzzy dedupe in SQL.
+  - Encrypted user fields stored as text tokens in `*_enc` columns (encrypted by the app, D-024).
+  - Reminder offset `0` = same-day morning alert; default `{7,3,1,0}`.
+  - `reminders_sent` unique key includes `date_value`, so a source date change re-arms reminders.
+  - `event_sources` unique on `(source, source_id)`.
+  - `models.sql` is idempotent (`IF NOT EXISTS`) and always holds the full current schema; later changes also go in `pipeline/migrations/NNNN_*.sql`.
+- **Why:** Keep dedupe and similarity inside Postgres (no extra services); make reminders correct when dates move.
+- **Alternatives:** float arrays for embeddings (no index); Alembic migrations (heavier than needed now).
+- **Status:** active
+
+### D-027 · Pin GitHub Actions to existing tags; setup-uv to exact version
+- **Date:** 2026-10-14
+- **Decision:** `actions/checkout@v7`, `astral-sh/setup-uv@v10.2.0` (exact; that repo publishes no floating major tag). Prefer releases ≥ 2 weeks old.
+- **Why:** `@v10` failed to resolve; exact pins are also safer against supply-chain changes.
+- **Status:** active

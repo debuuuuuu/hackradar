@@ -18,3 +18,12 @@
 ## Open questions
 - Can a Vercel **Python** function continue work after returning the deferred ACK? (Phase 3 spike)
 - Is pgvector available on Neon free? (Phase 4)
+
+## Update 2026-10-14 (Phase 0) — Neon project created (verified)
+- Project `hackradar` (id `proud-bar-84693777`), region `aws-ap-southeast-1` (Singapore), Postgres **18**,
+  database `hackradar`, role `hackradar_owner`, compute 0.25 CU, pooled endpoint.
+- Extensions available: **pgvector 0.8.6**, **pg_trgm 1.6**, pgcrypto 1.4 → pgvector open question answered: yes.
+- Project API reports `branch_logical_size_limit` = 1 GiB (plan said 0.5 GB; treat 0.5 GB as the safe budget
+  until checked on https://neon.com/pricing).
+- Account already has 4 other projects (5 total now); free-plan project cap not checked (unverified).
+- Local run: connect + insert + update took ~100 ms on a warm compute.

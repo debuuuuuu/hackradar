@@ -9,5 +9,5 @@ One file per finding/investigation: `YYYY-MM-DD-<topic>.md`. Newest first.
 | 2026-10-14 | [search-apis](2026-10-14-search-apis.md) | Tavily 1k/mo → Exa (no key) → Serper 2.5k one-time |
 | 2026-10-14 | [whatsapp-options](2026-10-14-whatsapp-options.md) | CallMeBot chosen; Twilio and unofficial libs rejected |
 | 2026-10-14 | [agent-reach](2026-10-14-agent-reach.md) | Only Exa, Jina Reader, RSS; cookie channels off |
-| 2026-10-14 | [github-cron](2026-10-14-github-cron.md) | Delays, 60-day disable, keepalive on non-default branch unverified |
-| 2026-10-14 | [hosting-and-db](2026-10-14-hosting-and-db.md) | Neon, Vercel, Discord 3 s/deferred, Gmail limits |
+| 2026-10-14 | [github-cron](2026-10-14-github-cron.md) | Delays, 60-day disable; keepalive works, branch-activity rule still unverified; setup-uv pinning |
+| 2026-10-14 | [hosting-and-db](2026-10-14-hosting-and-db.md) | Neon project created (PG18, pgvector ok), Vercel, Discord deferred, Gmail |

@@ -4,12 +4,13 @@ _Last updated: 2026-10-14_
 
 ## 1. Resume here
 
-- **Phase:** 0 · Setup — not started (docs system just created).
-- **Just finished:** documentation bootstrap (2026-10-14): repo initialized, all docs written, open decisions resolved.
-- **Next task:** Phase 0, task 1 — create the GitHub repo (public) and push; then work through `docs/SETUP.md`
-  (Neon, Discord webhook first) and the Phase 0 checklist in `docs/ROADMAP.md`.
-- **Blockers:** none. Waiting on Debjit's go-ahead to start Phase 0.
-- **Watch out:** local Python is 3.13, CI targets 3.12 (see §6).
+- **Phase:** 1 · MVP digest — not started. **Phase 0 gate passed 2026-10-14** (daily.yml run 38579261227 green).
+- **Just finished:** Phase 0: public repo https://github.com/debuuuuuu/hackradar, Neon project + schema (8 tables),
+  `pipeline/run.py` skeleton, `daily.yml` (cron + keepalive to `status` branch), `ci.yml` — all green.
+- **Next task:** Phase 1 — Debjit creates a Discord webhook (SETUP.md §3) → `DISCORD_WEBHOOK_URL` in `.env` +
+  GitHub secret; then `sources/base.py` (polite HTTP client) and `sources/devpost.py` + fixture test.
+- **Blockers:** Discord webhook URL needed before the digest step (scrapers can start without it).
+- **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
 
 ## 2. Project summary
 
@@ -42,7 +43,7 @@ Friends and college peers can join with their own filters, saves and reminders. 
 
 | Phase | Name | Gate | Status |
 |---|---|---|---|
-| 0 | Setup | Manual run of `daily.yml` passes green | ⬜ not started |
+| 0 | Setup | Manual run of `daily.yml` passes green | ✅ passed 2026-10-14 |
 | 1 | MVP digest | Real digest on Discord 3 days in a row | ⬜ |
 | 2 | AI + more sources | Digest ranked, no event listed twice | ⬜ |
 | 3 | Saves + reminders | Saved event gets its 7/3/1-day reminders | ⬜ |
@@ -50,7 +51,9 @@ Friends and college peers can join with their own filters, saves and reminders. 
 | 5 | Dashboard + friends | 3 friends get their own digests and reminders | ⬜ |
 | 6 | Portfolio polish | Repo public-ready, demo ready | ⬜ |
 
-**Working end to end right now:** nothing yet — docs only. No application code exists.
+**Working end to end right now:** `daily.yml` (manual or cron) → `python -m pipeline.run` connects to Neon, writes a
+`runs` row, writes `data/last_run.json` → keepalive commit to `status` branch. No sources or notifications yet.
+CI (ruff, black, pytest) green on `main`.
 
 ## 4. Stack at a glance
 
@@ -58,14 +61,14 @@ Friends and college peers can join with their own filters, saves and reminders. 
 |---|---|---|
 | Scheduler | GitHub Actions cron `17 23 * * *` UTC (04:47 IST) + `workflow_dispatch` | Runs often 30–60 min late → digest lands ~5 AM IST |
 | Keepalive | Daily commit of `last_run.json` to a `status` branch | Unverified that a non-default-branch commit counts; test in Phase 0 |
-| Pipeline | Python 3.12, `httpx`, `selectolax`/BeautifulSoup | Playwright only if unavoidable |
+| Pipeline | Python 3.12 via `uv` (D-025), `psycopg` 3, `httpx`, `selectolax`/BeautifulSoup | Playwright only if unavoidable |
 | Sources | Devpost, Unstop (`/api/public/*`), Devfolio, MLH | Next: Hack2Skill; later DoraHacks, HackerEarth |
 | LinkedIn/X discovery | Tavily (1,000 credits/mo) | Exa via Agent Reach → Serper (2,500 one-time) |
 | Page reading | Jina Reader (via Agent Reach) | Agent Reach login channels OFF |
 | AI batch | Gemini Flash / Flash-Lite, 10–15 events/call | Groq |
 | AI `/ask` | Groq | Gemini |
 | Embeddings | Gemini embedding model | TF-IDF on themes |
-| Database | Neon Postgres free (0.5 GB) | — (Supabase rejected) |
+| Database | Neon Postgres 18 free, project `hackradar` (Singapore), pgvector + pg_trgm | — (Supabase rejected) |
 | Bot + dashboard | Vercel Hobby: Python fn `/api/interactions` + React/Vite | — |
 | Discord | Bot via interactions endpoint + REST | Webhook for digest only (Phase 1) |
 | Email | Gmail SMTP + App Password | — |
@@ -99,13 +102,15 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-022 Next source after core four: Hack2Skill.
 - D-023 Keepalive via daily commit to a `status` branch.
 - D-024 Personal data (CallMeBot keys, emails) encrypted at rest.
+- D-025 Python 3.12 managed by uv.
+- D-026 Schema details (timestamptz, vector(768), pg_trgm, offset 0 = same day, date_value in reminder key).
+- D-027 Pin Actions tags; setup-uv exact version.
 
 ## 6. Known issues and open questions
 
-- **Python version mismatch:** local machine has Python 3.13.13; CI targets 3.12. Either install 3.12
-  locally (e.g. `uv python install 3.12`) or decide to target 3.13 everywhere. Decide in Phase 0.
-- **Keepalive on `status` branch is unverified** — GitHub's "60 days of no repository activity" rule may or
-  may not count commits on non-default branches. Verify in Phase 0; fall back to commits on `main` (D-023).
+- **Keepalive on `status` branch: mechanics verified, activity rule unverified** — GitHub docs don't define
+  "repository activity". Risk only after 60 quiet days on `main`; fallback planned (D-023, Phase 6 task).
+- **`ubuntu-latest` → Ubuntu 26 from 2026-10-19** — watch the first runs after that date.
 - **Date boundary:** cron fires 23:17 UTC = 04:47 IST the next day. All "today" logic must use IST.
 - **Devpost `/api/hackathons` is undocumented** (it's what devpost.com's own frontend calls). May change
   without notice; fixture tests + zero-results alert cover it.
@@ -117,6 +122,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
   request before ACK, or work moved elsewhere.
 - **Exa no-key access from GitHub Actions IPs** is unverified; test in Phase 4.
 - **Hack2Skill robots.txt / endpoints** not yet checked.
+- **Neon storage limit:** API reports 1 GiB branch limit; plan says 0.5 GB — budget for 0.5 GB until checked.
 - All free-tier numbers in research notes are as of 2026-10-14 from the planning session and marked unverified
   until re-checked against official pages.
 
@@ -139,7 +145,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 [WhatsApp options](research/2026-10-14-whatsapp-options.md) · [Agent Reach](research/2026-10-14-agent-reach.md) ·
 [GitHub cron behaviour](research/2026-10-14-github-cron.md) · [hosting & DB](research/2026-10-14-hosting-and-db.md)
 
-**Newest session:** [2026-10-14 docs bootstrap](sessions/2026-10-14-docs-bootstrap.md)
+**Newest sessions:** [2026-10-14 Phase 0 setup](sessions/2026-10-14-phase0-setup.md) · [2026-10-14 docs bootstrap](sessions/2026-10-14-docs-bootstrap.md)
 
 **Original planning docs (repo root, kept for reference):** `HackRadar — Project Plan.md`, `HACKRADAR_MASTER_PROMPT.md`.
 

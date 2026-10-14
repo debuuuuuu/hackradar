@@ -26,11 +26,13 @@ Do steps in the phase they are needed — no need to set everything up on day on
 | 13 | Discord OAuth | 5 | `DISCORD_CLIENT_SECRET` | | ✓ | ✓ |
 
 ## 1. GitHub repo (Phase 0)
+> ✅ Done 2026-10-14: https://github.com/debuuuuuu/hackradar (public), workflow permissions set to read/write.
 1. Create a **public** repo named `hackradar` (D-017). No template, no README (we push ours).
 2. `git remote add origin https://github.com/<you>/hackradar.git` and push `main`.
 3. Settings → Actions → General → Workflow permissions → **Read and write** (needed for the keepalive commit).
 
 ## 2. Neon Postgres (Phase 0)
+> ✅ Done 2026-10-14 via Neon MCP: project `hackradar` (`proud-bar-84693777`), Singapore, db `hackradar`. `DATABASE_URL` is in `.env` and GitHub Secrets.
 1. Sign up at https://neon.tech (GitHub login is fine).
 2. Create project `hackradar`, region closest to India (e.g. AWS Singapore `ap-southeast-1`; unverified availability).
 3. Dashboard → Connect → copy the **pooled** connection string → `DATABASE_URL`.

@@ -5,25 +5,26 @@ _Last updated: 2026-10-14_ · ~8 weeks part-time (evenings and weekends; estimat
 Each phase ends at a **gate**. Don't start the next phase until the gate passes, so there is always a
 working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 
-## Phase 0 · Setup (week 1) — ⬜
+## Phase 0 · Setup (week 1) — ✅ gate passed 2026-10-14
 
 **Gate:** a manual run of `daily.yml` passes green.
 
 - [x] Docs system: `CLAUDE.md` + `docs/` structure filled from planning (2026-10-14)
 - [x] Resolve open decisions (repo visibility, digest time, offsets, name, next source, keepalive) (2026-10-14)
-- [ ] Decide local Python version (3.12 vs 3.13) and log it
-- [ ] Create public GitHub repo `hackradar`, push `main`
-- [ ] Folder skeleton: `pipeline/`, `bot/`, `web/`, `tests/`, `config/`, `data/`, `.github/workflows/`
-- [ ] `pyproject.toml` with deps + `ruff`/`black`/`pytest` config
-- [ ] `config/sources.yaml` and `config/settings.yaml` (AI provider, digest size, default offsets)
-- [ ] `.env.example` with every variable name (no values)
-- [ ] Accounts per `docs/SETUP.md` needed for Phase 0–1: Neon, Discord webhook
-- [ ] `pipeline/models.sql` (all 8 tables) and run it on Neon
-- [ ] `pipeline/run.py` skeleton (connects to DB, writes a `runs` row, writes `data/last_run.json`)
-- [ ] `.github/workflows/daily.yml`: cron `17 23 * * *` + `workflow_dispatch` + keepalive commit to `status` branch
-- [ ] `.github/workflows/ci.yml`: ruff, black --check, pytest on push/PR
-- [ ] Research note: does a commit on the `status` branch count as repo activity? (D-023)
-- [ ] **Gate:** manual `workflow_dispatch` run of `daily.yml` is green
+- [x] Decide local Python version → 3.12 via uv (D-025) (2026-10-14)
+- [x] Create public GitHub repo `debuuuuuu/hackradar`, push `main` (2026-10-14)
+- [x] Folder skeleton: `pipeline/`, `tests/`, `config/`, `.github/workflows/` (`bot/`, `web/` created in Phases 3/5) (2026-10-14)
+- [x] `pyproject.toml` with deps + `ruff`/`black`/`pytest` config, `uv.lock` (2026-10-14)
+- [x] `config/sources.yaml` and `config/settings.yaml` (2026-10-14)
+- [x] `.env.example` with every variable name (2026-10-14)
+- [x] Neon project created via MCP; `DATABASE_URL` in `.env` + GitHub secret (2026-10-14)
+- [ ] Discord webhook (needed at start of Phase 1)
+- [x] `pipeline/models.sql` (all 8 tables) applied on Neon (D-026) (2026-10-14)
+- [x] `pipeline/run.py` skeleton (writes `runs` row + `data/last_run.json`) (2026-10-14)
+- [x] `.github/workflows/daily.yml`: cron `17 23 * * *` + dispatch + keepalive to `status` branch (2026-10-14)
+- [x] `.github/workflows/ci.yml`: ruff, black --check, pytest (2026-10-14)
+- [x] Research note on `status`-branch activity — still unverified, fallback planned (github-cron note) (2026-10-14)
+- [x] **Gate:** manual `workflow_dispatch` run of `daily.yml` is green — run 38579261227 (2026-10-14)
 
 ## Phase 1 · MVP digest (weeks 1–2) — ⬜
 
@@ -107,4 +108,5 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [ ] README, architecture diagram, demo GIF
 - [ ] Add Hack2Skill source (D-022)
 - [ ] Secret scan of full git history before promoting the repo
+- [ ] Confirm the `status`-branch keepalive kept the cron alive past 60 quiet days, or switch to fallback (D-023)
 - [ ] **Gate:** public repo polished, demo ready
