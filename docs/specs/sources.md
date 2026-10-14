@@ -10,14 +10,32 @@ per-source on/off flag in `config/sources.yaml` · fixture test from a saved rea
 
 ## Core four
 
-### Devpost — Phase 1
-- **Endpoint:** `GET https://devpost.com/api/hackathons?status[]=open` (JSON), 40 per page, paginate with `page=`.
-- **Method:** JSON API (undocumented — it's what devpost.com's frontend calls; may change without notice).
-- **robots.txt:** to verify at build time.
-- **Fields (expected):** title, url, organization name, submission period dates, prize amount, themes,
-  displayed location / online flag, open state, registrations count. Exact keys unverified.
-- **Quirks:** dates may be a display string range rather than ISO; prize may include HTML/currency markup.
-- **Fixture:** `tests/fixtures/devpost/` (todo)
+### Devpost — Phase 1 ✅ built 2026-10-14 (`pipeline/sources/devpost.py`)
+- **Endpoint (verified 2026-10-14):** `GET https://devpost.com/api/hackathons?status[]=open&per_page=40&page=N`.
+  Default page size is **9**; `per_page=40` works. Response: `{"hackathons": [...], "meta": {"total_count", "per_page"}}`.
+  Paginate until collected >= `total_count` (48 open on 2026-10-14 → 2 requests).
+- **Method:** JSON API (undocumented: devpost.com's own frontend calls it; may change without notice).
+- **robots.txt (checked 2026-10-14):** `User-agent: *` with empty `Disallow:` → all allowed; only named bots
+  (Bytespider, BLEXBot, …) are banned.
+- **Field mapping:**
+
+  | Devpost field | → events | Notes |
+  |---|---|---|
+  | `id` | source_id | |
+  | `url` | event_sources.url | |
+  | `title`, `organization_name` | title, organizer | |
+  | `submission_period_dates` | start_date, submission_deadline (= end_date) | Display text only, 3 formats: `Aug 31 - Oct 23, 2026`, `Oct 12 - 24, 2026`, `Dec 15, 2026 - Jan 10, 2027`. Stored as 00:00 IST (D-028) |
+  | `displayed_location.icon` | mode | `globe` → online, `map-marker-alt` → offline (no hybrid signal) |
+  | `displayed_location.location` | city | Free text ("Stanford University", "jaipur", "Vikrant University , Gwalior") |
+  | `prize_amount` | prize_text | HTML `$<span data-currency-value>138,000</span>`; `$`/`₹`/`€`; `0` → null |
+  | `themes[].name` | themes | |
+  | `invite_only` | invite_only | 6 of 48 on 2026-10-14 |
+
+- **Not available:** registration deadline (registration stays open until the submission deadline →
+  `reg_deadline` null), eligibility, team size, exact deadline time/timezone.
+- **Volatile fields kept out of the hash:** `time_left_to_submission`, `registrations_count`
+  (the hash uses normalized fields only).
+- **Fixture:** `tests/fixtures/devpost/open_page2_2026-10-14.json` (real page 2, 8 items).
 
 ### Unstop — Phase 1
 - **Endpoint:** `/api/public/*` search endpoints only (robots.txt allows these). Exact path todo.

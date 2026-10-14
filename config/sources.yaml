@@ -1,7 +1,7 @@
 # Per-source switches. Each source fails independently. Details: docs/specs/sources.md
 
 devpost:
-  enabled: false   # Phase 1
+  enabled: true    # Phase 1
 unstop:
   enabled: false   # Phase 1
 devfolio:

@@ -26,16 +26,16 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [x] Research note on `status`-branch activity — still unverified, fallback planned (github-cron note) (2026-10-14)
 - [x] **Gate:** manual `workflow_dispatch` run of `daily.yml` is green — run 38579261227 (2026-10-14)
 
-## Phase 1 · MVP digest (weeks 1–2) — ⬜
+## Phase 1 · MVP digest (weeks 1–2) — 🟨 in progress
 
 **Gate:** a real digest arrives on Discord 3 days in a row.
 
-- [ ] `sources/base.py`: `Source` interface + polite HTTP client (User-Agent, retries/backoff, ~1 req/s/host, robots check)
-- [ ] `sources/devpost.py` with pagination (40/page) + fixture test
+- [x] `sources/base.py`: `Source` interface + polite HTTP client (User-Agent, retries/backoff, ~1 req/s/host, robots check) (2026-10-14)
+- [x] `sources/devpost.py` with pagination (40/page) + fixture test; 48 live events stored (2026-10-14)
 - [ ] `sources/unstop.py` (`/api/public/*` only) + fixture test
-- [ ] `normalize.py`: common event shape, dates → IST, mode/city/prize parsing + tests
-- [ ] `db.py`: upsert into `events` and `event_sources`, content hash
-- [ ] Mark past events closed
+- [x] `normalize.py`: `EventRecord`, date ranges → IST, prize cleaning, content hash + tests (2026-10-14)
+- [x] `db.py`: upsert into `events` and `event_sources` (new/changed/same via content hash) (2026-10-14)
+- [x] Mark past events closed (IST day boundary) (2026-10-14)
 - [ ] `notify/discord.py`: webhook digest, top N sorted by deadline (no AI yet), "nothing new" message
 - [ ] Wire everything in `run.py`; per-source failures logged, never fatal
 - [ ] Cron + keepalive live

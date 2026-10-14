@@ -189,3 +189,10 @@ Format: date · decision · why · alternatives rejected · status.
 - **Decision:** `actions/checkout@v7`, `astral-sh/setup-uv@v10.2.0` (exact; that repo publishes no floating major tag). Prefer releases ≥ 2 weeks old.
 - **Why:** `@v10` failed to resolve; exact pins are also safer against supply-chain changes.
 - **Status:** active
+
+### D-028 · Date-only source values stored as 00:00 IST; Devpost mapping
+- **Date:** 2026-10-14
+- **Decision:** When a source gives only a date (Devpost), store it as `timestamptz` at 00:00 IST of that day and show the date only. An event closes when its last known date is before the start of today (IST), so it stays open on its deadline day. Devpost: submission period → `start_date` + `submission_deadline` (= `end_date`); `reg_deadline` null (registration stays open until the submission deadline); location free text → `city`.
+- **Why:** Devpost exposes only display text like "Aug 31 - Oct 23, 2026"; the exact time and timezone are unknown, and inventing them would break D-014.
+- **Alternatives:** a `date` column (other sources such as Unstop may give exact times); 23:59 IST (could show an event as open after a US-time deadline has already passed in IST).
+- **Status:** active

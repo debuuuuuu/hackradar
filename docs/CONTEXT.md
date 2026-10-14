@@ -4,12 +4,12 @@ _Last updated: 2026-10-14_
 
 ## 1. Resume here
 
-- **Phase:** 1 · MVP digest — not started. **Phase 0 gate passed 2026-10-14** (daily.yml run 38579261227 green).
-- **Just finished:** Phase 0: public repo https://github.com/debuuuuuu/hackradar, Neon project + schema (8 tables),
-  `pipeline/run.py` skeleton, `daily.yml` (cron + keepalive to `status` branch), `ci.yml` — all green.
-- **Next task:** Phase 1 — Debjit creates a Discord webhook (SETUP.md §3) → `DISCORD_WEBHOOK_URL` in `.env` +
-  GitHub secret; then `sources/base.py` (polite HTTP client) and `sources/devpost.py` + fixture test.
-- **Blockers:** Discord webhook URL needed before the digest step (scrapers can start without it).
+- **Phase:** 1 · MVP digest, in progress. Phase 0 gate passed 2026-10-14.
+- **Just finished:** `sources/base.py` (polite client), `sources/devpost.py`, `normalize.py`, DB upsert + close-past.
+  Live run stored **48 open Devpost hackathons**; a rerun reports all `same`. 21 tests green.
+- **Next task:** `sources/unstop.py` (`/api/public/*` only) + fixture test; then `notify/discord.py` webhook digest.
+- **Blockers:** Debjit adds `DISCORD_WEBHOOK_URL` to `.env` (SETUP.md §3) before the digest step;
+  Claude then copies it to GitHub Secrets with `gh secret set` (never paste it in chat).
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
 
 ## 2. Project summary
@@ -44,15 +44,16 @@ Friends and college peers can join with their own filters, saves and reminders. 
 | Phase | Name | Gate | Status |
 |---|---|---|---|
 | 0 | Setup | Manual run of `daily.yml` passes green | ✅ passed 2026-10-14 |
-| 1 | MVP digest | Real digest on Discord 3 days in a row | ⬜ |
+| 1 | MVP digest | Real digest on Discord 3 days in a row | 🟨 in progress |
 | 2 | AI + more sources | Digest ranked, no event listed twice | ⬜ |
 | 3 | Saves + reminders | Saved event gets its 7/3/1-day reminders | ⬜ |
 | 4 | Discovery + smarts | `/ask` answers reliably (see D-020) | ⬜ |
 | 5 | Dashboard + friends | 3 friends get their own digests and reminders | ⬜ |
 | 6 | Portfolio polish | Repo public-ready, demo ready | ⬜ |
 
-**Working end to end right now:** `daily.yml` (manual or cron) → `python -m pipeline.run` connects to Neon, writes a
-`runs` row, writes `data/last_run.json` → keepalive commit to `status` branch. No sources or notifications yet.
+**Working end to end right now:** `daily.yml` (manual or cron) → `python -m pipeline.run` fetches Devpost
+(robots-checked, polite), upserts into `events`/`event_sources`, closes past events, writes a `runs` row and
+`data/last_run.json` → keepalive commit to `status` branch. No notifications yet.
 CI (ruff, black, pytest) green on `main`.
 
 ## 4. Stack at a glance
@@ -105,6 +106,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-025 Python 3.12 managed by uv.
 - D-026 Schema details (timestamptz, vector(768), pg_trgm, offset 0 = same day, date_value in reminder key).
 - D-027 Pin Actions tags; setup-uv exact version.
+- D-028 Date-only source values stored as 00:00 IST; Devpost field mapping.
 
 ## 6. Known issues and open questions
 
@@ -122,6 +124,8 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
   request before ACK, or work moved elsewhere.
 - **Exa no-key access from GitHub Actions IPs** is unverified; test in Phase 4.
 - **Hack2Skill robots.txt / endpoints** not yet checked.
+- **Upsert speed:** first insert of 48 events took ~31 s from Pune (~3 round trips per event to Singapore).
+  Fine for now; batch the inserts if Unstop or later sources push the runtime up.
 - **Neon storage limit:** API reports 1 GiB branch limit; plan says 0.5 GB — budget for 0.5 GB until checked.
 - All free-tier numbers in research notes are as of 2026-10-14 from the planning session and marked unverified
   until re-checked against official pages.
@@ -140,7 +144,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 | [research/README.md](research/README.md) | Index of research notes |
 | [sessions/README.md](sessions/README.md) | Index of session logs |
 
-**Newest research (2026-10-14):** [sources & robots.txt](research/2026-10-14-sources-and-robots.md) ·
+**Newest research (2026-10-14):** [Devpost API](research/2026-10-14-devpost-api.md) · [sources & robots.txt](research/2026-10-14-sources-and-robots.md) ·
 [free AI tiers](research/2026-10-14-free-ai-tiers.md) · [search APIs](research/2026-10-14-search-apis.md) ·
 [WhatsApp options](research/2026-10-14-whatsapp-options.md) · [Agent Reach](research/2026-10-14-agent-reach.md) ·
 [GitHub cron behaviour](research/2026-10-14-github-cron.md) · [hosting & DB](research/2026-10-14-hosting-and-db.md)
