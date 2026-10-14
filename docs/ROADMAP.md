@@ -1,0 +1,110 @@
+# HackRadar — Roadmap
+
+_Last updated: 2026-10-14_ · ~8 weeks part-time (evenings and weekends; estimates).
+
+Each phase ends at a **gate**. Don't start the next phase until the gate passes, so there is always a
+working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
+
+## Phase 0 · Setup (week 1) — ⬜
+
+**Gate:** a manual run of `daily.yml` passes green.
+
+- [x] Docs system: `CLAUDE.md` + `docs/` structure filled from planning (2026-10-14)
+- [x] Resolve open decisions (repo visibility, digest time, offsets, name, next source, keepalive) (2026-10-14)
+- [ ] Decide local Python version (3.12 vs 3.13) and log it
+- [ ] Create public GitHub repo `hackradar`, push `main`
+- [ ] Folder skeleton: `pipeline/`, `bot/`, `web/`, `tests/`, `config/`, `data/`, `.github/workflows/`
+- [ ] `pyproject.toml` with deps + `ruff`/`black`/`pytest` config
+- [ ] `config/sources.yaml` and `config/settings.yaml` (AI provider, digest size, default offsets)
+- [ ] `.env.example` with every variable name (no values)
+- [ ] Accounts per `docs/SETUP.md` needed for Phase 0–1: Neon, Discord webhook
+- [ ] `pipeline/models.sql` (all 8 tables) and run it on Neon
+- [ ] `pipeline/run.py` skeleton (connects to DB, writes a `runs` row, writes `data/last_run.json`)
+- [ ] `.github/workflows/daily.yml`: cron `17 23 * * *` + `workflow_dispatch` + keepalive commit to `status` branch
+- [ ] `.github/workflows/ci.yml`: ruff, black --check, pytest on push/PR
+- [ ] Research note: does a commit on the `status` branch count as repo activity? (D-023)
+- [ ] **Gate:** manual `workflow_dispatch` run of `daily.yml` is green
+
+## Phase 1 · MVP digest (weeks 1–2) — ⬜
+
+**Gate:** a real digest arrives on Discord 3 days in a row.
+
+- [ ] `sources/base.py`: `Source` interface + polite HTTP client (User-Agent, retries/backoff, ~1 req/s/host, robots check)
+- [ ] `sources/devpost.py` with pagination (40/page) + fixture test
+- [ ] `sources/unstop.py` (`/api/public/*` only) + fixture test
+- [ ] `normalize.py`: common event shape, dates → IST, mode/city/prize parsing + tests
+- [ ] `db.py`: upsert into `events` and `event_sources`, content hash
+- [ ] Mark past events closed
+- [ ] `notify/discord.py`: webhook digest, top N sorted by deadline (no AI yet), "nothing new" message
+- [ ] Wire everything in `run.py`; per-source failures logged, never fatal
+- [ ] Cron + keepalive live
+- [ ] Watch 3 daily runs; fix anything flaky
+- [ ] **Gate:** 3 consecutive real digests on Discord
+
+## Phase 2 · AI + more sources (week 3) — ⬜
+
+**Gate:** the digest is ranked and no event is listed twice.
+
+- [ ] `ai/` provider adapter interface; `gemini.py`, `groq.py` (config switch); `claude.py` stub
+- [ ] Prompts: summarize, score (in `ai/prompts/`)
+- [ ] Batch summaries (10–15 events/call), only new/changed events; retry with backoff on 429
+- [ ] Per-user scoring for the owner (rule filters first, then AI score)
+- [ ] `sources/devfolio.py` + fixture test
+- [ ] `sources/mlh.py` (find current mlh.com listing URL) + fixture test
+- [ ] `dedupe.py`: fuzzy title + organizer + overlapping dates; keep all source URLs; tests
+- [ ] `notify/email.py`: Gmail SMTP HTML digest
+- [ ] Digest sections: top 5, closing ≤3 days, AI picks, other options
+- [ ] **Gate:** ranked digest, zero duplicates over a week of runs
+
+## Phase 3 · Saves + reminders (week 4) — ⬜
+
+**Gate:** a saved event gets its 7/3/1-day reminders.
+
+- [ ] **Spike first:** Vercel Python function + Discord deferred response + follow-up (D-020)
+- [ ] `bot/` Vercel function `/api/interactions`: signature verification, PING, button handlers
+- [ ] Discord bot (not webhook) digest with ⭐ Save / ✖ Not interested buttons
+- [ ] `/save`, `/status`, `/saved` commands
+- [ ] `reminders.py`: offsets per status (Saved → reg deadline; Registered → start + submission), `reminders_sent` dedupe
+- [ ] Reminder buttons: Mark registered, Snooze 1 day
+- [ ] `/reminders 7,3,1` command
+- [ ] `notify/whatsapp.py`: CallMeBot text
+- [ ] Encryption of CallMeBot keys and emails (D-024)
+- [ ] **Gate:** a saved test event receives its 7/3/1 + same-day reminders
+
+## Phase 4 · Discovery + smarts (week 5) — ⬜
+
+**Gate:** `/ask` answers correctly via deferred response, ACK always < 3 s (D-020).
+
+- [ ] Test Exa no-key access from a GitHub Actions runner; research note
+- [ ] `sources/discovery.py`: Tavily (~10 queries/day) → Exa → Serper; Jina Reader fetch
+- [ ] AI extraction prompt for discovered posts; drop posts without a registration link
+- [ ] Embeddings (Gemini) + TF-IDF fallback
+- [ ] Ranking: blend AI score with similarity to saves, away from dismissals
+- [ ] "Because you saved X" digest lines
+- [ ] `/ask` with Groq + small DB context
+- [ ] `/filters`, `/digest now`, `/pause`, `/resume`
+- [ ] **Gate:** `/ask` reliable under deferred flow
+
+## Phase 5 · Dashboard + friends (weeks 6–7) — ⬜
+
+**Gate:** 3 friends get their own digests and reminders.
+
+- [ ] `web/` React + Vite app on Vercel
+- [ ] Discord OAuth login
+- [ ] Pages: All events, Saved, Deadline calendar, Settings, Admin health
+- [ ] `/join` command + onboarding flow
+- [ ] Per-user filters, channels, offsets, CallMeBot key in Settings
+- [ ] Email status links (signed tokens)
+- [ ] **Gate:** 3 friends receiving personal digests and reminders
+
+## Phase 6 · Portfolio polish (week 8) — ⬜
+
+**Gate:** the repo is public-ready and the demo is ready.
+
+- [ ] Test coverage pass; CI green
+- [ ] Health alerts: source 0 results 2 days running, run failure → Discord
+- [ ] Admin health page complete
+- [ ] README, architecture diagram, demo GIF
+- [ ] Add Hack2Skill source (D-022)
+- [ ] Secret scan of full git history before promoting the repo
+- [ ] **Gate:** public repo polished, demo ready
