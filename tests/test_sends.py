@@ -2,6 +2,7 @@
 
 from datetime import date
 
+import psycopg
 import pytest
 
 from pipeline.sends import claim_send, mark_send
@@ -38,5 +39,5 @@ def test_mark_send_records_outcome(conn) -> None:
 
 def test_unknown_channel_rejected(conn) -> None:
     uid = _user(conn)
-    with pytest.raises(Exception):
+    with pytest.raises(psycopg.errors.CheckViolation):
         claim_send(conn, uid, date(2026, 10, 16), "sms")
