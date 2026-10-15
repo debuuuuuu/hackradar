@@ -1,5 +1,6 @@
 import { decrypt, encrypt, keyFromEnv } from "./crypto.js";
 import { query, transaction } from "./db.js";
+import { isDiscordWebhook } from "./discord-webhook.js";
 
 export const RADII = [50, 150, 300, 3000] as const;
 export const FORMATS = ["online_near", "online", "in_person", "anything"] as const;
@@ -31,6 +32,8 @@ export interface ContactView {
   emailLocked: boolean;
   phone: string | null;
   hasCallmebotKey: boolean;
+  /** Only whether a webhook is saved. The URL itself is a secret and is never returned. */
+  discordWebhookSet: boolean;
 }
 
 /** Contact input: omitted = leave stored data alone, "" = clear. */
@@ -38,6 +41,7 @@ export interface ContactInput {
   email?: string;
   phone?: string;
   callmebotKey?: string;
+  discordWebhook?: string;
 }
 
 export class ValidationError extends Error {
@@ -138,6 +142,12 @@ export function validateContact(input: unknown): ContactInput {
     if (k !== "" && !KEY_SHAPE.test(k)) throw new ValidationError("callmebotKey");
     out.callmebotKey = k;
   }
+  if (input.discordWebhook !== undefined) {
+    if (typeof input.discordWebhook !== "string") throw new ValidationError("discordWebhook", "That is not a Discord webhook URL.");
+    const w = input.discordWebhook.trim();
+    if (w !== "" && !isDiscordWebhook(w)) throw new ValidationError("discordWebhook", "That is not a Discord webhook URL.");
+    out.discordWebhook = w;
+  }
   return out;
 }
 
@@ -153,13 +163,14 @@ interface Row {
   email_hash: string | null;
   callmebot_phone_enc: string | null;
   callmebot_key_enc: string | null;
+  discord_webhook_enc: string | null;
 }
 
 /** Preferences and the owner's own contact details (decrypted for them only); null if the user is gone. */
 export async function getPrefs(uid: number): Promise<(Prefs & { contact: ContactView }) | null> {
   const rows = await query<Row>(
     `SELECT p.home_city, p.radius_km, p.format, p.priorities, p.themes, p.include_social, p.channels,
-            u.email_enc, u.email_hash, u.callmebot_phone_enc, u.callmebot_key_enc
+            u.email_enc, u.email_hash, u.callmebot_phone_enc, u.callmebot_key_enc, u.discord_webhook_enc
        FROM users u LEFT JOIN preferences p ON p.user_id = u.id
       WHERE u.id = $1`,
     [uid],
@@ -172,6 +183,7 @@ export async function getPrefs(uid: number): Promise<(Prefs & { contact: Contact
     emailLocked: r.email_hash !== null,
     phone: r.callmebot_phone_enc ? decrypt(r.callmebot_phone_enc, key) : null,
     hasCallmebotKey: r.callmebot_key_enc !== null,
+    discordWebhookSet: r.discord_webhook_enc !== null,
   };
   const prefs: Prefs = r.home_city
     ? {
@@ -193,7 +205,7 @@ export async function getPrefs(uid: number): Promise<(Prefs & { contact: Contact
  * notification email for others goes into email_enc only.
  */
 export async function savePrefs(uid: number, prefs: Prefs, contact: ContactInput = {}): Promise<void> {
-  const needsKey = contact.email || contact.phone || contact.callmebotKey;
+  const needsKey = contact.email || contact.phone || contact.callmebotKey || contact.discordWebhook;
   const key = needsKey ? keyFromEnv() : null;
   await transaction(async (q) => {
     const user = await q<{ locked: boolean }>("SELECT email_hash IS NOT NULL AS locked FROM users WHERE id = $1 FOR UPDATE", [uid]);
@@ -218,6 +230,7 @@ export async function savePrefs(uid: number, prefs: Prefs, contact: ContactInput
     if (!user[0].locked) set("email_enc", contact.email);
     set("callmebot_phone_enc", contact.phone);
     set("callmebot_key_enc", contact.callmebotKey);
+    set("discord_webhook_enc", contact.discordWebhook);
     await q(`UPDATE users SET ${sets.join(", ")} WHERE id = $1`, params);
   });
 }

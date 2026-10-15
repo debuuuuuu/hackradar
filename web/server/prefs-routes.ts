@@ -1,4 +1,7 @@
 import { findUser, sessionFromRequest } from "./auth.js";
+import { decrypt, keyFromEnv } from "./crypto.js";
+import { query } from "./db.js";
+import { isDiscordWebhook } from "./discord-webhook.js";
 import { addRoute, error, json } from "./http.js";
 import { getPrefs, savePrefs, validateContact, validatePrefs, ValidationError } from "./prefs.js";
 
@@ -52,5 +55,38 @@ export function registerPrefsRoutes(): void {
       throw e;
     }
     return json({ ok: true });
+  });
+
+  // Sends one harmless message to the caller's own saved webhook. The URL and any error text that could
+  // contain it stay server-side: responses carry only a generic reason, and nothing is logged.
+  addRoute("POST", "/api/me/prefs/test-discord", async (request) => {
+    const uid = await sessionUid(request);
+    if (uid === null) return error(401, "not signed in");
+    if (!isJson(request)) return error(415, "content-type must be application/json");
+    const fail = (reason: string) => json({ ok: false, reason });
+
+    const rows = await query<{ enc: string | null }>("SELECT discord_webhook_enc AS enc FROM users WHERE id = $1", [uid]);
+    if (!rows[0]?.enc) return fail("No webhook is saved yet.");
+    let url: string;
+    try {
+      url = decrypt(rows[0].enc, keyFromEnv());
+    } catch {
+      return fail("The saved webhook could not be read. Paste it again and save.");
+    }
+    if (!isDiscordWebhook(url)) return fail("The saved webhook is not a valid Discord webhook. Paste it again and save.");
+
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ content: "HackRadar test message. If you see this, your webhook works." }),
+        redirect: "error",
+        signal: AbortSignal.timeout(5000),
+      });
+      if (res.ok) return json({ ok: true });
+      return fail("Discord did not accept the message. Check that the webhook still exists.");
+    } catch {
+      return fail("Could not reach Discord. Try again in a moment.");
+    }
   });
 }

@@ -44,6 +44,7 @@ const FIELD_LABEL: Record<string, string> = {
   email: "email",
   phone: "WhatsApp number",
   callmebotKey: "CallMeBot key",
+  discordWebhook: "Discord webhook URL",
   homeCity: "home city",
   radiusKm: "distance",
   format: "format",
@@ -53,12 +54,15 @@ const DISCORD_INVITE = import.meta.env.VITE_DISCORD_INVITE_URL as string | undef
 
 type Status = { kind: "idle" } | { kind: "saving" } | { kind: "saved" } | { kind: "error"; message: string };
 
+const hookHint = (isSet: boolean, typed: boolean): string => (isSet && typed ? "Save first, then test the new URL." : "");
+
 export default function PrefsForm({ mode, name }: { mode: Mode; name?: string }) {
   const onboarding = mode === "onboarding";
   const [form, setForm] = useState<FormState | null>(null);
   const [places, setPlaces] = useState<Place[]>([]);
   const [loadError, setLoadError] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [hookTest, setHookTest] = useState<{ kind: "idle" } | { kind: "sending" } | { kind: "ok" } | { kind: "fail"; message: string }>({ kind: "idle" });
 
   useEffect(() => {
     let live = true;
@@ -110,7 +114,16 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
           window.location.assign("/");
           return;
         }
-        setForm({ ...form, callmebotKey: "", hasCallmebotKey: form.hasCallmebotKey || form.callmebotKey.trim() !== "" });
+        const typedHook = form.discordWebhook.trim() !== "";
+        setForm({
+          ...form,
+          callmebotKey: "",
+          hasCallmebotKey: form.hasCallmebotKey || form.callmebotKey.trim() !== "",
+          discordWebhook: "",
+          clearDiscordWebhook: false,
+          discordWebhookSet: typedHook || (form.discordWebhookSet && !form.clearDiscordWebhook),
+        });
+        setHookTest({ kind: "idle" });
         setStatus({ kind: "saved" });
         return;
       }
@@ -124,6 +137,29 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
       setStatus({ kind: "error", message: "Could not save. Check your connection and try again." });
     }
   }
+
+  async function testWebhook() {
+    setHookTest({ kind: "sending" });
+    try {
+      const res = await fetch("/api/me/prefs/test-discord", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: "{}",
+      });
+      const body = (await res.json().catch(() => null)) as { ok?: boolean; reason?: string } | null;
+      if (body?.ok === true) setHookTest({ kind: "ok" });
+      else
+        setHookTest({
+          kind: "fail",
+          message: res.status === 401 ? "You are signed out. Sign in again." : (body?.reason ?? "The test message failed."),
+        });
+    } catch {
+      setHookTest({ kind: "fail", message: "Could not send the test. Check your connection and try again." });
+    }
+  }
+
+  const hookTyped = form.discordWebhook.trim() !== "";
+  const canTestHook = form.discordWebhookSet && !form.clearDiscordWebhook && !hookTyped && hookTest.kind !== "sending";
 
   const step = (n: number) => (onboarding ? `Step ${n} of 4` : null);
 
@@ -203,6 +239,51 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
               WhatsApp messages use CallMeBot, a free service. Send it a message from your own phone to get a personal key, then paste the key here.
               Optional.
             </p>
+            <div className="field webhook">
+              <label htmlFor="dwebhook">Discord webhook URL (optional)</label>
+              <input
+                id="dwebhook"
+                type="url"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder="https://discord.com/api/webhooks/..."
+                value={form.discordWebhook}
+                onChange={(e) => {
+                  setHookTest({ kind: "idle" });
+                  patchForm({ discordWebhook: e.target.value, clearDiscordWebhook: false });
+                }}
+              />
+              <span className="note">
+                Anyone with this URL can post to that channel, so keep it private. Create one in your Discord channel settings under Integrations.
+              </span>
+              {form.discordWebhookSet && !form.clearDiscordWebhook && !hookTyped && (
+                <span className="note">A webhook is saved. Paste a new one to replace it.</span>
+              )}
+              {form.clearDiscordWebhook && <span className="note">The saved webhook will be removed when you save.</span>}
+              <div className="row">
+                <button type="button" className="btn" disabled={!canTestHook} onClick={() => void testWebhook()}>
+                  {hookTest.kind === "sending" ? "Sending" : "Send test message"}
+                </button>
+                {form.discordWebhookSet && (
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => {
+                      setHookTest({ kind: "idle" });
+                      patchForm({ discordWebhook: "", clearDiscordWebhook: !form.clearDiscordWebhook });
+                    }}
+                  >
+                    {form.clearDiscordWebhook ? "Keep saved webhook" : "Remove saved webhook"}
+                  </button>
+                )}
+                <span role="status" aria-live="polite" className={hookTest.kind === "fail" ? "failed" : "saved"}>
+                  {hookTest.kind === "ok" && "Test message sent. Check your Discord channel."}
+                  {hookTest.kind === "fail" && hookTest.message}
+                  {hookTest.kind === "idle" && !canTestHook && !form.discordWebhookSet && "Save a webhook to enable the test."}
+                  {hookTest.kind === "idle" && hookHint(form.discordWebhookSet, hookTyped)}
+                </span>
+              </div>
+            </div>
             {DISCORD_INVITE && (
               <div className="row spaced">
                 <a className="btn" href={DISCORD_INVITE} target="_blank" rel="noreferrer">

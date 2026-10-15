@@ -807,3 +807,10 @@ dd {
   block-size: 100%;
   background: var(--orange);
 }
+
+.prefs .field.webhook {
+  margin-block-start: 1rem;
+}
+.prefs .field.webhook input {
+  min-block-size: 2.75rem;
+}
