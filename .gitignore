@@ -34,3 +34,6 @@ data/last_run.json
 .agents/
 .claude/skills/
 skills-lock.json
+
+# Visual-companion mockups
+.superpowers/
