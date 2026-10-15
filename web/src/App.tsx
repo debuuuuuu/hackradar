@@ -1,6 +1,7 @@
 import { Link, Route, Routes, useLocation } from "react-router";
 import { signInHref, useMe } from "./lib/me.js";
 import EventDetail from "./pages/EventDetail.js";
+import ConfirmSignIn from "./pages/ConfirmSignIn.js";
 import Events from "./pages/Events.js";
 import SignIn from "./pages/SignIn.js";
 
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="/" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/signin/confirm" element={<ConfirmSignIn />} />
           <Route
             path="*"
             element={

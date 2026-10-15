@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { blindIndex, encrypt, keyFromEnv } from "./crypto.js";
-import { query } from "./db.js";
+import { query, transaction } from "./db.js";
 import { readSession } from "./session.js";
 
 const TOKEN_TTL_MS = 15 * 60_000;
@@ -17,12 +17,11 @@ export interface PublicUser {
   isAdmin: boolean;
 }
 
-/** A same-site path only: one leading "/", no "//", no backslash, no control characters. */
+/** A same-site path only: one leading "/", no "//", no backslash, printable ASCII only. */
 export function safeNext(value: string | null): string {
   if (!value || value.length > MAX_NEXT_LEN) return "/";
   if (!value.startsWith("/") || value.startsWith("//")) return "/";
-  // eslint-disable-next-line no-control-regex
-  if (value.includes("\\") || /[\u0000-\u001f\u007f]/.test(value)) return "/";
+  if (value.includes("\\") || /[^\x20-\x7e]/.test(value)) return "/";
   return value;
 }
 
@@ -37,7 +36,7 @@ const sha256 = (s: string): string => createHash("sha256").update(s).digest("hex
 
 /**
  * Creates a one-time token and mails the link. Resolves the same way for every input: unknown,
- * known, invalid, rate-limited. The throttle checks are part of the INSERT so they cannot race.
+ * known, invalid, rate-limited. Fewer than 200 tokens per hour overall, one per address per 60 s.
  */
 export async function startEmailLogin(
   email: string,
@@ -49,29 +48,52 @@ export async function startEmailLogin(
   const key = keyFromEnv();
   const emailHash = blindIndex(normalised, key);
   const token = randomBytes(32).toString("base64url");
-  const rows = await query(
-    `INSERT INTO login_tokens (email_hash, email_enc, token_hash, expires_at, created_at)
-     SELECT $1::text, $2::text, $3::text, $4::timestamptz, $5::timestamptz
-     WHERE NOT EXISTS (SELECT 1 FROM login_tokens WHERE email_hash = $1 AND created_at > $6::timestamptz)
-       AND (SELECT count(*) FROM login_tokens WHERE created_at > $7::timestamptz) <= $8
-     RETURNING id`,
-    [
-      emailHash,
-      encrypt(normalised, key),
-      sha256(token),
-      new Date(now + TOKEN_TTL_MS),
-      new Date(now),
-      new Date(now - RESEND_GAP_MS),
-      new Date(now - HOUR_MS),
-      MAX_TOKENS_PER_HOUR,
-    ],
-  );
-  if (rows.length === 0) return;
+  const tokenHash = sha256(token);
+  // A transaction-scoped advisory lock serialises every start, so the per-address and global
+  // checks below cannot be raced by parallel requests (READ COMMITTED alone would allow it).
+  const inserted = await transaction(async (q) => {
+    await q("SELECT pg_advisory_xact_lock(hashtext('login_tokens_start'))");
+    const rows = await q(
+      `INSERT INTO login_tokens (email_hash, email_enc, token_hash, expires_at, created_at)
+       SELECT $1::text, $2::text, $3::text, $4::timestamptz, $5::timestamptz
+       WHERE NOT EXISTS (SELECT 1 FROM login_tokens WHERE email_hash = $1 AND created_at > $6::timestamptz)
+         AND (SELECT count(*) FROM login_tokens WHERE created_at > $7::timestamptz) < $8
+       RETURNING id`,
+      [
+        emailHash,
+        encrypt(normalised, key),
+        tokenHash,
+        new Date(now + TOKEN_TTL_MS),
+        new Date(now),
+        new Date(now - RESEND_GAP_MS),
+        new Date(now - HOUR_MS),
+        MAX_TOKENS_PER_HOUR,
+      ],
+    );
+    return rows.length > 0;
+  });
+  if (!inserted) return;
   const link = new URL("/api/auth/email/verify", deps.origin);
   link.searchParams.set("token", token);
   const next = safeNext(deps.next ?? null);
   if (next !== "/") link.searchParams.set("next", next);
-  await deps.send(normalised, link.toString());
+  try {
+    await deps.send(normalised, link.toString());
+  } catch (e) {
+    // A failed mail must not lock the address for the next 60 s.
+    await query("DELETE FROM login_tokens WHERE token_hash = $1", [tokenHash]);
+    throw e;
+  }
+}
+
+/** True when the token exists, is unused and unexpired. Does NOT consume it (link scanners GET). */
+export async function peekEmailToken(token: string, now: number = Date.now()): Promise<boolean> {
+  if (typeof token !== "string" || token.length === 0 || token.length > 200) return false;
+  const rows = await query(
+    "SELECT 1 FROM login_tokens WHERE token_hash = $1 AND used_at IS NULL AND expires_at >= $2::timestamptz",
+    [sha256(token), new Date(now)],
+  );
+  return rows.length > 0;
 }
 
 /** Sets is_admin when the address is listed in ADMIN_EMAILS. Never clears it. */

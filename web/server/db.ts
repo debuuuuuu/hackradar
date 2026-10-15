@@ -31,6 +31,29 @@ export async function query<T = Record<string, unknown>>(text: string, params: u
   }
 }
 
+export type Q = <T = Record<string, unknown>>(text: string, params?: unknown[]) => Promise<T[]>;
+
+/** Runs fn on one connection inside BEGIN/COMMIT (ROLLBACK on error). */
+export async function transaction<R>(fn: (q: Q) => Promise<R>): Promise<R> {
+  const client = await getPool().connect();
+  try {
+    await client.query("BEGIN");
+    try {
+      // SET LOCAL inside the transaction: a transaction-mode pooler may switch backends between statements.
+      const schema = process.env.DB_SCHEMA;
+      if (schema) await client.query(`SET LOCAL search_path TO ${schema}, public`);
+      const out = await fn(async <T,>(text: string, params: unknown[] = []) => (await client.query(text, params)).rows as T[]);
+      await client.query("COMMIT");
+      return out;
+    } catch (e) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw e;
+    }
+  } finally {
+    client.release();
+  }
+}
+
 export async function closePool(): Promise<void> {
   const p = pool;
   pool = null;

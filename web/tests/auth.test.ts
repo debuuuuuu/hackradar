@@ -39,8 +39,11 @@ describe("safeNext", () => {
   it("keeps same-site paths", () => {
     expect(safeNext("/events/3")).toBe("/events/3");
     expect(safeNext("/events?q=a&b=c")).toBe("/events?q=a&b=c");
+    // percent-encoded forms are inert in a Location header and stay as given
+    expect(safeNext("/%2F%2Fevil.com")).toBe("/%2F%2Fevil.com");
+    expect(safeNext("/%5Cevil.com")).toBe("/%5Cevil.com");
   });
-  it.each(["//evil.com", "https://evil.com", "/\\evil.com", "", null, "evil.com", "/\t/evil.com", "/a\nb", "javascript:alert(1)"])(
+  it.each(["//evil.com", "https://evil.com", "/\\evil.com", "", null, "evil.com", "/\t/evil.com", "/a\nb", "javascript:alert(1)", "/events?q=日本"])(
     "rejects %j",
     (v) => expect(safeNext(v as string | null)).toBe("/"),
   );
@@ -81,15 +84,53 @@ describe("email sign-in", () => {
       expect(send).toHaveBeenCalledTimes(2);
     }));
 
-  dbIt("known and unknown addresses resolve identically", () =>
+  dbIt("known and unknown addresses behave identically (same sends, same route response)", () =>
     withSchema(async () => {
       const { send, lastToken } = fakeSend();
       await startEmailLogin("known@example.com", { send, origin: ORIGIN, now: T0 });
       await finishEmailLogin(lastToken(), T0 + 1000);
-      const known = await startEmailLogin("known@example.com", { send, origin: ORIGIN, now: T0 + 5 * MIN });
-      const unknown = await startEmailLogin("new@example.com", { send, origin: ORIGIN, now: T0 + 5 * MIN });
-      expect(known).toBeUndefined();
-      expect(unknown).toBeUndefined();
+      send.mockClear();
+      await startEmailLogin("known@example.com", { send, origin: ORIGIN, now: T0 + 5 * MIN });
+      const knownSends = send.mock.calls.length;
+      send.mockClear();
+      await startEmailLogin("new@example.com", { send, origin: ORIGIN, now: T0 + 5 * MIN });
+      expect(send.mock.calls.length).toBe(knownSends);
+      const startPost = (email: string) =>
+        route(
+          new Request(`${ORIGIN}/api/auth/email/start`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email }),
+          }),
+        );
+      const log = vi.spyOn(console, "error").mockImplementation(() => {});
+      const k = await startPost("known@example.com");
+      const u = await startPost("other@example.com");
+      log.mockRestore();
+      expect(k.status).toBe(u.status);
+      expect(await k.json()).toEqual(await u.json());
+    }));
+
+  dbIt("five parallel starts for one address send exactly once", () =>
+    withSchema(async () => {
+      const { send } = fakeSend();
+      await Promise.all(
+        Array.from({ length: 5 }, () => startEmailLogin("a@example.com", { send, origin: ORIGIN, now: T0 })),
+      );
+      expect(send).toHaveBeenCalledTimes(1);
+      expect(await query("SELECT 1 FROM login_tokens")).toHaveLength(1);
+    }));
+
+  dbIt("a failed send releases the address so it can retry immediately", () =>
+    withSchema(async () => {
+      const bad = vi.fn(async () => {
+        throw new Error("smtp down");
+      });
+      await expect(startEmailLogin("a@example.com", { send: bad, origin: ORIGIN, now: T0 })).rejects.toThrow("smtp down");
+      expect(await query("SELECT 1 FROM login_tokens")).toHaveLength(0);
+      const { send } = fakeSend();
+      await startEmailLogin("a@example.com", { send, origin: ORIGIN, now: T0 + 1000 });
+      expect(send).toHaveBeenCalledTimes(1);
     }));
 
   dbIt("an invalid address resolves without sending or storing", () =>
@@ -179,12 +220,12 @@ describe("email sign-in", () => {
       expect((await admins()).sort()).toEqual([boss!.uid, plain!.uid].sort());
     }));
 
-  dbIt("sends nothing once more than 200 tokens were created in the last hour", () =>
+  dbIt("sends nothing once 200 tokens were created in the last hour", () =>
     withSchema(async () => {
       const { send } = fakeSend();
       await query(
         `INSERT INTO login_tokens (email_hash, token_hash, expires_at, created_at)
-         SELECT 'h' || g, 't' || g, $1::timestamptz, $2::timestamptz FROM generate_series(1, 201) g`,
+         SELECT 'h' || g, 't' || g, $1::timestamptz, $2::timestamptz FROM generate_series(1, 200) g`,
         [new Date(T0 + 15 * MIN), new Date(T0 - 5 * MIN)],
       );
       await expect(startEmailLogin("a@example.com", { send, origin: ORIGIN, now: T0 })).resolves.toBeUndefined();
@@ -230,41 +271,99 @@ describe("auth routes", () => {
       log.mockRestore();
     }));
 
-  it("verify: only GET", async () => {
-    const res = await route(new Request(`${ORIGIN}/api/auth/email/verify?token=x`, { method: "POST" }));
-    expect(res.status).toBe(404);
-  });
-  it("verify: a bad token redirects to /signin?error=expired with no-store", async () => {
-    const res = await route(new Request(`${ORIGIN}/api/auth/email/verify?token=`));
+  const verifyPost = (body: unknown, headers: Record<string, string> = { "content-type": "application/json" }) =>
+    post("/api/auth/email/verify", typeof body === "string" ? body : JSON.stringify(body), headers);
+  const getVerify = (token: string, next?: string) =>
+    route(
+      new Request(`${ORIGIN}/api/auth/email/verify?token=${token}${next ? `&next=${encodeURIComponent(next)}` : ""}`),
+    );
+
+  it("verify GET: a bad token redirects to /signin?error=expired with no-store", async () => {
+    const res = await getVerify("");
     expect(res.status).toBe(302);
     expect(res.headers.get("location")).toBe("/signin?error=expired");
     expect(res.headers.get("cache-control")).toBe("no-store");
     expect(res.headers.get("set-cookie")).toBeNull();
   });
-  dbIt("verify: sets the session cookie and redirects to safeNext(next)", () =>
+  it("verify: other methods are not routed", async () => {
+    const res = await route(new Request(`${ORIGIN}/api/auth/email/verify?token=x`, { method: "DELETE" }));
+    expect(res.status).toBe(404);
+  });
+  dbIt("verify GET only validates: redirects to the confirm page and leaves the token usable", () =>
     withSchema(async () => {
       const { send, lastToken } = fakeSend();
       await startEmailLogin("a@example.com", { send, origin: ORIGIN });
       const t = lastToken();
-      const url = `${ORIGIN}/api/auth/email/verify?token=${t}&next=${encodeURIComponent("//evil.com")}`;
-      const res = await route(new Request(url));
-      expect(res.status).toBe(302);
-      expect(res.headers.get("location")).toBe("/");
-      expect(res.headers.get("cache-control")).toBe("no-store");
-      const cookie = res.headers.get("set-cookie")!;
-      expect(cookie).toMatch(/^hr_session=/);
-      expect(readSession(cookie.split(";")[0], process.env.SESSION_SECRET!)).not.toBeNull();
-      // the link is single use
-      const again = await route(new Request(`${ORIGIN}/api/auth/email/verify?token=${t}`));
-      expect(again.headers.get("location")).toBe("/signin?error=expired");
+      for (let i = 0; i < 2; i++) {
+        const res = await getVerify(t, "/events/3");
+        expect(res.status).toBe(302);
+        expect(res.headers.get("location")).toBe(`/signin/confirm?token=${t}&next=${encodeURIComponent("/events/3")}`);
+        expect(res.headers.get("cache-control")).toBe("no-store");
+        expect(res.headers.get("set-cookie")).toBeNull();
+      }
+      expect(await query("SELECT 1 FROM logins")).toHaveLength(0);
+      expect(await query("SELECT 1 FROM users")).toHaveLength(0);
+      const evil = await getVerify(t, "//evil.com");
+      expect(evil.headers.get("location")).toBe(`/signin/confirm?token=${t}&next=%2F`);
+      expect(await finishEmailLogin(t)).not.toBeNull(); // still usable afterwards
     }));
-  dbIt("verify: keeps a safe next", () =>
+  dbIt("verify POST: consumes once, sets a hardened cookie, records one login, returns next", () =>
     withSchema(async () => {
       const { send, lastToken } = fakeSend();
       await startEmailLogin("a@example.com", { send, origin: ORIGIN });
-      const res = await route(new Request(`${ORIGIN}/api/auth/email/verify?token=${lastToken()}&next=%2Fevents%2F3`));
-      expect(res.headers.get("location")).toBe("/events/3");
+      const t = lastToken();
+      const res = await verifyPost({ token: t, next: "/events/3" });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true, next: "/events/3" });
+      const cookie = res.headers.get("set-cookie")!;
+      expect(cookie).toMatch(/^hr_session=/);
+      for (const attr of ["HttpOnly", "Secure", "SameSite=Lax"]) expect(cookie).toContain(attr);
+      expect(readSession(cookie.split(";")[0], process.env.SESSION_SECRET!)).not.toBeNull();
+      expect(await query("SELECT method FROM logins")).toEqual([{ method: "email" }]);
+      const again = await verifyPost({ token: t });
+      expect(again.status).toBe(400);
+      expect(await again.json()).toEqual({ ok: false });
+      expect(again.headers.get("set-cookie")).toBeNull();
+      expect(await query("SELECT 1 FROM logins")).toHaveLength(1);
     }));
+  dbIt("verify POST: //evil.com and non-ASCII next become /", () =>
+    withSchema(async () => {
+      const { send, lastToken } = fakeSend();
+      await startEmailLogin("a@example.com", { send, origin: ORIGIN });
+      const r1 = await verifyPost({ token: lastToken(), next: "//evil.com" });
+      expect(await r1.json()).toEqual({ ok: true, next: "/" });
+      await startEmailLogin("b@example.com", { send, origin: ORIGIN });
+      const r2 = await verifyPost({ token: lastToken(), next: "/events?q=日本" });
+      expect(await r2.json()).toEqual({ ok: true, next: "/" });
+    }));
+  dbIt("verify POST: an expired token fails", () =>
+    withSchema(async () => {
+      const { send, lastToken } = fakeSend();
+      await startEmailLogin("a@example.com", { send, origin: ORIGIN, now: Date.now() - 20 * MIN });
+      const res = await verifyPost({ token: lastToken() });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ ok: false });
+    }));
+  dbIt("verify POST: a missing SESSION_SECRET fails without consuming the token", () =>
+    withSchema(async () => {
+      const { send, lastToken } = fakeSend();
+      await startEmailLogin("a@example.com", { send, origin: ORIGIN });
+      const t = lastToken();
+      const secret = process.env.SESSION_SECRET;
+      delete process.env.SESSION_SECRET;
+      const log = vi.spyOn(console, "error").mockImplementation(() => {});
+      const res = await verifyPost({ token: t });
+      log.mockRestore();
+      process.env.SESSION_SECRET = secret;
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ ok: false });
+      expect((await getVerify(t)).headers.get("location")).toMatch(/^\/signin\/confirm/);
+      expect(await finishEmailLogin(t)).not.toBeNull();
+    }));
+  it("verify POST: 415 without JSON, 400 on a bad body", async () => {
+    expect((await verifyPost({ token: "x" }, { "content-type": "text/plain" })).status).toBe(415);
+    expect((await verifyPost("{")).status).toBe(400);
+  });
 
   it("me: 401 without a cookie", async () => {
     const res = await route(new Request(`${ORIGIN}/api/me`));

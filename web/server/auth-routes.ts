@@ -1,4 +1,5 @@
-import { finishEmailLogin, findUser, normaliseEmail, safeNext, sessionFromRequest, sessionSecret, startEmailLogin } from "./auth.js";
+import { finishEmailLogin, findUser, normaliseEmail, peekEmailToken, safeNext, sessionFromRequest, sessionSecret, startEmailLogin } from "./auth.js";
+import { keyFromEnv } from "./crypto.js";
 import { addRoute, error, json } from "./http.js";
 import { sendLoginEmail } from "./mail.js";
 import { clearSessionCookie, sessionCookie, signSession } from "./session.js";
@@ -37,6 +38,13 @@ function originFor(url: URL): string {
   return url.origin;
 }
 
+/** Error class name plus its short machine `code` (e.g. EAUTH); never the message. */
+function errTag(e: unknown): string {
+  if (!(e instanceof Error)) return "unknown";
+  const code = (e as { code?: unknown }).code;
+  return typeof code === "string" && /^[A-Za-z0-9_]{1,32}$/.test(code) ? `${e.name} ${code}` : e.name;
+}
+
 const redirect = (location: string, headers: Record<string, string> = {}): Response =>
   new Response(null, { status: 302, headers: { location, "cache-control": "no-store", ...headers } });
 
@@ -51,22 +59,41 @@ export function registerAuthRoutes(): void {
       await startEmailLogin(email, { send: sendLoginEmail, origin: originFor(url), next });
     } catch (e) {
       // Same response whatever happened; log the class only (messages can carry addresses).
-      console.error("email sign-in start failed:", e instanceof Error ? e.name : "unknown");
+      console.error("email sign-in start failed:", errTag(e));
     }
     return json({ ok: true });
   });
 
+  // GET only checks the token: mail scanners prefetch links, so it must stay usable until confirmed.
   addRoute("GET", "/api/auth/email/verify", async (_request, _params, url) => {
     const token = url.searchParams.get("token") ?? "";
-    let result: { uid: number } | null = null;
+    let valid = false;
     try {
-      result = await finishEmailLogin(token);
+      valid = await peekEmailToken(token);
     } catch (e) {
-      console.error("email sign-in verify failed:", e instanceof Error ? e.name : "unknown");
+      console.error("email sign-in check failed:", errTag(e));
     }
-    if (!result) return redirect("/signin?error=expired");
-    const cookie = sessionCookie(signSession({ uid: result.uid }, sessionSecret()));
-    return redirect(safeNext(url.searchParams.get("next")), { "set-cookie": cookie });
+    if (!valid) return redirect("/signin?error=expired");
+    const next = safeNext(url.searchParams.get("next"));
+    return redirect(`/signin/confirm?token=${encodeURIComponent(token)}&next=${encodeURIComponent(next)}`);
+  });
+
+  addRoute("POST", "/api/auth/email/verify", async (request) => {
+    const failed = () => json({ ok: false }, { status: 400 });
+    const body = await readBody(request);
+    if (body instanceof Response) return body.status === 415 ? body : failed();
+    try {
+      const token = typeof body.token === "string" ? body.token : "";
+      const secret = sessionSecret(); // read before the token is consumed
+      keyFromEnv();
+      const result = await finishEmailLogin(token);
+      if (!result) return failed();
+      const cookie = sessionCookie(signSession({ uid: result.uid }, secret));
+      return json({ ok: true, next: safeNext(typeof body.next === "string" ? body.next : null) }, { headers: { "set-cookie": cookie } });
+    } catch (e) {
+      console.error("email sign-in verify failed:", errTag(e));
+      return failed();
+    }
   });
 
   addRoute("POST", "/api/auth/logout", async (request) => {
