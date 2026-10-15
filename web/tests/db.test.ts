@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { closePool, query } from "../server/db.js";
+import { describe, expect, it, vi } from "vitest";
+import { closePool, getPool, query } from "../server/db.js";
 import { dbIt, withSchema } from "./helpers.js";
 
 const COUNT = "SELECT count(*)::int AS n FROM pg_tables WHERE schemaname = $1 AND tablename = 'scratch'";
@@ -23,6 +23,19 @@ describe("db", () => {
     expect(process.env.DB_SCHEMA).toBeUndefined();
     process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
     expect((await query<{ n: number }>(COUNT, [schema]))[0].n).toBe(0);
+    await closePool();
+    delete process.env.DATABASE_URL;
+  });
+
+  it("an idle pool error is logged generically and does not throw", async () => {
+    process.env.DATABASE_URL = "postgres://u:topsecret@localhost:1/db";
+    await closePool();
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const pool = getPool();
+    expect(() => pool.emit("error", new Error("connect postgres://u:topsecret@h/db"))).not.toThrow();
+    expect(log).toHaveBeenCalled();
+    expect(JSON.stringify(log.mock.calls)).not.toContain("topsecret");
+    log.mockRestore();
     await closePool();
     delete process.env.DATABASE_URL;
   });

@@ -2,7 +2,7 @@ import pg from "pg";
 
 let pool: pg.Pool | null = null;
 
-function getPool(): pg.Pool {
+export function getPool(): pg.Pool {
   if (pool) return pool;
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error("DATABASE_URL is not set");
@@ -12,6 +12,8 @@ function getPool(): pg.Pool {
     connectionString,
     max: 3,
   });
+  // An idle client dropping must not crash the process; log a generic line only (never the connection string).
+  pool.on("error", () => console.error("db: idle pool client error"));
   return pool;
 }
 
