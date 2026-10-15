@@ -6,8 +6,7 @@ export function getPool(): pg.Pool {
   if (pool) return pool;
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error("DATABASE_URL is not set");
-  const schema = process.env.DB_SCHEMA;
-  if (schema !== undefined && !/^[a-z0-9_]+$/.test(schema)) throw new Error("invalid DB_SCHEMA");
+  activeSchema();
   pool = new pg.Pool({
     connectionString,
     max: 3,
@@ -17,30 +16,35 @@ export function getPool(): pg.Pool {
   return pool;
 }
 
+const SCHEMA_RE = /^[a-z0-9_]+$/;
+
+/** DB_SCHEMA (test isolation only), validated on every use; undefined in production. */
+function activeSchema(): string | undefined {
+  const schema = process.env.DB_SCHEMA;
+  if (!schema) return undefined;
+  if (!SCHEMA_RE.test(schema)) throw new Error("invalid DB_SCHEMA");
+  return schema;
+}
+
 export async function query<T = Record<string, unknown>>(text: string, params: unknown[] = []): Promise<T[]> {
   const p = getPool();
-  const schema = process.env.DB_SCHEMA;
-  if (!schema) return (await p.query(text, params)).rows as T[];
-  // Neon's pooled endpoint rejects the startup `options` parameter, so set search_path per checkout.
-  const client = await p.connect();
-  try {
-    await client.query(`SET search_path TO ${schema}, public`);
-    return (await client.query(text, params)).rows as T[];
-  } finally {
-    client.release();
-  }
+  // Validate before any SQL is sent.
+  if (!activeSchema()) return (await p.query(text, params)).rows as T[];
+  // Neon's pooled endpoint is a transaction-mode pooler: a separate SET and statement can land on different
+  // backends (and hit `public`). In DB_SCHEMA mode run SET LOCAL + statement as one transaction.
+  return transaction((q) => q<T>(text, params));
 }
 
 export type Q = <T = Record<string, unknown>>(text: string, params?: unknown[]) => Promise<T[]>;
 
 /** Runs fn on one connection inside BEGIN/COMMIT (ROLLBACK on error). */
 export async function transaction<R>(fn: (q: Q) => Promise<R>): Promise<R> {
+  const schema = activeSchema();
   const client = await getPool().connect();
   try {
     await client.query("BEGIN");
     try {
       // SET LOCAL inside the transaction: a transaction-mode pooler may switch backends between statements.
-      const schema = process.env.DB_SCHEMA;
       if (schema) await client.query(`SET LOCAL search_path TO ${schema}, public`);
       const out = await fn(async <T,>(text: string, params: unknown[] = []) => (await client.query(text, params)).rows as T[]);
       await client.query("COMMIT");
