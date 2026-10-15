@@ -80,6 +80,13 @@ def parse_date_range(text: str) -> tuple[date, date] | None:
     return date(y1, m1, int(m["d1"])), end
 
 
+def team_size_text(lo: int | None, hi: int | None) -> str | None:
+    """'2-4', '3' or None."""
+    if not lo and not hi:
+        return None
+    return str(lo or hi) if lo == hi or not hi else f"{lo or 1}-{hi}"
+
+
 def clean_prize(html: str | None) -> str | None:
     """'$<span data-currency-value>138,000</span>' -> '$138,000'. Zero or empty -> None."""
     if not html:

@@ -21,8 +21,8 @@ log = logging.getLogger(__name__)
 
 _PENDING = """
     SELECT e.id, e.title, e.organizer, e.themes,
-           (SELECT raw_json->>'details' FROM event_sources WHERE event_id = e.id
-             ORDER BY first_seen_at LIMIT 1)
+           (SELECT COALESCE(raw_json->>'details', raw_json->>'desc') FROM event_sources
+             WHERE event_id = e.id ORDER BY first_seen_at LIMIT 1)
       FROM events e
      WHERE e.status = 'open' AND e.summary IS NULL
      ORDER BY COALESCE(e.reg_deadline, e.submission_deadline, e.end_date) NULLS LAST, e.id

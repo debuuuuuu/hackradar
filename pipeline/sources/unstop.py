@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from pipeline.normalize import EventRecord
+from pipeline.normalize import EventRecord, team_size_text
 from pipeline.sources.base import PoliteClient, Source
 
 log = logging.getLogger(__name__)
@@ -74,7 +74,7 @@ def parse(item: dict[str, Any]) -> EventRecord:
         prize_text=prize_total(item.get("prizes") or ()),
         themes=tuple(dict.fromkeys(themes)),  # dedupe, keep order
         eligibility=", ".join(eligible) or None,
-        team_size=_team_size(regn.get("min_team_size"), regn.get("max_team_size")),
+        team_size=team_size_text(regn.get("min_team_size"), regn.get("max_team_size")),
         entry_fee=entry_fee(item),
         registrations=item.get("registerCount"),
         raw=item,
@@ -100,12 +100,6 @@ def prize_total(prizes) -> str | None:
             symbol = CURRENCY.get(p.get("currency"), "")
             totals[symbol] = totals.get(symbol, 0) + int(p["cash"])
     return " + ".join(f"{sym}{amount:,}" for sym, amount in totals.items()) or None
-
-
-def _team_size(lo: int | None, hi: int | None) -> str | None:
-    if not lo and not hi:
-        return None
-    return str(lo or hi) if lo == hi or not hi else f"{lo or 1}-{hi}"
 
 
 def _ts(value: str | None) -> datetime | None:

@@ -73,7 +73,13 @@ per-source on/off flag in `config/sources.yaml` · fixture test from a saved rea
 - **robots.txt:** devfolio.co and api.devfolio.co allow all (verified 2026-10-15). Terms silent on automation.
 - **Fields:** name, slug, starts_at, ends_at, is_online, city/state/country, themes, prizes, team_min/team_size,
   participants_count, verified, devfolio_official, `hackathon_setting.reg_ends_at` (**registration deadline**).
-- **Drop from raw:** `hackathon_setting.contact_email`. **Fixture:** todo.
+- **Built 2026-10-15** (`pipeline/sources/devfolio.py`, fixture `tests/fixtures/devfolio/hackathons.json`, 4 real events).
+- **Mapping:** `uuid` → source_id; URL `https://<hackathon_setting.subdomain>.devfolio.co/` (verified 200 on 2 events);
+  `reg_ends_at` → `reg_deadline`; `starts_at`/`ends_at` → start/end (UTC → shown in IST); `is_online` → mode;
+  city falls back to state (Goa); `participants_count` → registrations; `desc` is the text sent to AI enrichment.
+- **Not in the listing:** organiser, prizes, entry fee. So organiser/prize stay empty and the "no organiser" digest flag is
+  skipped for Devfolio. `hackathon_setting.paid` (true on 2 of 14) is **unverified** as "entry fee", so not mapped.
+- **Dropped from raw:** `hackathon_setting.contact_email`.
 - Details: research/2026-10-15-phase2-sources.md
 
 ### MLH — Phase 2 (endpoint verified 2026-10-15)

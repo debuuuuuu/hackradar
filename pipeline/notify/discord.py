@@ -77,7 +77,7 @@ def trust_flags(item: DigestItem) -> list[str]:
         flags.append(f"💰 {fee}")
     if item.invite_only:
         flags.append("🔒 invite-only")
-    if not item.organizer:
+    if not item.organizer and item.source != "devfolio":  # its listing has no organiser field
         flags.append("⚠️ no organiser listed")
     if item.dates_suspect:
         flags.append("⚠️ dates look inconsistent, check the page")

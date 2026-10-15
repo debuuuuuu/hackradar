@@ -69,7 +69,7 @@ CI (ruff, black, pytest) green on `main`.
 | Scheduler | GitHub Actions cron `17 23 * * *` UTC (04:47 IST) + `workflow_dispatch` | Runs often 30–60 min late → digest lands ~5 AM IST |
 | Keepalive | Daily commit of `last_run.json` to a `status` branch | Unverified that a non-default-branch commit counts; test in Phase 0 |
 | Pipeline | Python 3.12 via `uv` (D-025), `psycopg` 3, `httpx`, `selectolax`/BeautifulSoup | Playwright only if unavoidable |
-| Sources | Devpost ✅, Unstop ✅ (`/api/public/*`), Devfolio, MLH | Next: Hack2Skill; later DoraHacks, HackerEarth |
+| Sources | Devpost ✅, Unstop ✅ (`/api/public/*`), Devfolio ✅ (2026-10-15), MLH | Next: Hack2Skill; later DoraHacks, HackerEarth |
 | LinkedIn/X discovery | Tavily (1,000 credits/mo) | Exa via Agent Reach → Serper (2,500 one-time) |
 | Page reading | Jina Reader (via Agent Reach) | Agent Reach login channels OFF |
 | AI batch | Gemini Flash / Flash-Lite, 10–15 events/call | Groq |

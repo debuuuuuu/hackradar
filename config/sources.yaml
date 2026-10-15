@@ -5,7 +5,7 @@ devpost:
 unstop:
   enabled: true    # Phase 1
 devfolio:
-  enabled: false   # Phase 2
+  enabled: true    # Phase 2
 mlh:
   enabled: false   # Phase 2
 hack2skill:
