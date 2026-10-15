@@ -19,3 +19,4 @@ One file per finding/investigation: `YYYY-MM-DD-<topic>.md`. Newest first.
 | 2026-10-15 | [ai-chat-prefill-links](2026-10-15-ai-chat-prefill-links.md) | ChatGPT `?q=` reported to prefill, Claude `new?q=` unverified; copy-prompt fallback; prompt-injection wrapping |
 | 2026-10-15 | [linkedin-search-test](2026-10-15-linkedin-search-test.md) | LinkedIn search returns mostly finished events; future-date-only rule for discovery |
 | 2026-10-15 | [groq](2026-10-15-groq.md) | Groq models, no embeddings, free limits unverified |
+| 2026-10-15 | [secret-scan](2026-10-15-secret-scan.md) | gitleaks over 52 commits: no leaks; manual pattern hits were placeholders |
