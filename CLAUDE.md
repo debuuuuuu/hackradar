@@ -67,4 +67,5 @@ uv run python -m pipeline.run             # run the daily pipeline locally (read
 uv run pytest -q                          # tests (DB tests skip unless TEST_DATABASE_URL is set; CI has a pgvector service; they use a throwaway schema)
 uv run ruff check . && uv run black --check .   # lint
 gh workflow run daily.yml && gh run watch # trigger the daily job manually
+cd web && npm test                        # web tests: needs TEST_DATABASE_URL; run in an isolated schema, a leak guard checks public tables
 ```

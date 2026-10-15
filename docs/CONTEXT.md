@@ -16,6 +16,7 @@ _Last updated: 2026-10-15_
   daily.yml`, the Discord channel, the `runs` table. Fix anything flaky. Then Phase 2 (ROADMAP).
 - **Blockers for Phase 2 (Debjit):** Groq API key (console.groq.com; if it asks for a card, stop) and Gmail app password → `.env`; Claude
   copies them to GitHub Secrets with `gh secret set` (never pasted in chat).
+- **Web platform:** plan [superpowers/plans/2026-10-15-web-platform.md](superpowers/plans/2026-10-15-web-platform.md), spec [superpowers/specs/2026-10-15-user-onboarding-design.md](superpowers/specs/2026-10-15-user-onboarding-design.md) (D-039). Run its tests: `cd web && npm test` (needs `TEST_DATABASE_URL`).
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
 
 ## 2. Project summary
@@ -61,6 +62,8 @@ Friends and college peers can join with their own filters, saves and reminders. 
 Unstop (robots-checked, polite), batch-upserts into `events`/`event_sources`, closes past events, writes a `runs` row and
 `data/last_run.json` → keepalive commit to `status` branch. Builds and sends the Discord digest (webhook live since 2026-10-15).
 CI (ruff, black, pytest) green on `main`.
+
+**Web platform (branch `feat/web-platform`, in `web/`; D-039):** Vite + React site on the Vercel project `hackradar` (deployment protection currently on). Events list; event page with Ask ChatGPT / Ask Claude links; email sign-in with a confirm step; Discord sign-in (disabled until `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` are set); onboarding and settings; owner-only analytics at `/admin`. CI has a second job `web` (npm ci, test, build, tsc). Env var names: `DATABASE_URL`, `SESSION_SECRET`, `ENCRYPTION_KEY`, `SMTP_USER`, `SMTP_APP_PASSWORD`, `ADMIN_EMAILS`, `SITE_URL`, `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `VITE_DISCORD_INVITE_URL` (optional). Production smoke test not yet done (plan Task 8).
 
 ## 4. Stack at a glance
 
@@ -164,6 +167,8 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 | [SETUP.md](SETUP.md) | One-time account/key setup and where each secret goes |
 | [specs/features.md](specs/features.md) | Digest, saves/status, reminders, learning, commands, dashboard, multi-user |
 | [specs/sources.md](specs/sources.md) | Each source: endpoint, method, robots.txt, fields, quirks |
+| [superpowers/plans/2026-10-15-web-platform.md](superpowers/plans/2026-10-15-web-platform.md) | Web platform implementation plan |
+| [superpowers/specs/2026-10-15-user-onboarding-design.md](superpowers/specs/2026-10-15-user-onboarding-design.md) | Web onboarding and sign-in design |
 | [research/README.md](research/README.md) | Index of research notes |
 | [sessions/README.md](sessions/README.md) | Index of session logs |
 

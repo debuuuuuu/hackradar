@@ -303,3 +303,10 @@ Format: date · decision · why · alternatives rejected · status.
 - **Alternatives:** OSM Nominatim (needs policy research, cache, network at runtime); GeoNames file (download server forbids bots; manual one-off).
 - **Known limits:** coordinates are from memory, accurate to a few km, unverified against a geocoder; hybrid events far away are hidden even though they may allow remote joining; friends with other home cities need those cities in the table.
 - **Status:** active
+
+### D-039 · Web platform architecture (Vite + React site, one Vercel function)
+- **Date:** 2026-10-15
+- **Decision:** Site in `web/` (Vite + React). One Vercel function `web/api/index.ts` with an internal router. Neon Postgres via node-postgres. Sign-in by emailed confirm link (confirm step before the session is created) or Discord OAuth. Sessions are signed cookies. Contact details are AES-GCM encrypted, with a blind index for email lookup. Email is read-only in settings when it is the sign-in identity. Accounts are not merged across Discord and email in v1. Owner analytics at `/admin` come from our own tables (users, sign-ins). Vercel Web Analytics is not used (free limits unverified).
+- **Why:** One function keeps the free-tier function count low and shares DB/session code; signed cookies need no session table; encryption plus blind index protects contact data (D-024) while allowing lookup; own-table analytics avoids an unverified external limit.
+- **Alternatives:** Next.js (heavier than needed); one function per route; Neon Auth or a third-party auth provider; Vercel Web Analytics; merging Discord and email accounts (deferred).
+- **Status:** active
