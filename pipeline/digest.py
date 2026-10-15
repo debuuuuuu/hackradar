@@ -15,6 +15,10 @@ log = logging.getLogger(__name__)
 
 # The date that matters for joining: registration deadline first, then submission, then end.
 DEADLINE_SQL = "COALESCE(e.reg_deadline, e.submission_deadline, e.end_date)"
+# New events closing soon are listed only under "closing", never twice.
+NEW_WHERE = f" AND e.first_seen_at > %s AND ({DEADLINE_SQL} IS NULL OR {DEADLINE_SQL} >= %s)"
+CLOSING_WHERE = f" AND {DEADLINE_SQL} >= %s AND {DEADLINE_SQL} < %s"
+ORDER = f" ORDER BY {DEADLINE_SQL} NULLS LAST, e.id"
 
 
 @dataclass(frozen=True)
@@ -102,13 +106,8 @@ def build(conn: psycopg.Connection, since: datetime | None, now: datetime) -> Di
     in_range = " AND (e.mode = 'online' OR e.mode IS NULL OR COALESCE(e.city = ANY(%s), false))"
     too_far = " AND e.mode IN ('offline', 'hybrid') AND NOT COALESCE(e.city = ANY(%s), false)"
 
-    # New events closing soon are listed only under "closing", never twice.
-    new_where = f" AND e.first_seen_at > %s AND ({DEADLINE_SQL} IS NULL OR {DEADLINE_SQL} >= %s)"
-    closing_where = f" AND {DEADLINE_SQL} >= %s AND {DEADLINE_SQL} < %s"
-    order = f" ORDER BY {DEADLINE_SQL} NULLS LAST, e.id"
-
     def items(where: str, params: tuple) -> list[DigestItem]:
-        rows = conn.execute(_SELECT + where + order + " LIMIT %s", (*params, limit)).fetchall()
+        rows = conn.execute(_SELECT + where + ORDER + " LIMIT %s", (*params, limit)).fetchall()
         return [DigestItem(*r[:-1], tuple(r[-1])) for r in rows]
 
     def count(where: str, params: tuple) -> int:
@@ -121,12 +120,12 @@ def build(conn: psycopg.Connection, since: datetime | None, now: datetime) -> Di
             return kind + where, params
         return kind + in_range + where, (near, *params)
 
-    new_q = placed(hack, new_where, (since, soon))
-    closing_q = placed(hack, closing_where, (today, soon))
+    new_q = placed(hack, NEW_WHERE, (since, soon))
+    closing_q = placed(hack, CLOSING_WHERE, (today, soon))
     contests: list[DigestItem] = []
     contests_total = 0
     if cfg.get("show_contests", True):
-        contests_q = placed(other, new_where, (since, soon))
+        contests_q = placed(other, NEW_WHERE, (since, soon))
         contests, contests_total = items(*contests_q), count(*contests_q)
     return Digest(
         day=today.date().isoformat(),
