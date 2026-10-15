@@ -1,3 +1,7 @@
+import { Link, Route, Routes } from "react-router";
+import EventDetail from "./pages/EventDetail.js";
+import Events from "./pages/Events.js";
+
 export default function App() {
   return (
     <div className="wrap">
@@ -17,11 +21,23 @@ export default function App() {
           <path d="M17 20 L25 9" />
           <circle cx="17" cy="20" r="2.6" fill="#F2602A" />
         </svg>
-        HackRadar
+        <Link to="/" className="brand">
+          HackRadar
+        </Link>
       </header>
       <main>
-        <h1>Hackathons, found for you</h1>
-        <p className="lead">The event list is on its way.</p>
+        <Routes>
+          <Route path="/" element={<Events />} />
+          <Route path="/events/:id" element={<EventDetail />} />
+          <Route
+            path="*"
+            element={
+              <p>
+                Page not found. <Link to="/">All events</Link>
+              </p>
+            }
+          />
+        </Routes>
       </main>
     </div>
   );
