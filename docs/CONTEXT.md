@@ -4,6 +4,9 @@ _Last updated: 2026-10-15_
 
 ## 1. Resume here
 
+**Where docs live:** all in `docs/`. At session start read this file, then the **newest file in
+[`sessions/`](sessions/README.md)** (last session's done/problems/next steps), then only the sub-docs the task needs (index in §7).
+
 - **Phase:** 1 · MVP digest, in progress. Phase 0 gate passed 2026-10-14.
 - **Just finished (2026-10-15):** digest now shows AI summaries and a separate "Contests & other" section (kind filter, 52 tests); first live Discord digest; "new" cutoff fix; trust signals (D-031); batched
   upserts (run 155 s → 15 s); calendar plan (D-032); Luma via ICS (D-033); place filter (D-034); dashboard design
