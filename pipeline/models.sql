@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS users (
     email_enc           text,
     callmebot_phone_enc text,
     callmebot_key_enc   text,
+    discord_webhook_enc text,
     channels            text[]      NOT NULL DEFAULT '{discord}'
                         CHECK (channels <@ ARRAY['discord', 'email', 'whatsapp']),
     digest_enabled      boolean     NOT NULL DEFAULT true,
@@ -170,4 +171,14 @@ CREATE TABLE IF NOT EXISTS places (
     name text,
     lat  float8,
     lon  float8
+);
+
+-- Send-once ledger for per-user messages (migration 0007).
+CREATE TABLE IF NOT EXISTS sends (
+    user_id  bigint      NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    ist_date date        NOT NULL,
+    channel  text        NOT NULL CHECK (channel IN ('discord', 'email', 'whatsapp')),
+    status   text        NOT NULL CHECK (status IN ('sent', 'failed', 'skipped')),
+    sent_at  timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, ist_date, channel)
 );
