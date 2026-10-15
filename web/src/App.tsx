@@ -1,8 +1,12 @@
-import { Link, Route, Routes } from "react-router";
+import { Link, Route, Routes, useLocation } from "react-router";
+import { signInHref, useMe } from "./lib/me.js";
 import EventDetail from "./pages/EventDetail.js";
 import Events from "./pages/Events.js";
+import SignIn from "./pages/SignIn.js";
 
 export default function App() {
+  const { state, signOut } = useMe();
+  const loc = useLocation();
   return (
     <div className="wrap">
       <header>
@@ -24,11 +28,27 @@ export default function App() {
         <Link to="/" className="brand">
           HackRadar
         </Link>
+        <nav className="who" aria-label="Account">
+          {state.status === "in" && (
+            <>
+              <span>{state.me.name}</span>
+              <button type="button" className="btn" onClick={() => void signOut()}>
+                Sign out
+              </button>
+            </>
+          )}
+          {state.status === "out" && (
+            <Link to={signInHref(loc.pathname, loc.search)} className="btn">
+              Sign in
+            </Link>
+          )}
+        </nav>
       </header>
       <main>
         <Routes>
           <Route path="/" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
+          <Route path="/signin" element={<SignIn />} />
           <Route
             path="*"
             element={

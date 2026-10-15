@@ -328,3 +328,31 @@ dd {
   white-space: pre-wrap;
   color: oklch(30% 0.02 265);
 }
+
+/* ---- account ---- */
+.who {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: "Archivo", "Helvetica Neue", sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: normal;
+}
+.signin {
+  max-inline-size: 32rem;
+}
+.signin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+.notice {
+  margin-block: 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 0.625rem;
+  background: var(--peach);
+}
