@@ -11,10 +11,11 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from pipeline import config, db, dedupe, digest, enrich, place
+from pipeline import config, crypto, db, dedupe, digest, enrich, place, user_digest
 from pipeline.normalize import IST, ist_day_start
 from pipeline.notify import discord
 from pipeline.notify.webhook_url import guard_http_logs
+from pipeline.notify.whatsapp import WhatsAppSender, short_text
 from pipeline.sources.base import PoliteClient, Source
 from pipeline.sources.devfolio import Devfolio
 from pipeline.sources.devpost import Devpost
@@ -107,6 +108,38 @@ def send_digest(conn, run_id: int, errors: list[str]) -> int:
     return 1
 
 
+def send_user_digests(conn, errors: list[str]) -> int:
+    """Per-user digests (Discord webhook, WhatsApp). Skipped without ENCRYPTION_KEY; never fatal."""
+    if not os.environ.get("ENCRYPTION_KEY"):
+        log.warning("ENCRYPTION_KEY not set; per-user digests skipped")
+        return 0
+    key = crypto.key_from_env()
+    wa = WhatsAppSender()
+    site = os.environ.get("SITE_URL", "")
+
+    def to_discord(r, d) -> None:
+        discord.send(crypto.decrypt(r.discord_webhook_enc, key), discord.render(d))
+
+    def to_whatsapp(r, d) -> None:
+        wa.send_text(
+            crypto.decrypt(r.callmebot_phone_enc, key),
+            crypto.decrypt(r.callmebot_key_enc, key),
+            short_text(d, site),
+        )
+
+    try:
+        s = user_digest.run_user_digests(
+            conn, datetime.now(UTC), {"discord": to_discord, "whatsapp": to_whatsapp}
+        )
+    except Exception as e:
+        log.exception("user digests failed")
+        errors.append(f"user digests: {type(e).__name__}")
+        return 0
+    if s.failed:
+        errors.append(f"user digests: {s.failed} failed")
+    return s.sent
+
+
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     load_dotenv()
@@ -121,6 +154,7 @@ def main() -> int:
             source_counts, errors = fetch_and_store(conn)
             enrich.enrich_safely(conn, errors)
             sent = send_digest(conn, run_id, errors)
+            sent += send_user_digests(conn, errors)
             status = "partial" if errors else "success"
             db.finish_run(conn, run_id, status, source_counts, errors, sent)
         log.info("run %s finished: %s", run_id, status)

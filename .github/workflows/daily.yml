@@ -29,6 +29,8 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+          SITE_URL: ${{ secrets.SITE_URL }}
 
       # Runs even if the pipeline failed, so the schedule stays alive.
       - name: Keepalive commit to status branch
