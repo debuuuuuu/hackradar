@@ -29,3 +29,8 @@ Thumbs.db
 
 # Pipeline output (lives on the status branch, D-023)
 data/last_run.json
+
+# Third-party agent skills installed locally (not part of HackRadar)
+.agents/
+.claude/skills/
+skills-lock.json

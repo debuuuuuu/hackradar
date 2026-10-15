@@ -114,3 +114,8 @@ def test_listed_on_several_platforms_badge():
         "✅ listed on devpost + unstop"
     ]
     assert discord.trust_flags(item(platforms=("unstop",))) == []
+
+
+def test_url_cannot_break_the_markdown_link():
+    line = discord.format_item(item(url="https://x.com/a (b)"))
+    assert line.startswith("**[Hack \[AI\] \*2026\*](https://x.com/a%20(b%29)**")

@@ -48,6 +48,7 @@ def fetch_and_store(conn) -> tuple[dict[str, int], list[str]]:
     """Fetch every enabled source and upsert. A failing source is logged and skipped."""
     counts: dict[str, int] = {}
     errors: list[str] = []
+    started = conn.execute("SELECT now()").fetchone()[0]
     with PoliteClient() as client:
         for source in enabled_sources():
             try:
@@ -65,9 +66,13 @@ def fetch_and_store(conn) -> tuple[dict[str, int], list[str]]:
                 counts[source.name] = 0
                 continue
             counts[source.name] = len(records)
+            if not records:
+                errors.append(f"{source.name}: returned 0 listings (API change or outage?)")
             log.info("%s: %d listings %s", source.name, len(records), dict(outcomes))
     today = ist_day_start(datetime.now(IST).date())
     log.info("closed %d past events", db.close_past_events(conn, today))
+    healthy = [name for name, n in counts.items() if n]  # skip failed or empty sources
+    log.info("closed %d unlisted events", db.close_unlisted_events(conn, healthy, started))
     try:
         log.info("merged %d cross-platform duplicates", dedupe.dedupe_events(conn))
     except Exception as e:

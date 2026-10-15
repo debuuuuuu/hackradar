@@ -72,7 +72,7 @@ deduplication never loses a link. Schema file: `pipeline/models.sql` (not yet wr
 | `user_events` | Saves and status | user_id, event_id, status (saved/registered/submitted/done/dismissed), snoozed_until, created_at |
 | `scores` | Per-user fit score | user_id, event_id, score 0–100, reason, model, scored_at |
 | `reminders_sent` | Prevents duplicate reminders | user_id, event_id, date_field, offset_days, channel, sent_at |
-| `runs` | Health of each daily run | run_id, started_at, per-source counts + errors, ai_calls, notifications_sent, status |
+| `runs` | Health of each daily run | run_id, started_at, per-source counts + errors, notifications_sent, status |
 
 **Rules**
 - A `content_hash` change → event re-summarized; reminders recomputed if dates changed.

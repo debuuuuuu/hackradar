@@ -146,6 +146,13 @@ def upsert_events(conn: psycopg.Connection, recs: list[EventRecord]) -> list[str
                 " WHERE source = %s AND source_id = %s",
                 [(r.registrations, r.source, r.source_id) for r in same],
             )
+            # Listed again after close_unlisted_events closed it (run.py re-closes past ones).
+            cur.execute(
+                "UPDATE events SET status = 'open', updated_at = now() WHERE status = 'closed'"
+                " AND id IN (SELECT event_id FROM event_sources"
+                "             WHERE source = %s AND source_id = ANY(%s))",
+                (source, [r.source_id for r in same]),
+            )
     return outcomes
 
 
@@ -158,6 +165,26 @@ def close_past_events(conn: psycopg.Connection, today_ist_start: datetime) -> in
            AND COALESCE(submission_deadline, end_date, reg_deadline, start_date) < %s
         """,
         (today_ist_start,),
+    )
+    return cur.rowcount
+
+
+def close_unlisted_events(
+    conn: psycopg.Connection, healthy_sources: list[str], run_started: datetime, grace_days: int = 3
+) -> int:
+    """Close open events that every one of their sources stopped listing `grace_days` ago.
+
+    Only sources that returned listings this run count, so an outage never closes anything.
+    The grace period covers a one-off short fetch; a relisted event reopens in upsert_events.
+    """
+    cur = conn.execute(
+        """
+        UPDATE events SET status = 'closed', updated_at = now()
+         WHERE status = 'open' AND id IN (
+               SELECT event_id FROM event_sources GROUP BY event_id
+               HAVING bool_and(source = ANY(%s) AND last_seen_at < %s - make_interval(days => %s)))
+        """,
+        (healthy_sources, run_started, grace_days),
     )
     return cur.rowcount
 

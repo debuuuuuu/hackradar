@@ -87,3 +87,16 @@ def test_enrich_saves_each_batch_and_reconnects_after_a_dropped_connection(monke
     n = enrich.enrich("old", Replies())
     assert n == 2 and saved == [[1], [2]]
     assert fresh == ["closed"]
+
+
+def test_enrich_safely_survives_a_provider_timeout(monkeypatch):
+    import httpx
+
+    def boom(conn):
+        raise httpx.ReadTimeout("slow")
+
+    monkeypatch.setenv("GROQ_API_KEY", "x")
+    monkeypatch.setattr(enrich, "enrich", boom)
+    errors: list[str] = []
+    assert enrich.enrich_safely(None, errors) == 0
+    assert errors and "ReadTimeout" in errors[0]

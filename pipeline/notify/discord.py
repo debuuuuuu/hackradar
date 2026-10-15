@@ -56,7 +56,8 @@ def format_item(item: DigestItem) -> str:
         parts.append(f"👥 {item.registrations:,}")
     parts.append(item.source)
     title = item.title if len(item.title) <= TITLE_MAX else item.title[: TITLE_MAX - 1] + "…"
-    line = f"**[{escape(title)}]({item.url})**\n{' · '.join(parts)}"
+    url = item.url.replace(" ", "%20").replace(")", "%29")
+    line = f"**[{escape(title)}]({url})**\n{' · '.join(parts)}"
     if item.summary:
         text = " ".join(item.summary.split())
         if len(text) > SUMMARY_MAX:

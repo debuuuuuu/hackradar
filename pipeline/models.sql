@@ -126,7 +126,6 @@ CREATE TABLE IF NOT EXISTS runs (
                        CHECK (status IN ('running', 'success', 'partial', 'failed')),
     source_counts      jsonb       NOT NULL DEFAULT '{}',  -- {"devpost": 120, ...}
     errors             jsonb       NOT NULL DEFAULT '[]',
-    ai_calls           int         NOT NULL DEFAULT 0,
     notifications_sent int         NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS runs_started_idx ON runs (started_at DESC);

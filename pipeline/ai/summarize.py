@@ -94,7 +94,7 @@ def violates_rules(summary: str) -> bool:
 
 
 def parse_reply(reply: str, expected_ids: Sequence[int]) -> dict[int, Enriched]:
-    """Valid results by event id. Unknown ids, bad types and rule-breaking summaries are dropped."""
+    """Results by event id. Unknown ids and bad types are dropped; rule-breaking summaries blank."""
     try:
         items = json.loads(reply)["events"]
     except (ValueError, KeyError, TypeError) as e:
@@ -108,10 +108,12 @@ def parse_reply(reply: str, expected_ids: Sequence[int]) -> dict[int, Enriched]:
         if eid not in wanted or not isinstance(text, str):
             continue
         text = _SPACE.sub(" ", text.replace("‑", "-").replace("–", "-")).strip()
+        kind = kind if kind in KINDS else None
         if not text or violates_rules(text):
-            log.warning("dropped summary for event %s (empty or breaks rules)", eid)
-            continue
-        out[eid] = Enriched(text, kind if kind in KINDS else None)
+            # "" (not NULL) marks it as tried, so it isn't sent to the model again every day.
+            log.warning("blanked summary for event %s (empty or breaks rules)", eid)
+            text = ""
+        out[eid] = Enriched(text, kind)
     return out
 
 

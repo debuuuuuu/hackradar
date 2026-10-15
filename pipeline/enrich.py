@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 from pipeline import ai, config, db
 from pipeline.ai import summarize
-from pipeline.ai.base import AIError, Provider
+from pipeline.ai.base import Provider
 
 log = logging.getLogger(__name__)
 
@@ -86,7 +86,7 @@ def enrich_safely(conn: psycopg.Connection, errors: list[str]) -> int:
         return 0
     try:
         return enrich(conn)
-    except (AIError, psycopg.Error) as e:
+    except Exception as e:  # e.g. httpx timeouts: enrichment must never block the digest
         log.exception("enrichment failed")
         errors.append(f"enrich: {type(e).__name__}: {e}")
         return 0

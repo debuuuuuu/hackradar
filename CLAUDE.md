@@ -64,7 +64,7 @@ Python 3.12 managed by `uv` (pinned in `.python-version`, locked in `uv.lock`).
 uv sync                                   # install deps into .venv
 uv run python -m pipeline.db init         # apply pipeline/models.sql to DATABASE_URL (idempotent)
 uv run python -m pipeline.run             # run the daily pipeline locally (reads .env)
-uv run pytest -q                          # tests
+uv run pytest -q                          # tests (DB tests skip unless TEST_DATABASE_URL is set; CI has a pgvector service; they use a throwaway schema)
 uv run ruff check . && uv run black --check .   # lint
 gh workflow run daily.yml && gh run watch # trigger the daily job manually
 ```

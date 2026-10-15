@@ -48,7 +48,7 @@ def test_rules_reject_money_dates_and_long_text():
     assert not s.violates_rules("HackGB 2026 is a beginner hackathon on health topics.")
 
 
-def test_parse_reply_keeps_valid_drops_bad_and_unknown():
+def test_parse_reply_keeps_valid_blanks_rule_breakers_drops_unknown():
     reply = json.dumps(
         {
             "events": [
@@ -60,7 +60,10 @@ def test_parse_reply_keeps_valid_drops_bad_and_unknown():
             ]
         }
     )
-    assert s.parse_reply(reply, [1, 2, 3]) == {1: s.Enriched("Build agents.", None)}
+    assert s.parse_reply(reply, [1, 2, 3]) == {
+        1: s.Enriched("Build agents.", None),
+        2: s.Enriched("", None),  # kept blank so it isn't retried daily
+    }
 
 
 def test_summarize_batches_and_survives_a_failed_batch(monkeypatch):

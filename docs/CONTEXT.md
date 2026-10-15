@@ -143,6 +143,9 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - **Exa no-key access from GitHub Actions IPs** is unverified; test in Phase 4.
 - **Hack2Skill robots.txt / endpoints** not yet checked.
 - **Upsert speed:** fixed 2026-10-15 with batched upserts (whole local run 155 s → 15 s).
+- **Run health (audit 2026-10-15):** a source returning 0 listings now marks the run `partial`; events a healthy source
+  stopped listing for 3+ days are closed (reopened if relisted); AI summaries that break the rules are stored as `""` (not retried);
+  any enrichment failure is non-fatal. DB tests need `TEST_DATABASE_URL` (CI runs them on a pgvector service).
 - **Cross-platform dedupe live (D-037):** merges only obvious duplicates; known limit: merged event keeps one set of dates.
 - **Unstop listing lacks event start date and submission deadline** — only registration deadline and end date.
 - **Neon storage limit:** API reports 1 GiB branch limit; plan says 0.5 GB — budget for 0.5 GB until checked.
