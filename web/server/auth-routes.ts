@@ -1,4 +1,5 @@
-import { finishEmailLogin, findUser, normaliseEmail, peekEmailToken, safeNext, sessionFromRequest, sessionSecret, startEmailLogin } from "./auth.js";
+import { authorizeUrl, clearOauthCookie, discordConfigured, exchangeCode, newState, oauthCookie, readOauthCookie, sameState, upsertUserByDiscord } from "./discord.js";
+import { finishEmailLogin, findUser, normaliseEmail, peekEmailToken, recordLogin, safeNext, sessionFromRequest, sessionSecret, startEmailLogin } from "./auth.js";
 import { keyFromEnv } from "./crypto.js";
 import { addRoute, error, json } from "./http.js";
 import { sendLoginEmail } from "./mail.js";
@@ -45,8 +46,11 @@ function errTag(e: unknown): string {
   return typeof code === "string" && /^[A-Za-z0-9_]{1,32}$/.test(code) ? `${e.name} ${code}` : e.name;
 }
 
-const redirect = (location: string, headers: Record<string, string> = {}): Response =>
-  new Response(null, { status: 302, headers: { location, "cache-control": "no-store", ...headers } });
+const redirect = (location: string, cookies: string[] = []): Response => {
+  const headers = new Headers({ location, "cache-control": "no-store" });
+  for (const c of cookies) headers.append("set-cookie", c);
+  return new Response(null, { status: 302, headers });
+};
 
 export function registerAuthRoutes(): void {
   addRoute("POST", "/api/auth/email/start", async (request, _params, url) => {
@@ -93,6 +97,41 @@ export function registerAuthRoutes(): void {
     } catch (e) {
       console.error("email sign-in verify failed:", errTag(e));
       return failed();
+    }
+  });
+
+  addRoute("GET", "/api/auth/providers", () => json({ email: true, discord: discordConfigured() }));
+
+  addRoute("GET", "/api/auth/discord/start", (_request, _params, url) => {
+    if (!discordConfigured()) return redirect("/signin?error=discord");
+    try {
+      const state = newState();
+      const next = safeNext(url.searchParams.get("next"));
+      const cookie = oauthCookie(state, next, sessionSecret());
+      return redirect(authorizeUrl(state, `${originFor(url)}/api/auth/discord/callback`), [cookie]);
+    } catch (e) {
+      console.error("discord sign-in start failed:", errTag(e));
+      return redirect("/signin?error=discord");
+    }
+  });
+
+  addRoute("GET", "/api/auth/discord/callback", async (request, _params, url) => {
+    const clear = [clearOauthCookie()]; // state is single-use in every outcome
+    try {
+      if (!discordConfigured()) return redirect("/signin?error=discord", clear);
+      const secret = sessionSecret(); // read before anything changes
+      const saved = readOauthCookie(request.headers.get("cookie"), secret);
+      const state = url.searchParams.get("state") ?? "";
+      if (!saved || !state || !sameState(state, saved.state)) return redirect("/signin?error=state", clear);
+      const code = url.searchParams.get("code") ?? "";
+      if (url.searchParams.has("error") || !code || code.length > 512) return redirect("/signin?error=discord", clear);
+      const profile = await exchangeCode(code, `${originFor(url)}/api/auth/discord/callback`);
+      const { uid } = await upsertUserByDiscord(profile);
+      await recordLogin(uid, "discord");
+      return redirect(safeNext(saved.next), [...clear, sessionCookie(signSession({ uid }, secret))]);
+    } catch (e) {
+      console.error("discord sign-in failed:", errTag(e));
+      return redirect("/signin?error=discord", clear);
     }
   });
 

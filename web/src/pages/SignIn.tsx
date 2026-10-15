@@ -1,10 +1,24 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router";
 
 export default function SignIn() {
   const [sp] = useSearchParams();
   const next = sp.get("next") ?? undefined;
-  const expired = sp.get("error") === "expired";
+  const errorCode = sp.get("error");
+  const expired = errorCode === "expired";
+  const [discord, setDiscord] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    fetch("/api/auth/providers")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((p: { discord?: boolean } | null) => live && setDiscord(p?.discord === true))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+  const discordHref = `/api/auth/discord/start${next ? `?next=${encodeURIComponent(next)}` : ""}`;
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "invalid" | "failed">("idle");
 
@@ -30,6 +44,24 @@ export default function SignIn() {
         <p className="notice" role="alert">
           That link has expired or was already used. Request a new one.
         </p>
+      )}
+      {errorCode === "state" && (
+        <p className="notice" role="alert">
+          That sign-in attempt expired. Please try again.
+        </p>
+      )}
+      {errorCode === "discord" && (
+        <p className="notice" role="alert">
+          Discord sign-in did not complete. Please try again.
+        </p>
+      )}
+      {discord && state !== "sent" && (
+        <div className="signin-alt">
+          <a className="btn primary" href={discordHref}>
+            Continue with Discord
+          </a>
+          <p className="signin-or">or</p>
+        </div>
       )}
       {state === "sent" ? (
         <p className="notice" role="status">
