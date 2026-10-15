@@ -3,6 +3,8 @@ import { signInHref, useMe } from "./lib/me.js";
 import EventDetail from "./pages/EventDetail.js";
 import ConfirmSignIn from "./pages/ConfirmSignIn.js";
 import Events from "./pages/Events.js";
+import Onboarding from "./pages/Onboarding.js";
+import Settings from "./pages/Settings.js";
 import SignIn from "./pages/SignIn.js";
 
 export default function App() {
@@ -33,6 +35,7 @@ export default function App() {
           {state.status === "in" && (
             <>
               <span>{state.me.name}</span>
+              {state.me.onboarded ? <Link to="/settings">Settings</Link> : <Link to="/welcome">Finish setup</Link>}
               <button type="button" className="btn" onClick={() => void signOut()}>
                 Sign out
               </button>
@@ -49,6 +52,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
+          <Route path="/welcome" element={<Onboarding />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signin/confirm" element={<ConfirmSignIn />} />
           <Route

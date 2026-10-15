@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
+/** True unless /api/me says the new user has not finished setup (any failure keeps the normal landing). */
+async function isOnboarded(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/me", { headers: { accept: "application/json" } });
+    return res.ok ? ((await res.json()) as { onboarded?: boolean }).onboarded !== false : true;
+  } catch {
+    return true;
+  }
+}
+
 export default function ConfirmSignIn() {
   const [sp] = useSearchParams();
   // Read once, then keep in a ref so the token can be removed from the visible URL.
@@ -21,7 +31,11 @@ export default function ConfirmSignIn() {
       });
       const data = res.ok ? ((await res.json()) as { next?: string }) : null;
       // Full navigation so the header re-reads /api/me with the new cookie.
-      window.location.assign(data?.next ?? "/signin?error=expired");
+      if (!data?.next) {
+        window.location.assign("/signin?error=expired");
+        return;
+      }
+      window.location.assign(data.next === "/" && !(await isOnboarded()) ? "/welcome" : data.next);
     } catch {
       window.location.assign("/signin?error=expired");
     }
