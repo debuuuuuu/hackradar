@@ -1,5 +1,6 @@
 import { Link, Route, Routes, useLocation } from "react-router";
 import { signInHref, useMe } from "./lib/me.js";
+import Admin from "./pages/Admin.js";
 import EventDetail from "./pages/EventDetail.js";
 import ConfirmSignIn from "./pages/ConfirmSignIn.js";
 import Events from "./pages/Events.js";
@@ -35,6 +36,7 @@ export default function App() {
           {state.status === "in" && (
             <>
               <span>{state.me.name}</span>
+              {state.me.isAdmin && <Link to="/admin">Admin</Link>}
               {state.me.onboarded ? <Link to="/settings">Settings</Link> : <Link to="/welcome">Finish setup</Link>}
               <button type="button" className="btn" onClick={() => void signOut()}>
                 Sign out
@@ -54,6 +56,7 @@ export default function App() {
           <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/welcome" element={<Onboarding />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signin/confirm" element={<ConfirmSignIn />} />
           <Route
