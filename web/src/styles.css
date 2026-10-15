@@ -1,0 +1,109 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=Bricolage+Grotesque:wght@800&display=swap");
+
+:root {
+  interpolate-size: allow-keywords;
+  scrollbar-gutter: stable;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  --ink: oklch(21% 0.01 270);
+  --paper: oklch(98% 0.005 100);
+  --bg: oklch(94.5% 0.007 100);
+  --line: oklch(85.5% 0.01 105);
+  --dot: color-mix(in oklch, var(--line), var(--bg) 25%);
+  --mute: oklch(37% 0.02 265);
+  --faint: color-mix(in oklch, var(--mute), white 15%);
+  --orange: oklch(66% 0.2 38);
+  --peach: color-mix(in oklch, var(--orange) 20%, white);
+  --blue: oklch(49% 0.23 268);
+  --text-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --text-h1: clamp(2.25rem, 1.4rem + 3.6vw, 3.5rem);
+  --space-page: clamp(1rem, 0.4rem + 2.5vw, 2rem);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-block-size: 100svh;
+  background: var(--bg);
+  background-image: radial-gradient(var(--dot) 1px, transparent 1.3px);
+  background-size: 22px 22px;
+  color: var(--ink);
+  font-family: "Archivo", "Helvetica Neue", sans-serif;
+  line-height: 1.5;
+}
+
+h1,
+h2 {
+  text-wrap: balance;
+}
+
+input,
+select,
+textarea {
+  font-size: max(16px, 1rem);
+}
+
+button,
+a,
+label {
+  touch-action: manipulation;
+}
+
+button {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 44px minimum touch targets on real form controls */
+button,
+input:not([type="checkbox"], [type="radio"]),
+select {
+  min-block-size: 2.75rem;
+}
+
+:focus-visible {
+  outline: max(2px, 0.08em) solid var(--blue);
+  outline-offset: 0.25em;
+}
+
+.wrap {
+  max-inline-size: 69rem;
+  margin-inline: auto;
+  padding-inline: var(--space-page);
+  padding-block-end: 4.5rem;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding-block: 1.25rem;
+  border-block-end: 1.5px solid var(--ink);
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.04em;
+}
+
+h1 {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-weight: 800;
+  font-size: var(--text-h1);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  margin-block: 2.5rem 0.625rem;
+}
+
+.lead {
+  font-size: var(--text-lead);
+  color: var(--mute);
+  margin-block: 0 1.875rem;
+  max-inline-size: 56ch;
+}
