@@ -69,3 +69,29 @@ def near_cities(cities: list[str], home: str, radius_km: float) -> tuple[list[st
         elif distance_km(origin, spot) <= radius_km:
             near.append(city)
     return near, unknown
+
+
+def sync_places(conn) -> int:
+    """Upsert every config/places.yaml entry into the places table (the website reads it)."""
+    rows = [(key, key.title(), lat, lon) for key, (lat, lon) in _table()[0].items()]
+    with conn.cursor() as cur:
+        cur.executemany(
+            "INSERT INTO places (key, name, lat, lon) VALUES (%s, %s, %s, %s)"
+            " ON CONFLICT (key) DO UPDATE SET name = EXCLUDED.name,"
+            " lat = EXCLUDED.lat, lon = EXCLUDED.lon",
+            rows,
+        )
+    return len(rows)
+
+
+def geocode_events(conn) -> int:
+    """Set lat/lon on open in-person events whose city resolves. Returns rows updated."""
+    found = conn.execute(
+        "SELECT id, city FROM events"
+        " WHERE status = 'open' AND mode IN ('offline', 'hybrid') AND city IS NOT NULL"
+    ).fetchall()
+    rows = [(*spot, event_id) for event_id, city in found if (spot := resolve(city))]
+    if rows:
+        with conn.cursor() as cur:
+            cur.executemany("UPDATE events SET lat = %s, lon = %s WHERE id = %s", rows)
+    return len(rows)

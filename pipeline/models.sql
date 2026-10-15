@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS events (
     entry_fee           text,                       -- e.g. '₹200'; NULL = free (D-031)
     summary             text,                       -- AI-written (D-036)
     kind                text        CHECK (kind IN ('hackathon', 'contest', 'other')),  -- AI-assigned (D-036)
+    lat                 float8,                     -- from places via city (place.geocode_events)
+    lon                 float8,
     embedding           vector(768),                -- Gemini embedding, 768 dims
     first_seen_at       timestamptz NOT NULL DEFAULT now(),
     updated_at          timestamptz NOT NULL DEFAULT now(),
@@ -63,7 +65,10 @@ CREATE TABLE IF NOT EXISTS users (
     digest_enabled      boolean     NOT NULL DEFAULT true,
     timezone            text        NOT NULL DEFAULT 'Asia/Kolkata',
     is_admin            boolean     NOT NULL DEFAULT false,
-    created_at          timestamptz NOT NULL DEFAULT now()
+    created_at          timestamptz NOT NULL DEFAULT now(),
+    email_hash          text        UNIQUE,         -- web login lookup; email itself stays encrypted
+    last_login_at       timestamptz,
+    onboarded_at        timestamptz
 );
 
 -- Per-user filters and profile. Offset 0 = same-day morning alert (D-019).
@@ -75,7 +80,16 @@ CREATE TABLE IF NOT EXISTS preferences (
     modes            text[]  NOT NULL DEFAULT '{online,offline,hybrid}',
     student_only     boolean NOT NULL DEFAULT false,
     min_prize        integer,
-    reminder_offsets int[]   NOT NULL DEFAULT '{7,3,1,0}'
+    reminder_offsets int[]   NOT NULL DEFAULT '{7,3,1,0}',
+    home_city        text    NOT NULL DEFAULT 'pune',
+    radius_km        int     NOT NULL DEFAULT 150,
+    format           text    NOT NULL DEFAULT 'online_near'
+                     CHECK (format IN ('online_near', 'online', 'in_person', 'anything')),
+    priorities       jsonb   NOT NULL
+                     DEFAULT '{"hackathon":"top","contest":"normal","workshop":"off","fest":"off"}',
+    include_social   boolean NOT NULL DEFAULT true,
+    channels         jsonb   NOT NULL
+                     DEFAULT '{"digest":["email","discord"],"ping":["discord"],"reminders":["email","discord"]}'
 );
 
 -- Saves and status.
@@ -129,3 +143,30 @@ CREATE TABLE IF NOT EXISTS runs (
     notifications_sent int         NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS runs_started_idx ON runs (started_at DESC);
+
+-- Web sign-ins (for the admin stats page).
+CREATE TABLE IF NOT EXISTS logins (
+    id      bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id bigint      NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    method  text        NOT NULL CHECK (method IN ('discord', 'email')),
+    at      timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS logins_at_idx ON logins (at);
+
+-- One-time email sign-in links; only hashes are stored.
+CREATE TABLE IF NOT EXISTS login_tokens (
+    id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    email_hash text        NOT NULL,
+    token_hash text        NOT NULL UNIQUE,
+    expires_at timestamptz NOT NULL,
+    used_at    timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Mirror of config/places.yaml so the website can read it (place.sync_places).
+CREATE TABLE IF NOT EXISTS places (
+    key  text PRIMARY KEY,
+    name text,
+    lat  float8,
+    lon  float8
+);
