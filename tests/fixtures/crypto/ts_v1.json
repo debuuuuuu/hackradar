@@ -1,0 +1,22 @@
+{
+  "key_b64": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=",
+  "cases": [
+    {
+      "plain": "debji@example.com",
+      "blob": "v1:SeLNEBX5TztG5lVt:pNhTfGIAltQFDPSnRqqUgg==:sH+oUcyMbezqD7TBM1YF6QA="
+    },
+    {
+      "plain": "+91 98765 43210",
+      "blob": "v1:IVRoDwqDMMnqZyCi:vLxqszay653e2PqqPSZMMA==:yQNrZeoFRJRUjgcNnOL1"
+    },
+    {
+      "plain": "https://discord.com/api/webhooks/123/abc_DEF-xyz",
+      "blob": "v1:7NvTiNJ4wS7710Z7:J2LMTTyZgXOtKFKNj4WtYQ==:aqcuCMqCXSCwUGaTj9BVnUIEIvC+YS3gK+mqo/dJR2MWTz4zNgQ9RqVMiVrX42xG"
+    },
+    {
+      "plain": "₹200 — ünïcode ✓",
+      "blob": "v1:NboF3JoV1iaullqs:nNdC7Ej/ekRBu8Nh/qRFTw==:LLPZX04lo94/4AK8G8kjKjb4HgoOu9QE"
+    }
+  ],
+  "blind_index_email": "e2cb86f636a45dea7f6d54b3bd71fd9954fab40e1e38f8143a694fee76d75234"
+}
