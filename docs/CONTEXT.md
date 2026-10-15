@@ -8,7 +8,7 @@ _Last updated: 2026-10-15_
 [`sessions/`](sessions/README.md)** (last session's done/problems/next steps), then only the sub-docs the task needs (index in §7).
 
 - **Phase:** 1 · MVP digest, in progress. Phase 0 gate passed 2026-10-14.
-- **Just finished (2026-10-15):** digest now shows AI summaries and a separate "Contests & other" section (kind filter, 52 tests); first live Discord digest; "new" cutoff fix; trust signals (D-031); batched
+- **Just finished (2026-10-15):** dedupe + "listed on 2+ platforms" badge (D-037, 61 tests); digest now shows AI summaries and a separate "Contests & other" section (kind filter, 52 tests); first live Discord digest; "new" cutoff fix; trust signals (D-031); batched
   upserts (run 155 s → 15 s); calendar plan (D-032); Luma via ICS (D-033); place filter (D-034); dashboard design
   direction D (canvas https://claude.ai/artifact/SDLHqTM56wgrjpXHTgdbAx, private); Phase 2 source research.
   34 tests green.
@@ -121,6 +121,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-034 Place filter: home city + radius + metro areas.
 - D-035 Groq is the default batch AI provider (Gemini optional); no embeddings from Groq.
 - D-036 Daily enrichment: AI summary + kind (hackathon/contest/other) stored per event; digest doesn't use them yet.
+- D-037 Cross-platform dedupe: conservative rule-based merge, "listed on 2+ platforms" badge.
 
 ## 6. Known issues and open questions
 
@@ -142,7 +143,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - **Exa no-key access from GitHub Actions IPs** is unverified; test in Phase 4.
 - **Hack2Skill robots.txt / endpoints** not yet checked.
 - **Upsert speed:** fixed 2026-10-15 with batched upserts (whole local run 155 s → 15 s).
-- **Cross-platform duplicates exist** (Multimodal AI on Devpost + Unstop, different deadlines) → Phase 2 dedupe.
+- **Cross-platform dedupe live (D-037):** merges only obvious duplicates; known limit: merged event keeps one set of dates.
 - **Unstop listing lacks event start date and submission deadline** — only registration deadline and end date.
 - **Neon storage limit:** API reports 1 GiB branch limit; plan says 0.5 GB — budget for 0.5 GB until checked.
 - All free-tier numbers in research notes are as of 2026-10-14 from the planning session and marked unverified

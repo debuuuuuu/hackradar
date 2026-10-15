@@ -287,3 +287,11 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Devpost exposes only display text like "Aug 31 - Oct 23, 2026"; the exact time and timezone are unknown, and inventing them would break D-014.
 - **Alternatives:** a `date` column (other sources such as Unstop may give exact times); 23:59 IST (could show an event as open after a US-time deadline has already passed in IST).
 - **Status:** active
+
+### D-037 · Cross-platform dedupe: conservative rule-based merge
+- **Date:** 2026-10-15
+- **Decision:** After each fetch, `pipeline/dedupe.py` merges open events listed on *different* sources into the oldest event row, keeping every `event_sources` URL. A match needs distinctive-title overlap ≥ 0.8 (stop words and years removed) plus a second signal: a shared organiser word, or dates within 3 days when the titles are near-identical. Digest shows "✅ listed on devpost + unstop".
+- **Why:** Live data showed identical generic titles within one source ("Hackathon", "Robo Race") that are different events, and the same event with different organiser strings and deadlines across platforms. A wrong merge hides a real event; a missed one only shows it twice, so the rule errs towards missing. Dry run on 311 open events found exactly the 2 known duplicates (Multimodal AI; CodeSprint / Codesprint 2026), after tightening a date signal that falsely matched 2 other pairs.
+- **Alternatives:** pg_trgm similarity in SQL (scores 1.0 on generic same-source titles); AI judging pairs (costs calls, risks personal/odd merges); embeddings (Phase 4).
+- **Known limits:** the surviving row keeps the oldest source's dates; a later "changed" listing from either source overwrites the row's dates (the merged sources share one event id). Different deadlines per platform are only in each source's `raw_json`. Revisit when a third source lands.
+- **Status:** active

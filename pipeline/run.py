@@ -11,7 +11,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from pipeline import config, db, digest, enrich
+from pipeline import config, db, dedupe, digest, enrich
 from pipeline.normalize import IST, ist_day_start
 from pipeline.notify import discord
 from pipeline.sources.base import PoliteClient, Source
@@ -68,6 +68,11 @@ def fetch_and_store(conn) -> tuple[dict[str, int], list[str]]:
             log.info("%s: %d listings %s", source.name, len(records), dict(outcomes))
     today = ist_day_start(datetime.now(IST).date())
     log.info("closed %d past events", db.close_past_events(conn, today))
+    try:
+        log.info("merged %d cross-platform duplicates", dedupe.dedupe_events(conn))
+    except Exception as e:
+        log.exception("dedupe failed")
+        errors.append(f"dedupe: {type(e).__name__}: {e}")
     return counts, errors
 
 

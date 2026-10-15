@@ -69,6 +69,8 @@ def format_item(item: DigestItem) -> str:
 def trust_flags(item: DigestItem) -> list[str]:
     """Things to check before joining (D-031). Rules on source data only, never AI."""
     flags = []
+    if len(item.platforms) > 1:
+        flags.append(f"✅ listed on {' + '.join(item.platforms)}")
     if item.entry_fee:
         fee = "paid entry" if item.entry_fee == "paid" else f"{item.entry_fee} entry fee"
         flags.append(f"💰 {fee}")

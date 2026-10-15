@@ -61,8 +61,8 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [ ] Per-user scoring for the owner (rule filters first, then AI score)
 - [ ] `sources/devfolio.py` + fixture test
 - [ ] `sources/mlh.py` (`www.mlh.com/seasons/2027/events` embedded JSON; filter IN + online) + fixture test
-- [ ] `dedupe.py`: fuzzy title + organizer + overlapping dates; keep all source URLs; tests
-- [ ] "Listed on 2+ platforms" trust badge from dedupe (D-031)
+- [x] `dedupe.py`: fuzzy title + organizer + overlapping dates; keep all source URLs; tests
+- [x] "Listed on 2+ platforms" trust badge from dedupe (D-031)
 - [ ] `sources/luma.py`: curated calendar ICS feeds, hackathon keyword + future filter, fixture test (D-033)
 - [ ] Place preferences + filter: city normalisation, geocode cache, radius (D-034; research geocoder first)
 - [ ] `notify/email.py`: Gmail SMTP HTML digest

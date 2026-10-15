@@ -31,6 +31,7 @@ class DigestItem:
     invite_only: bool = False
     dates_suspect: bool = False  # end before start, or registration closes after the end
     summary: str | None = None  # AI-written (D-036); never used for dates or prizes
+    platforms: tuple[str, ...] = ()  # every source listing this event (dedupe)
 
 
 @dataclass(frozen=True)
@@ -57,7 +58,9 @@ _SELECT = f"""
            e.mode, e.city, e.prize_text, s.source,
            e.organizer, s.registrations, e.entry_fee, e.invite_only,
            COALESCE(e.end_date < e.start_date OR e.reg_deadline > e.end_date, false),
-           e.summary
+           e.summary,
+           (SELECT array_agg(DISTINCT source ORDER BY source) FROM event_sources
+             WHERE event_id = e.id)
       FROM events e
       JOIN LATERAL (SELECT url, source, registrations FROM event_sources
                      WHERE event_id = e.id ORDER BY first_seen_at LIMIT 1) s ON true
@@ -96,7 +99,7 @@ def build(conn: psycopg.Connection, since: datetime | None, now: datetime) -> Di
 
     def items(where: str, params: tuple) -> list[DigestItem]:
         rows = conn.execute(_SELECT + where + order + " LIMIT %s", (*params, limit)).fetchall()
-        return [DigestItem(*r) for r in rows]
+        return [DigestItem(*r[:-1], tuple(r[-1])) for r in rows]
 
     def count(where: str, params: tuple) -> int:
         sql = f"SELECT count(*) FROM events e WHERE e.status = 'open'{where}"

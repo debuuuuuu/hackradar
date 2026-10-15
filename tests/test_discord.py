@@ -107,3 +107,10 @@ def test_render_contests_section():
     payload = discord.render(digest(contests=[item()], contests_total=1))
     assert payload["embeds"][0]["title"] == "🧩 Contests & other (1)"
     assert not digest(contests_total=1).empty
+
+
+def test_listed_on_several_platforms_badge():
+    assert discord.trust_flags(item(platforms=("devpost", "unstop"))) == [
+        "✅ listed on devpost + unstop"
+    ]
+    assert discord.trust_flags(item(platforms=("unstop",))) == []
