@@ -303,3 +303,38 @@ Format: date · decision · why · alternatives rejected · status.
 - **Alternatives:** OSM Nominatim (needs policy research, cache, network at runtime); GeoNames file (download server forbids bots; manual one-off).
 - **Known limits:** coordinates are from memory, accurate to a few km, unverified against a geocoder; hybrid events far away are hidden even though they may allow remote joining; friends with other home cities need those cities in the table.
 - **Status:** active
+
+### D-039 · Web platform architecture (Vite + React site, one Vercel function)
+- **Date:** 2026-10-15
+- **Decision:** Site in `web/` (Vite + React). One Vercel function `web/api/index.ts` with an internal router. Neon Postgres via node-postgres. Sign-in by emailed confirm link (confirm step before the session is created) or Discord OAuth. Sessions are signed cookies. Contact details are AES-GCM encrypted, with a blind index for email lookup. Email is read-only in settings when it is the sign-in identity. Accounts are not merged across Discord and email in v1. Owner analytics at `/admin` come from our own tables (users, sign-ins). Vercel Web Analytics is not used (free limits unverified).
+- **Why:** One function keeps the free-tier function count low and shares DB/session code; signed cookies need no session table; encryption plus blind index protects contact data (D-024) while allowing lookup; own-table analytics avoids an unverified external limit.
+- **Alternatives:** Next.js (heavier than needed); one function per route; Neon Auth or a third-party auth provider; Vercel Web Analytics; merging Discord and email accounts (deferred).
+- **Status:** active
+
+### D-040 · Per-user notification channels; users paste their own Discord webhook
+- **Date:** 2026-10-15
+- **Decision:** Each signed-in user chooses their channels: email, a Discord webhook they paste, or WhatsApp (CallMeBot). The daily run builds and sends one message set per user. Settings has a "Send test message" button and a tutorial page for each channel. A pasted webhook must match `https://discord.com/api/webhooks/<id>/<token>` (or `discordapp.com`), is validated on save and again in the pipeline, and is stored encrypted.
+- **Why:** Debjit's direction (2026-10-15). A per-person Discord bot (D-011) is not built yet, and a shared webhook can only post to one channel.
+- **Alternatives:** shared community server only (no per-person delivery); Discord bot DMs (Phase 3, later).
+- **Status:** active. Amends the single-target delivery note in `specs/features.md` §1.
+
+### D-041 · Owner approves each new account
+- **Date:** 2026-10-15
+- **Decision:** New accounts start pending. Nothing is sent and nothing is saved until the owner approves them in `/admin`.
+- **Why:** Limits abuse, email quota use, and personal data collection to people the owner knows.
+- **Alternatives:** invite codes (codes spread); open sign-up (abuse risk from day one).
+- **Status:** active. Implementation in product plan Phase 4.
+
+### D-042 · Confirm the notification email before use
+- **Date:** 2026-10-15
+- **Decision:** If the email entered for notifications differs from the sign-in identity, a confirm link is sent to that address. The email channel stays off until it is clicked.
+- **Why:** Stops typos and sending digests to someone else's inbox.
+- **Alternatives:** use immediately (no check).
+- **Status:** active.
+
+### D-043 · Visit counts from our own page-view table
+- **Date:** 2026-10-15
+- **Decision:** `/admin` counts page views per page per IST day. No IP, user id or cookie is stored. Vercel Web Analytics is not used.
+- **Why:** Keeps analytics on our own tables (as D-039 does for sign-ins) and avoids an unverified free-tier limit.
+- **Alternatives:** Vercel Web Analytics (free limits unverified); no visit counts.
+- **Status:** active.

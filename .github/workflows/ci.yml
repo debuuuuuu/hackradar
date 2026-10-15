@@ -27,3 +27,32 @@ jobs:
       - run: uv run pytest -q
         env:
           TEST_DATABASE_URL: postgresql://postgres:test@localhost:5432/postgres
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+    services:
+      postgres: # own service; web tests apply pipeline/models.sql (vector + pg_trgm)
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_PASSWORD: test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7.1.0 # pin exact, same rule as setup-uv
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm test
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:test@localhost:5432/postgres
+      - run: npm run build
+      - run: npx tsc --noEmit

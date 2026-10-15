@@ -62,9 +62,9 @@ Do steps in the phase they are needed — no need to set everything up on day on
 5. After Vercel deploy (step 10): General Information → **Interactions Endpoint URL** = `https://<vercel-app>/api/interactions`.
 
 ## 8. Encryption key (Phase 3)
-1. Generate locally: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
-   (cipher choice not final — unverified; log a decision when implemented).
-2. → `ENCRYPTION_KEY`. Losing it means re-collecting CallMeBot keys; keep a private backup.
+1. Generate locally: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
+   (AES-256-GCM, D-039/D-024; must decode to exactly 32 bytes). Fernet was dropped.
+2. → `ENCRYPTION_KEY`, in GitHub Actions and Vercel with the same value. A mismatch makes every user's contacts unreadable. Losing it means re-collecting CallMeBot keys and webhooks; keep a private backup.
 
 ## 9. CallMeBot (Phase 3, per user)
 1. Each user saves CallMeBot's number in contacts and sends the permission message on WhatsApp

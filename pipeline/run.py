@@ -11,7 +11,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from pipeline import config, db, dedupe, digest, enrich
+from pipeline import config, db, dedupe, digest, enrich, place
 from pipeline.normalize import IST, ist_day_start
 from pipeline.notify import discord
 from pipeline.sources.base import PoliteClient, Source
@@ -79,6 +79,12 @@ def fetch_and_store(conn) -> tuple[dict[str, int], list[str]]:
     except Exception as e:
         log.exception("dedupe failed")
         errors.append(f"dedupe: {type(e).__name__}: {e}")
+    try:
+        log.info("synced %d places", place.sync_places(conn))
+        log.info("geocoded %d events", place.geocode_events(conn))
+    except Exception as e:
+        log.exception("places/geocode failed")
+        errors.append(f"places: {type(e).__name__}: {e}")
     return counts, errors
 
 
