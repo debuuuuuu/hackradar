@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 import psycopg
@@ -30,6 +30,7 @@ class DigestItem:
     entry_fee: str | None = None
     invite_only: bool = False
     dates_suspect: bool = False  # end before start, or registration closes after the end
+    summary: str | None = None  # AI-written (D-036); never used for dates or prizes
 
 
 @dataclass(frozen=True)
@@ -40,10 +41,12 @@ class Digest:
     closing: list[DigestItem]
     closing_total: int
     open_total: int
+    contests: list[DigestItem] = field(default_factory=list)  # new non-hackathons (kind)
+    contests_total: int = 0
 
     @property
     def empty(self) -> bool:
-        return self.new_total == 0 and self.closing_total == 0
+        return self.new_total == 0 and self.closing_total == 0 and self.contests_total == 0
 
 
 _SELECT = f"""
@@ -53,7 +56,8 @@ _SELECT = f"""
                 WHEN e.end_date IS NOT NULL THEN 'ends' END,
            e.mode, e.city, e.prize_text, s.source,
            e.organizer, s.registrations, e.entry_fee, e.invite_only,
-           COALESCE(e.end_date < e.start_date OR e.reg_deadline > e.end_date, false)
+           COALESCE(e.end_date < e.start_date OR e.reg_deadline > e.end_date, false),
+           e.summary
       FROM events e
       JOIN LATERAL (SELECT url, source, registrations FROM event_sources
                      WHERE event_id = e.id ORDER BY first_seen_at LIMIT 1) s ON true
@@ -81,6 +85,10 @@ def build(conn: psycopg.Connection, since: datetime | None, now: datetime) -> Di
     soon = today + timedelta(days=cfg["closing_soon_days"] + 1)
     since = since or datetime.min.replace(tzinfo=IST)
 
+    # Hackathons by default (unclassified counts as one); contests/other get their own section.
+    hack = " AND COALESCE(e.kind, 'hackathon') = 'hackathon'"
+    other = " AND e.kind IN ('contest', 'other')"
+
     # New events closing soon are listed only under "closing", never twice.
     new_where = f" AND e.first_seen_at > %s AND ({DEADLINE_SQL} IS NULL OR {DEADLINE_SQL} >= %s)"
     closing_where = f" AND {DEADLINE_SQL} >= %s AND {DEADLINE_SQL} < %s"
@@ -96,9 +104,11 @@ def build(conn: psycopg.Connection, since: datetime | None, now: datetime) -> Di
 
     return Digest(
         day=today.date().isoformat(),
-        new=items(new_where, (since, soon)),
-        new_total=count(new_where, (since, soon)),
-        closing=items(closing_where, (today, soon)),
-        closing_total=count(closing_where, (today, soon)),
-        open_total=count("", ()),
+        new=items(hack + new_where, (since, soon)),
+        new_total=count(hack + new_where, (since, soon)),
+        closing=items(hack + closing_where, (today, soon)),
+        closing_total=count(hack + closing_where, (today, soon)),
+        open_total=count(hack, ()),
+        contests=items(other + new_where, (since, soon)),
+        contests_total=count(other + new_where, (since, soon)),
     )

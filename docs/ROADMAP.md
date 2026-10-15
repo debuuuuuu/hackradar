@@ -55,7 +55,7 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [ ] `gemini.py` (optional), `claude.py` stub
 - [x] Summarize: `ai/summarize.py` (batched, rule-checked: no dates/money, untrusted-text delimiters), tested live on 12 events (2026-10-15)
 - [x] `enrich.py`: summary + kind stored for new/changed events, paced, saved per batch, never fatal; wired into `run.py` (D-036) (2026-10-15)
-- [ ] Digest uses `kind` (hackathons by default, contests in their own section) and shows `summary`
+- [x] Digest uses `kind` (hackathons by default, contests in their own section) and shows `summary`
 - [ ] Score prompt (per-user, after preferences exist)
 - [ ] Batch summaries (10–15 events/call), only new/changed events; retry with backoff on 429
 - [ ] Per-user scoring for the owner (rule filters first, then AI score)

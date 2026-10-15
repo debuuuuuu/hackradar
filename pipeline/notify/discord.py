@@ -18,11 +18,13 @@ DESCRIPTION_LIMIT = 4000
 EMBEDS_TOTAL_BUDGET = 5600  # headroom under 6000 for titles
 TITLE_MAX = 120
 ORGANIZER_MAX = 60
+SUMMARY_MAX = 160
 DISCLAIMER = (
     "Dates, prizes and fees are copied from each platform's listing. Confirm on the event page."
 )
 COLOR_NEW = 0x5865F2
 COLOR_CLOSING = 0xED4245
+COLOR_CONTESTS = 0x99AAB5
 KIND_LABEL = {"reg": "reg closes", "submit": "submit by", "ends": "ends"}
 _MD_SPECIAL = re.compile(r"([\\*_~`|\[\]>])")
 
@@ -55,6 +57,11 @@ def format_item(item: DigestItem) -> str:
     parts.append(item.source)
     title = item.title if len(item.title) <= TITLE_MAX else item.title[: TITLE_MAX - 1] + "…"
     line = f"**[{escape(title)}]({item.url})**\n{' · '.join(parts)}"
+    if item.summary:
+        text = " ".join(item.summary.split())
+        if len(text) > SUMMARY_MAX:
+            text = text[: SUMMARY_MAX - 1] + "…"
+        line += f"\n*{escape(text)}*"
     flags = trust_flags(item)
     return f"{line}\n{' · '.join(flags)}" if flags else line
 
@@ -101,6 +108,9 @@ def render(digest: Digest) -> dict:
     if digest.closing_total:
         title = f"⏰ Closing within 3 days ({digest.closing_total})"
         sections.append((title, digest.closing, digest.closing_total, COLOR_CLOSING))
+    if digest.contests_total:
+        title = f"🧩 Contests & other ({digest.contests_total})"
+        sections.append((title, digest.contests, digest.contests_total, COLOR_CONTESTS))
     budget = EMBEDS_TOTAL_BUDGET // len(sections)
     embeds = [_section(*s, budget=budget) for s in sections]
     return {"content": header, "embeds": embeds, "allowed_mentions": {"parse": []}}

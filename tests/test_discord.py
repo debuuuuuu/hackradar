@@ -94,3 +94,16 @@ def test_send_retries_after_429():
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
         discord.send("https://discord.com/api/webhooks/1/abc", {"content": "hi"}, client)
     assert len(calls) == 2
+
+
+def test_summary_shown_italic_and_truncated():
+    line = discord.format_item(item(summary="Build *fast*. " + "x" * 300))
+    summary = line.split("\n")[2]
+    assert summary.startswith(r"*Build \*fast\*. ") and summary.endswith("…*")
+    assert len(summary) <= discord.SUMMARY_MAX + 10
+
+
+def test_render_contests_section():
+    payload = discord.render(digest(contests=[item()], contests_total=1))
+    assert payload["embeds"][0]["title"] == "🧩 Contests & other (1)"
+    assert not digest(contests_total=1).empty
