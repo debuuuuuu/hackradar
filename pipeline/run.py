@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 from pipeline import config, db, dedupe, digest, enrich, place
 from pipeline.normalize import IST, ist_day_start
 from pipeline.notify import discord
+from pipeline.notify.webhook_url import guard_http_logs
 from pipeline.sources.base import PoliteClient, Source
 from pipeline.sources.devfolio import Devfolio
 from pipeline.sources.devpost import Devpost
@@ -109,6 +110,7 @@ def send_digest(conn, run_id: int, errors: list[str]) -> int:
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     load_dotenv()
+    guard_http_logs()  # httpx logs the webhook URL, which holds the token
     trigger = os.environ.get("GITHUB_EVENT_NAME", "local")
     run_id: int | None = None
     status = "failed"

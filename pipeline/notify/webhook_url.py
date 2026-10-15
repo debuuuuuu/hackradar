@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from urllib.parse import unquote
 
@@ -13,6 +14,7 @@ _DISCORD_WEBHOOK = re.compile(
 _SECRET_PARTS = [
     re.compile(r"(/api/webhooks/[0-9]+/)[A-Za-z0-9_-]+", re.IGNORECASE),  # Discord token
     re.compile(r"(apikey=)[^&\s]+", re.IGNORECASE),  # CallMeBot key in the query string
+    re.compile(r"(phone=)[^&\s]+", re.IGNORECASE),  # personal phone number in the same URL
 ]
 
 
@@ -32,3 +34,22 @@ def redact(text: str) -> str:
     for pattern in _SECRET_PARTS:
         out = pattern.sub(r"\1****", out)
     return out
+
+
+class _RedactFilter(logging.Filter):
+    """Rewrites each record's final message through redact(). Attached to the httpx logger."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.msg = redact(record.getMessage())
+        record.args = ()
+        return True
+
+
+def guard_http_logs() -> None:
+    """httpx logs every request URL at INFO, and our webhook and CallMeBot URLs hold secrets.
+
+    Idempotent. Call before any request that carries a token or key in its URL.
+    """
+    logger = logging.getLogger("httpx")
+    if not any(isinstance(f, _RedactFilter) for f in logger.filters):
+        logger.addFilter(_RedactFilter())
