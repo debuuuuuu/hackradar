@@ -157,6 +157,7 @@ CREATE INDEX IF NOT EXISTS logins_at_idx ON logins (at);
 CREATE TABLE IF NOT EXISTS login_tokens (
     id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email_hash text        NOT NULL,
+    email_enc  text,                       -- encrypted address, used to create the user on first sign-in
     token_hash text        NOT NULL UNIQUE,
     expires_at timestamptz NOT NULL,
     used_at    timestamptz,

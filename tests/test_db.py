@@ -204,3 +204,13 @@ def test_migration_0005_upgrades_the_previous_schema_and_is_idempotent(conn):
     finally:
         conn.execute(f"SET search_path TO {original}")
         conn.execute(f"DROP SCHEMA {schema} CASCADE")
+
+
+def test_migration_0006_adds_login_token_email_and_is_idempotent(conn):
+    path = Path(db.__file__).parent / "migrations" / "0006_login_token_email.sql"
+    assert "email_enc" in _columns(conn, "login_tokens")  # fresh models.sql has it
+    conn.execute("ALTER TABLE login_tokens DROP COLUMN email_enc")  # shape before 0006
+    sql = path.read_text(encoding="utf-8")
+    conn.execute(sql)
+    conn.execute(sql)  # second run proves idempotency
+    assert "email_enc" in _columns(conn, "login_tokens")
