@@ -10,8 +10,9 @@ import psycopg
 def claim_send(conn: psycopg.Connection, user_id: int, ist_date: date, channel: str) -> bool:
     """Reserve (user, day, channel) before sending. False means it was already claimed.
 
-    A crash after the claim leaves the row as 'sent' and it is not retried: a missed message
-    is preferred to a duplicate.
+    The caller must COMMIT the claim before sending. A rollback would release it and allow a
+    second send. A crash after the commit leaves the row as 'sent' and is not retried: a missed
+    message is preferred to a duplicate.
     """
     row = conn.execute(
         """

@@ -8,6 +8,12 @@ import os
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
+# Same set as JavaScript String.prototype.trim(), so both sides normalise an address identically.
+JS_WHITESPACE = (
+    "\t\n\v\f\r \u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a"
+    "\u2028\u2029\u202f\u205f\u3000\ufeff"
+)
+
 
 def key_from_env(name: str = "ENCRYPTION_KEY") -> bytes:
     raw = os.environ.get(name)
@@ -35,4 +41,6 @@ def decrypt(blob: str, key: bytes) -> str:
 
 def blind_index(value: str, key: bytes) -> str:
     """Same as crypto.ts blindIndex: hex HMAC-SHA256 of the trimmed, lower-cased value."""
-    return hmac.new(key, value.strip().lower().encode("utf-8"), hashlib.sha256).hexdigest()
+    return hmac.new(
+        key, value.strip(JS_WHITESPACE).lower().encode("utf-8"), hashlib.sha256
+    ).hexdigest()

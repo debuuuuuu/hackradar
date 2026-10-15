@@ -45,3 +45,37 @@ def test_redact_hides_token_in_text() -> None:
 def test_redact_hides_callmebot_key() -> None:
     msg = "GET https://api.callmebot.com/whatsapp.php?phone=+91&apikey=ABC123 failed"
     assert "ABC123" not in redact(msg)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://x@discord.com/api/webhooks/1/tok",  # userinfo
+        "https://discord.com:443/api/webhooks/1/tok",  # explicit port
+        "https://DISCORD.com/api/webhooks/1/tok",  # uppercase host
+        "https://discord.com./api/webhooks/1/tok",  # trailing dot
+        "https://discord.com/api/webhooks/1/tok#frag",  # fragment
+        "https://discord.com/api/webhooks/\u0661/tok",  # Arabic-Indic digit id
+        " https://discord.com/api/webhooks/1/tok",  # leading space
+        "https://discord.com/api/webhooks/1/tok\n",  # trailing newline
+        "https://discord.com/api/webhooks/1/to\tk",  # embedded tab
+        "https://discord%2Ecom/api/webhooks/1/tok",  # encoded host
+    ],
+)
+def test_rejects_non_canonical_forms(url: str) -> None:
+    assert not is_discord_webhook(url)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "/API/WEBHOOKS/1/SECRETTOK",
+        "https%3A%2F%2Fdiscord.com%2Fapi%2Fwebhooks%2F1%2FSECRETTOK",
+        "https%253A%252F%252Fdiscord.com%252Fapi%252Fwebhooks%252F1%252FSECRETTOK",
+        "APIKEY=SECRETTOK",
+        "ApiKey=SECRETTOK",
+        "apikey%3DSECRETTOK",
+    ],
+)
+def test_redact_handles_case_and_encoding(text: str) -> None:
+    assert "SECRETTOK" not in redact(text)
