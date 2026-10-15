@@ -77,11 +77,12 @@ def _event(
     kind: str = "hackathon",
     mode: str | None = "online",
     city: str | None = None,
+    days_to_deadline: int = 10,
 ) -> None:
     eid = conn.execute(
         "INSERT INTO events (title, kind, mode, city, reg_deadline, first_seen_at)"
         " VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
-        (title, kind, mode, city, NOW + timedelta(days=10), NOW - timedelta(days=1)),
+        (title, kind, mode, city, NOW + timedelta(days=days_to_deadline), NOW - timedelta(days=1)),
     ).fetchone()[0]
     conn.execute(
         "INSERT INTO event_sources (event_id, source, source_id, url, content_hash)"
@@ -157,10 +158,13 @@ def test_sender_failure_for_one_user_does_not_stop_another(conn) -> None:
 
 def test_running_twice_same_day_sends_once(conn) -> None:
     _user(conn)
-    _event(conn, "open-event")
+    # Closing within the window, so the digest is non-empty even when `since` is a real DB time.
+    _event(conn, "open-event", days_to_deadline=1)
     rec = Recorder()
-    run_user_digests(conn, NOW, {"discord": rec})
-    run_user_digests(conn, NOW, {"discord": rec})
+    first = run_user_digests(conn, NOW, {"discord": rec})
+    second = run_user_digests(conn, NOW, {"discord": rec})
+    assert (first.sent, second.sent) == (1, 0)
+    assert second.already_sent == 1
     assert len(rec.sent) == 1
 
 

@@ -66,19 +66,9 @@ class RunSummary:
 Sender = Callable[[Recipient, Digest], None]
 
 
-def _email_confirmation_exists(conn: psycopg.Connection) -> bool:
-    """Email is a channel only once a confirmation column exists (D-042, web task 3.1)."""
-    return conn.execute(
-        "SELECT EXISTS (SELECT 1 FROM information_schema.columns"
-        " WHERE table_schema = current_schema() AND table_name = 'users'"
-        " AND column_name = 'email_confirmed_at')"
-    ).fetchone()[0]
-
-
 def recipients(conn: psycopg.Connection, now: datetime) -> list[Recipient]:
     """Approved, onboarded users with digests on, with only their usable channels."""
     del now  # reserved for time-based gating; the query needs no clock today
-    email_ok = _email_confirmation_exists(conn)
     rows = conn.execute("""
         SELECT u.id, COALESCE(p.channels -> 'digest', '[]'::jsonb), u.discord_webhook_enc,
                u.email_enc, u.callmebot_phone_enc, u.callmebot_key_enc,
@@ -94,8 +84,7 @@ def recipients(conn: psycopg.Connection, now: datetime) -> list[Recipient]:
         for chan in chans:
             if chan == "discord" and hook:
                 usable.append(chan)
-            elif chan == "email" and email and email_ok:
-                usable.append(chan)
+            # Email stays off until a confirmed-address check exists (D-042, web task 3.1).
             elif chan == "whatsapp" and phone and key:
                 usable.append(chan)
         out.append(
