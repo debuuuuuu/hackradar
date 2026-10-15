@@ -64,7 +64,7 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [x] `dedupe.py`: fuzzy title + organizer + overlapping dates; keep all source URLs; tests
 - [x] "Listed on 2+ platforms" trust badge from dedupe (D-031)
 - [ ] `sources/luma.py`: curated calendar ICS feeds, hackathon keyword + future filter, fixture test (D-033)
-- [ ] Place preferences + filter: city normalisation, geocode cache, radius (D-034; research geocoder first)
+- [x] Place preferences + filter: static city table + radius (D-038); per-user prefs come with Phase 3
 - [ ] `notify/email.py`: Gmail SMTP HTML digest
 - [ ] Digest sections: top 5, closing ≤3 days, AI picks, other options
 - [ ] **Gate:** ranked digest, zero duplicates over a week of runs

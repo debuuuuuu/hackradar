@@ -2,7 +2,7 @@
 
 from datetime import UTC, datetime, timedelta
 
-from pipeline import db, dedupe, digest
+from pipeline import config, db, dedupe, digest
 from pipeline.normalize import IST, EventRecord
 
 NOW = datetime(2026, 10, 15, 12, tzinfo=UTC)
@@ -58,7 +58,8 @@ def test_close_unlisted_waits_for_grace_and_ignores_unhealthy_sources(conn):
     assert status(conn, "Gone") == "open"
 
 
-def test_digest_new_uses_cutoff_and_splits_kinds(conn):
+def test_digest_new_uses_cutoff_and_splits_kinds(conn, monkeypatch):
+    monkeypatch.setitem(config.load("settings")["digest"], "show_contests", True)
     db.upsert_events(conn, [rec(sid="1", title="Build It"), rec(sid="2", title="Quiz Night")])
     conn.execute("UPDATE events SET kind = 'contest' WHERE title = 'Quiz Night'")
     d = digest.build(conn, None, NOW)
@@ -76,3 +77,16 @@ def test_dedupe_merges_across_sources_and_keeps_both_urls(conn):
     sources = conn.execute("SELECT source FROM event_sources ORDER BY 1").fetchall()
     assert sources == [("devpost",), ("unstop",)]
     assert db.upsert_events(conn, [rec("unstop", "u1", "Multimodal AI Hackathon 2026")]) == ["same"]
+
+
+def test_digest_hides_contests_and_far_in_person_events_by_default(conn):
+    near = dict(mode="offline", city="Karjat")
+    db.upsert_events(conn, [rec(sid="1", title="Online One", mode="online")])
+    db.upsert_events(conn, [rec(sid="2", title="Near One", **near)])
+    db.upsert_events(conn, [rec(sid="3", title="Far One", mode="offline", city="West Delhi")])
+    db.upsert_events(conn, [rec(sid="4", title="Unknown One", mode="offline", city="Kalyanpur")])
+    db.upsert_events(conn, [rec(sid="5", title="Quiz Night", mode="online")])
+    conn.execute("UPDATE events SET kind = 'contest' WHERE title = 'Quiz Night'")
+    d = digest.build(conn, None, NOW)  # settings: home pune, 150 km, contests hidden
+    assert sorted(i.title for i in d.new) == ["Near One", "Online One"]
+    assert (d.new_total, d.far_hidden, d.contests_total) == (2, 2, 0)

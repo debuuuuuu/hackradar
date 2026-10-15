@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 import psycopg
 
-from pipeline import config
+from pipeline import config, place
 from pipeline.normalize import IST
+
+log = logging.getLogger(__name__)
 
 # The date that matters for joining: registration deadline first, then submission, then end.
 DEADLINE_SQL = "COALESCE(e.reg_deadline, e.submission_deadline, e.end_date)"
@@ -44,6 +47,8 @@ class Digest:
     open_total: int
     contests: list[DigestItem] = field(default_factory=list)  # new non-hackathons (kind)
     contests_total: int = 0
+    far_hidden: int = 0  # in-person hackathons outside the travel radius
+    radius_km: int | None = None
 
     @property
     def empty(self) -> bool:
@@ -92,6 +97,11 @@ def build(conn: psycopg.Connection, since: datetime | None, now: datetime) -> Di
     hack = " AND COALESCE(e.kind, 'hackathon') = 'hackathon'"
     other = " AND e.kind IN ('contest', 'other')"
 
+    # Place filter (D-034): online (or unknown format) always; in person only near home.
+    near = _near_cities(conn, cfg)
+    in_range = " AND (e.mode = 'online' OR e.mode IS NULL OR COALESCE(e.city = ANY(%s), false))"
+    too_far = " AND e.mode IN ('offline', 'hybrid') AND NOT COALESCE(e.city = ANY(%s), false)"
+
     # New events closing soon are listed only under "closing", never twice.
     new_where = f" AND e.first_seen_at > %s AND ({DEADLINE_SQL} IS NULL OR {DEADLINE_SQL} >= %s)"
     closing_where = f" AND {DEADLINE_SQL} >= %s AND {DEADLINE_SQL} < %s"
@@ -105,13 +115,52 @@ def build(conn: psycopg.Connection, since: datetime | None, now: datetime) -> Di
         sql = f"SELECT count(*) FROM events e WHERE e.status = 'open'{where}"
         return conn.execute(sql, params).fetchone()[0]
 
+    # `near` is None when the filter is off: then every event is in range.
+    def placed(kind: str, where: str, params: tuple) -> tuple[str, tuple]:
+        if near is None:
+            return kind + where, params
+        return kind + in_range + where, (near, *params)
+
+    new_q = placed(hack, new_where, (since, soon))
+    closing_q = placed(hack, closing_where, (today, soon))
+    contests: list[DigestItem] = []
+    contests_total = 0
+    if cfg.get("show_contests", True):
+        contests_q = placed(other, new_where, (since, soon))
+        contests, contests_total = items(*contests_q), count(*contests_q)
     return Digest(
         day=today.date().isoformat(),
-        new=items(hack + new_where, (since, soon)),
-        new_total=count(hack + new_where, (since, soon)),
-        closing=items(hack + closing_where, (today, soon)),
-        closing_total=count(hack + closing_where, (today, soon)),
+        new=items(*new_q),
+        new_total=count(*new_q),
+        closing=items(*closing_q),
+        closing_total=count(*closing_q),
         open_total=count(hack, ()),
-        contests=items(other + new_where, (since, soon)),
-        contests_total=count(other + new_where, (since, soon)),
+        contests=contests,
+        contests_total=contests_total,
+        far_hidden=0 if near is None else count(hack + too_far, (near,)),
+        radius_km=None if near is None else cfg["radius_km"],
     )
+
+
+def _near_cities(conn: psycopg.Connection, cfg: dict) -> list[str] | None:
+    """Source city strings within the travel radius of home, or None if the filter is off."""
+    home, radius = cfg.get("home_city"), cfg.get("radius_km")
+    if not home or not radius:
+        return None
+    cities = [
+        r[0]
+        for r in conn.execute(
+            "SELECT DISTINCT city FROM events WHERE status = 'open' AND city IS NOT NULL"
+            " AND mode IN ('offline', 'hybrid')"
+        )
+    ]
+    try:
+        near, unknown = place.near_cities(cities, home, radius)
+    except ValueError:
+        log.exception(
+            "place filter off: bad home_city"
+        )  # misconfiguration must not stop the digest
+        return None
+    if unknown:
+        log.info("unknown places (add to config/places.yaml): %s", "; ".join(sorted(unknown)))
+    return near

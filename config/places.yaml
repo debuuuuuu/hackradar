@@ -1,0 +1,29 @@
+# Place table for the place filter (D-034). Approximate city-centre coordinates (good to a few km,
+# enough for 100-150 km radii; not verified against a geocoder). Aliases map neighbourhoods and
+# source spellings to a metro. Add a city here when the run log says "unknown places: ...".
+# Keys and aliases are lowercase.
+
+pune:       {lat: 18.5204, lon: 73.8567, aliases: [pimpri-chinchwad, pimpri chinchwad, hinjewadi, kothrud]}
+mumbai:     {lat: 19.0760, lon: 72.8777, aliases: [powai, malad, bandra, vile parle, andheri, thane, navi mumbai, kalyan, dombivli, vashi, borivali]}
+karjat:     {lat: 18.9100, lon: 73.3200}
+lonavala:   {lat: 18.7481, lon: 73.4072, aliases: [lonavla, khandala]}
+panvel:     {lat: 18.9894, lon: 73.1175}
+nashik:     {lat: 19.9975, lon: 73.7898}
+satara:     {lat: 17.6805, lon: 74.0183}
+kolhapur:   {lat: 16.7050, lon: 74.2433}
+solapur:    {lat: 17.6599, lon: 75.9064}
+ahmednagar: {lat: 19.0948, lon: 74.7480, aliases: [ahilyanagar]}
+nagpur:     {lat: 21.1458, lon: 79.0882}
+delhi:      {lat: 28.6139, lon: 77.2090, aliases: [new delhi, west delhi, east delhi, south delhi, north delhi, south west delhi, central delhi, gurgaon, gurugram, noida, greater noida, ghaziabad, faridabad, dasna]}
+bengaluru:  {lat: 12.9716, lon: 77.5946, aliases: [bangalore, bangalore urban, bengaluru urban]}
+hyderabad:  {lat: 17.3850, lon: 78.4867, aliases: [secunderabad]}
+chennai:    {lat: 13.0827, lon: 80.2707}
+kolkata:    {lat: 22.5726, lon: 88.3639, aliases: [calcutta]}
+ahmedabad:  {lat: 23.0225, lon: 72.5714, aliases: [gandhinagar]}
+jaipur:     {lat: 26.9124, lon: 75.7873}
+indore:     {lat: 22.7196, lon: 75.8577}
+bhopal:     {lat: 23.2599, lon: 77.4126}
+lucknow:    {lat: 26.8467, lon: 80.9462}
+chandigarh: {lat: 30.7333, lon: 76.7794, aliases: [mohali, panchkula]}
+mangaluru:  {lat: 12.9141, lon: 74.8560, aliases: [mangalore]}
+goa:        {lat: 15.4909, lon: 73.8278, aliases: [panaji, panjim, north goa, south goa]}

@@ -295,3 +295,11 @@ Format: date · decision · why · alternatives rejected · status.
 - **Alternatives:** pg_trgm similarity in SQL (scores 1.0 on generic same-source titles); AI judging pairs (costs calls, risks personal/odd merges); embeddings (Phase 4).
 - **Known limits:** the surviving row keeps the oldest source's dates; a later "changed" listing from either source overwrites the row's dates (the merged sources share one event id). Different deadlines per platform are only in each source's `raw_json`. Revisit when a third source lands.
 - **Status:** active
+
+### D-038 · Place filter built on a hand-kept city table (no geocoder); owner preferences in settings.yaml
+- **Date:** 2026-10-15
+- **Decision:** `pipeline/place.py` + `config/places.yaml` (24 metros/cities, approximate coordinates, alias lists). A source city string resolves by exact alias, then comma-separated parts from the end; distance is haversine. In-person (offline/hybrid) events farther than `digest.radius_km` of `digest.home_city` are hidden; online and unknown-format events always show; an unknown city counts as "not near" and is logged ("unknown places") so the table can grow. The digest header says how many were hidden. Owner preferences (home Pune, 150 km, contests hidden) live in `config/settings.yaml` until the `users`/`preferences` tables are wired in Phase 3. Refines D-034 (geocoder research no longer needed for now).
+- **Why:** The real data has 86 distinct city strings including venue names and junk; ~25 aliases cover the cases that matter for Pune ± 150 km, with no external service, no card, and deterministic tests. "Kalyanpur" (17 events) is a UP locality, so it is deliberately not aliased to Kalyan.
+- **Alternatives:** OSM Nominatim (needs policy research, cache, network at runtime); GeoNames file (download server forbids bots; manual one-off).
+- **Known limits:** coordinates are from memory, accurate to a few km, unverified against a geocoder; hybrid events far away are hidden even though they may allow remote joining; friends with other home cities need those cities in the table.
+- **Status:** active

@@ -103,6 +103,12 @@ def test_summary_shown_italic_and_truncated():
     assert len(summary) <= discord.SUMMARY_MAX + 10
 
 
+def test_header_says_how_many_far_events_are_hidden():
+    payload = discord.render(digest(new=[item()], new_total=1, far_hidden=7, radius_km=150))
+    assert "7 in-person events farther than 150 km hidden" in payload["content"]
+    assert "hidden" not in discord.render(digest(new=[item()], new_total=1))["content"]
+
+
 def test_render_contests_section():
     payload = discord.render(digest(contests=[item()], contests_total=1))
     assert payload["embeds"][0]["title"] == "🧩 Contests & other (1)"
@@ -118,4 +124,4 @@ def test_listed_on_several_platforms_badge():
 
 def test_url_cannot_break_the_markdown_link():
     line = discord.format_item(item(url="https://x.com/a (b)"))
-    assert line.startswith("**[Hack \[AI\] \*2026\*](https://x.com/a%20(b%29)**")
+    assert line.startswith(r"**[Hack \[AI\] \*2026\*](https://x.com/a%20(b%29)**")

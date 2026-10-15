@@ -8,7 +8,7 @@ _Last updated: 2026-10-15_
 [`sessions/`](sessions/README.md)** (last session's done/problems/next steps), then only the sub-docs the task needs (index in §7).
 
 - **Phase:** 1 · MVP digest, in progress. Phase 0 gate passed 2026-10-14.
-- **Just finished (2026-10-15):** dedupe + "listed on 2+ platforms" badge (D-037, 61 tests); digest now shows AI summaries and a separate "Contests & other" section (kind filter, 52 tests); first live Discord digest; "new" cutoff fix; trust signals (D-031); batched
+- **Just finished (2026-10-15):** Devfolio source; place filter (Pune ± 150 km, contests hidden; D-038); dedupe + "listed on 2+ platforms" badge (D-037, 61 tests); digest now shows AI summaries and a separate "Contests & other" section (kind filter, 52 tests); first live Discord digest; "new" cutoff fix; trust signals (D-031); batched
   upserts (run 155 s → 15 s); calendar plan (D-032); Luma via ICS (D-033); place filter (D-034); dashboard design
   direction D (canvas https://claude.ai/artifact/SDLHqTM56wgrjpXHTgdbAx, private); Phase 2 source research.
   34 tests green.
@@ -122,6 +122,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-035 Groq is the default batch AI provider (Gemini optional); no embeddings from Groq.
 - D-036 Daily enrichment: AI summary + kind (hackathon/contest/other) stored per event; digest doesn't use them yet.
 - D-037 Cross-platform dedupe: conservative rule-based merge, "listed on 2+ platforms" badge.
+- D-038 Place filter on a hand-kept city table (no geocoder); owner prefs in settings.yaml.
 
 ## 6. Known issues and open questions
 

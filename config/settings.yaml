@@ -18,6 +18,10 @@ digest:
   list_limit: 10            # Phase 1: max items per digest section
   closing_soon_days: 3
   ai_picks: 3
+  # Owner's preferences until the users/preferences tables are wired in (Phase 3).
+  home_city: pune
+  radius_km: 150            # in-person events farther than this are hidden; online always shown
+  show_contests: false      # hide the "Contests & other" section
 
 reminders:
   default_offsets: [7, 3, 1, 0]   # 0 = same-day morning alert (D-019)

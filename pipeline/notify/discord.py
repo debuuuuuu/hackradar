@@ -102,6 +102,10 @@ def _section(title: str, items: list[DigestItem], total: int, color: int, budget
 def render(digest: Digest) -> dict:
     """Webhook payload for one digest."""
     header = f"🛰️ **HackRadar** · {digest.day} · {digest.open_total} open hackathons tracked"
+    if digest.far_hidden:
+        header += (
+            f"\n-# {digest.far_hidden} in-person events farther than {digest.radius_km} km hidden."
+        )
     header += f"\n-# {DISCLAIMER}"
     if digest.empty:
         return {"content": f"{header}\nNothing new today and nothing closing in the next 3 days."}
