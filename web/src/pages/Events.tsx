@@ -6,12 +6,19 @@ import { formatIst, sourceLabel } from "../lib/format.js";
 const PAGE = 20;
 const RADII = [50, 100, 150, 300, 500];
 
-export default function Events() {
+export default function Events({
+  heading = "Hackathons, found for you",
+  defaults = { place: "", radius: 150 },
+}: {
+  heading?: string;
+  defaults?: { place: string; radius: number };
+}) {
   const [sp, setSp] = useSearchParams();
   const q = sp.get("q") ?? "";
   const kind = sp.get("kind") ?? "";
-  const place = sp.get("place") ?? "";
-  const radius = Number(sp.get("radius")) || 150;
+  const rawPlace = sp.get("place") ?? defaults.place;
+  const place = rawPlace === "none" ? "" : rawPlace; // "none" = the person turned Near me off
+  const radius = Number(sp.get("radius")) || defaults.radius;
   const offset = Math.max(0, Number(sp.get("offset")) || 0);
 
   const [places, setPlaces] = useState<Place[]>([]);
@@ -53,7 +60,7 @@ export default function Events() {
 
   return (
     <>
-      <h1>Hackathons, found for you</h1>
+      <h1>{heading}</h1>
       <p className="lead">Open hackathons and contests from public listings. Dates come from the source.</p>
 
       <form
@@ -79,8 +86,8 @@ export default function Events() {
         </label>
         <label className="field">
           <span>Near me</span>
-          <select value={place} onChange={(e) => update({ place: e.target.value })}>
-            <option value="">Off</option>
+          <select value={place || "none"} onChange={(e) => update({ place: e.target.value })}>
+            <option value="none">Off</option>
             {places.map((p) => (
               <option key={p.key} value={p.key}>
                 {p.name}
