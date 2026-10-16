@@ -351,4 +351,11 @@ Format: date · decision · why · alternatives rejected · status.
 - **Decision:** The landing page, Today list and event pages are open to everyone. Sign-in is required only for saved preferences, digests and WhatsApp or email opt-in. Launch sign-in methods: email link (built) and Google. Discord stays built but off. Phone-code sign-in is deferred (SMS costs money). LinkedIn and X posts appear inside Today and the digest, tagged with their source, found by keyword rules plus an LLM check. Personalisation covers ranking by saved preferences and per-user tone. The product board (claude.ai artifact "HackRadar Flow Board") holds the working flow.
 - **Why:** Debjit (2026-10-16, board comments and answers). Public pages also help search and sharing.
 - **Alternatives:** sign-in wall (rejected by Debjit); Supabase or Firebase Auth (not chosen yet: unverified free limits, extra dependency, and identities would need migrating).
-- **Status:** active. Open: where Google sign-in lives (own OAuth like Discord is the proposal), the keyword rule set, GIF source and terms.
+- **Status:** active. Open: where Google sign-in lives (own OAuth like Discord is the proposal), the keyword rule set, GIF source and terms. The auth-service question is settled by D-046.
+
+### D-046 · Supabase Auth for email + password; our own session and database stay
+- **Date:** 2026-10-16
+- **Decision:** Add Supabase Auth for email-and-password sign-in, account confirmation and password reset. After Supabase signs someone in, our server validates the token with Supabase, finds or creates our user by email, and sets our own session cookie. Neon stays the database. Email link, Google (own OAuth) and Discord stay on our code. One account per email across all methods. A daily keep-alive query (GitHub Actions) stops the free project pausing; move to Pro at public launch.
+- **Why:** Debjit (2026-10-16) wants passwords as well as Google at 1,000 to 1M users. Passwords, reset and lockout are better handled by a managed service than by new code of ours. Research: `research/2026-10-16-supabase-auth.md`.
+- **Alternatives:** own passwords (more security work and breach risk); Firebase Auth (limits unverified); Clerk (not researched).
+- **Status:** active. Supersedes D-005 only for sign-in, not for the database. Unverified: whether free signup needs a card, default email limits. Debjit checks the card question at sign-up.

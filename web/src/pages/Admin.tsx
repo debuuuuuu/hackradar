@@ -134,7 +134,7 @@ function Tile({ label, value }: { label: string; value: string }) {
 }
 
 function SignInChart({ days }: { days: AdminStats["loginsByDay"] }) {
-  const max = niceMax(Math.max(0, ...days.map((d) => d.discord + d.email)));
+  const max = niceMax(Math.max(0, ...days.map((d) => d.discord + d.email + d.google)));
   const first = days[0]?.day;
   const last = days[days.length - 1]?.day;
   return (
@@ -146,6 +146,9 @@ function SignInChart({ days }: { days: AdminStats["loginsByDay"] }) {
         <li>
           <span className="swatch email" aria-hidden="true" /> Email (striped)
         </li>
+        <li>
+          <span className="swatch google" aria-hidden="true" /> Google (dotted)
+        </li>
       </ul>
       <div className="plot">
         <span className="ymax" aria-hidden="true">
@@ -156,7 +159,8 @@ function SignInChart({ days }: { days: AdminStats["loginsByDay"] }) {
         </span>
         <div className="bars" aria-hidden="true">
           {days.map((d) => (
-            <div key={d.day} className="bar" title={`${shortDay(d.day)}: ${d.discord} Discord, ${d.email} email`}>
+            <div key={d.day} className="bar" title={`${shortDay(d.day)}: ${d.discord} Discord, ${d.email} email, ${d.google} Google`}>
+              <span className="seg google" style={{ blockSize: `${barPct(d.google, max)}%` }} />
               <span className="seg email" style={{ blockSize: `${barPct(d.email, max)}%` }} />
               <span className="seg discord" style={{ blockSize: `${barPct(d.discord, max)}%` }} />
             </div>
@@ -176,6 +180,7 @@ function SignInChart({ days }: { days: AdminStats["loginsByDay"] }) {
             <th scope="col">Day</th>
             <th scope="col">Discord</th>
             <th scope="col">Email</th>
+            <th scope="col">Google</th>
           </tr>
         </thead>
         <tbody>
@@ -184,6 +189,7 @@ function SignInChart({ days }: { days: AdminStats["loginsByDay"] }) {
               <th scope="row">{shortDay(d.day)}</th>
               <td>{d.discord}</td>
               <td>{d.email}</td>
+              <td>{d.google}</td>
             </tr>
           ))}
         </tbody>

@@ -114,7 +114,7 @@ export async function grantAdminIfListed(uid: number, emailHash: string): Promis
 }
 
 /** Records a successful sign-in. */
-export async function recordLogin(uid: number, method: "discord" | "email"): Promise<void> {
+export async function recordLogin(uid: number, method: "discord" | "email" | "google"): Promise<void> {
   await query("INSERT INTO logins (user_id, method) VALUES ($1, $2)", [uid, method]);
   await query("UPDATE users SET last_login_at = now() WHERE id = $1", [uid]);
 }
@@ -136,38 +136,62 @@ export async function finishEmailLogin(
   );
   if (used.length === 0) return null;
   const { email_hash: emailHash, email_enc: emailEnc } = used[0];
-
-  let uid: number;
-  let isNew = false;
-  let email: string | undefined; // set for a brand-new account only, so the caller can send the welcome mail
-  const existing = await query<{ id: number }>("SELECT id FROM users WHERE email_hash = $1", [emailHash]);
-  if (existing.length > 0) {
-    uid = Number(existing[0].id);
-  } else {
-    if (!emailEnc) return null;
-    // One statement: the user and their default preferences are created together or not at all.
-    const created = await query<{ id: number }>(
-      `WITH u AS (
-         INSERT INTO users (name, email_hash, email_enc) VALUES ('Member', $1, $2)
-         ON CONFLICT (email_hash) DO NOTHING RETURNING id
-       ), p AS (INSERT INTO preferences (user_id) SELECT id FROM u)
-       SELECT id FROM u`,
-      [emailHash, emailEnc],
-    );
-    if (created.length > 0) {
-      uid = Number(created[0].id);
-      isNew = true;
-      email = decrypt(emailEnc, keyFromEnv());
-    } else {
-      const raced = await query<{ id: number }>("SELECT id FROM users WHERE email_hash = $1", [emailHash]);
-      if (raced.length === 0) return null;
-      uid = Number(raced[0].id);
-    }
-  }
-  await grantAdminIfListed(uid, emailHash);
-  await recordLogin(uid, "email");
-  return { uid, isNew, email };
+  const user = await userForEmail(emailHash, emailEnc, "Member");
+  if (!user) return null;
+  await grantAdminIfListed(user.uid, emailHash);
+  await recordLogin(user.uid, "email");
+  return user;
 }
+
+/**
+ * Finds the account for an email (by its blind index) or creates it with default preferences. The
+ * address is returned only for a brand-new account, so the caller can send the welcome mail.
+ */
+async function userForEmail(
+  emailHash: string,
+  emailEnc: string | null,
+  name: string,
+): Promise<{ uid: number; isNew: boolean; email?: string } | null> {
+  const existing = await query<{ id: number }>("SELECT id FROM users WHERE email_hash = $1", [emailHash]);
+  if (existing.length > 0) return { uid: Number(existing[0].id), isNew: false };
+  if (!emailEnc) return null;
+  // One statement: the user and their default preferences are created together or not at all.
+  const created = await query<{ id: number }>(
+    `WITH u AS (
+       INSERT INTO users (name, email_hash, email_enc) VALUES ($3, $1, $2)
+       ON CONFLICT (email_hash) DO NOTHING RETURNING id
+     ), p AS (INSERT INTO preferences (user_id) SELECT id FROM u)
+     SELECT id FROM u`,
+    [emailHash, emailEnc, name],
+  );
+  if (created.length > 0) return { uid: Number(created[0].id), isNew: true, email: decrypt(emailEnc, keyFromEnv()) };
+  const raced = await query<{ id: number }>("SELECT id FROM users WHERE email_hash = $1", [emailHash]);
+  return raced.length === 0 ? null : { uid: Number(raced[0].id), isNew: false };
+}
+
+/**
+ * Signs in a person whose email a provider (Google, or Supabase for passwords) has verified. They land
+ * on the same account as the email link for that address (one account per email), created on first use.
+ * Records the login itself. A password sign-in is recorded as "email": the identity is the address.
+ */
+async function signInWithVerifiedEmail(
+  rawEmail: string,
+  name: string,
+  method: "google" | "email",
+): Promise<{ uid: number; isNew: boolean; email?: string } | null> {
+  const email = normaliseEmail(rawEmail);
+  if (!email) return null;
+  const key = keyFromEnv();
+  const emailHash = blindIndex(email, key);
+  const user = await userForEmail(emailHash, encrypt(email, key), name);
+  if (!user) return null;
+  await grantAdminIfListed(user.uid, emailHash);
+  await recordLogin(user.uid, method);
+  return user;
+}
+
+export const signInWithGoogle = (email: string, name: string) => signInWithVerifiedEmail(email, name, "google");
+export const signInWithSupabase = (email: string, name: string) => signInWithVerifiedEmail(email, name, "email");
 
 export async function findUser(uid: number): Promise<PublicUser | null> {
   const rows = await query<{ id: number; name: string; onboarded_at: Date | null; is_admin: boolean }>(

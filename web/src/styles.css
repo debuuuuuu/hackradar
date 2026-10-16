@@ -715,6 +715,10 @@ dd {
 .seg.email {
   background: repeating-linear-gradient(135deg, var(--ink) 0 1.5px, color-mix(in oklch, var(--ink) 22%, white) 1.5px 5px);
 }
+.swatch.google,
+.seg.google {
+  background: radial-gradient(var(--ink) 1.3px, transparent 1.6px) 0 0 / 5px 5px, color-mix(in oklch, var(--ink) 12%, white);
+}
 .plot {
   position: relative;
   padding-inline-start: 2rem;
@@ -829,4 +833,22 @@ dd {
   margin: 1.5rem 0 0;
   padding-inline-start: 1.25rem;
   color: var(--mute);
+}
+
+.signin-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin: 0;
+}
+
+.linklike {
+  min-block-size: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--blue);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
 }

@@ -150,7 +150,7 @@ CREATE INDEX IF NOT EXISTS runs_started_idx ON runs (started_at DESC);
 CREATE TABLE IF NOT EXISTS logins (
     id      bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id bigint      NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    method  text        NOT NULL CHECK (method IN ('discord', 'email')),
+    method  text        NOT NULL CHECK (method IN ('discord', 'email', 'google')),
     at      timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS logins_at_idx ON logins (at);
