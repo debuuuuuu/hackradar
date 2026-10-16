@@ -2,7 +2,7 @@ import { authorizeUrl, clearOauthCookie, discordConfigured, exchangeCode, newSta
 import { finishEmailLogin, findUser, normaliseEmail, peekEmailToken, recordLogin, safeNext, sessionFromRequest, sessionSecret, startEmailLogin } from "./auth.js";
 import { keyFromEnv } from "./crypto.js";
 import { addRoute, error, json } from "./http.js";
-import { sendLoginEmail } from "./mail.js";
+import { isBadRecipient, sendLoginEmail, sendWelcomeEmail } from "./mail.js";
 import { clearSessionCookie, sessionCookie, signSession } from "./session.js";
 
 const MAX_BODY_BYTES = 2048;
@@ -60,10 +60,14 @@ export function registerAuthRoutes(): void {
     if (!email) return error(400, "enter a valid email address");
     const next = typeof body.next === "string" ? body.next : null;
     try {
-      await startEmailLogin(email, { send: sendLoginEmail, origin: originFor(url), next });
+      // Vercel overwrites x-forwarded-for with the real client address, so its first entry can't be spoofed.
+      const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+      await startEmailLogin(email, { send: sendLoginEmail, origin: originFor(url), next, ip });
     } catch (e) {
-      // Same response whatever happened; log the class only (messages can carry addresses).
+      // Log the class only (messages can carry addresses). Tell the person when the mail did not go out:
+      // 422 = the server refused this address (check for typos), 502 = we could not send right now.
       console.error("email sign-in start failed:", errTag(e));
+      return isBadRecipient(e) ? error(422, "undeliverable address") : error(502, "could not send email");
     }
     return json({ ok: true });
   });
@@ -92,6 +96,13 @@ export function registerAuthRoutes(): void {
       keyFromEnv();
       const result = await finishEmailLogin(token);
       if (!result) return failed();
+      if (result.isNew && result.email) {
+        // Awaited because a serverless function can be frozen once the response is sent. A failure
+        // here must never block the sign-in itself, so it is only logged.
+        await sendWelcomeEmail(result.email, new URL("/welcome", originFor(new URL(request.url))).toString()).catch((e) =>
+          console.error("welcome email failed:", errTag(e)),
+        );
+      }
       const cookie = sessionCookie(signSession({ uid: result.uid }, secret));
       return json({ ok: true, next: safeNext(typeof body.next === "string" ? body.next : null) }, { headers: { "set-cookie": cookie } });
     } catch (e) {

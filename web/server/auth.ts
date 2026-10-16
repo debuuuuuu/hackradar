@@ -1,12 +1,15 @@
 import { createHash, randomBytes } from "node:crypto";
-import { blindIndex, encrypt, keyFromEnv } from "./crypto.js";
+import { blindIndex, decrypt, encrypt, keyFromEnv } from "./crypto.js";
 import { query, transaction } from "./db.js";
 import { readSession } from "./session.js";
 
 const TOKEN_TTL_MS = 15 * 60_000;
 const RESEND_GAP_MS = 60_000;
 const HOUR_MS = 3_600_000;
-const MAX_TOKENS_PER_HOUR = 200;
+// Global brake, sized to the mail provider (Gmail SMTP ~500/day). Raise LOGIN_TOKENS_PER_HOUR when it moves to a real provider (D-044).
+const MAX_TOKENS_PER_HOUR = Number(process.env.LOGIN_TOKENS_PER_HOUR) || 200;
+/** One address of the world can't use up the global brake: at most this many links per IP per hour. */
+export const MAX_TOKENS_PER_IP_PER_HOUR = 20;
 const MAX_NEXT_LEN = 2000;
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
 
@@ -40,13 +43,14 @@ const sha256 = (s: string): string => createHash("sha256").update(s).digest("hex
  */
 export async function startEmailLogin(
   email: string,
-  deps: { send: (to: string, link: string) => Promise<void>; now?: number; origin: string; next?: string | null },
+  deps: { send: (to: string, link: string) => Promise<void>; now?: number; origin: string; next?: string | null; ip?: string | null },
 ): Promise<void> {
   const normalised = normaliseEmail(email);
   if (!normalised) return;
   const now = deps.now ?? Date.now();
   const key = keyFromEnv();
   const emailHash = blindIndex(normalised, key);
+  const ipHash = deps.ip ? blindIndex(deps.ip, key) : null; // hashed: raw IPs are never stored
   const token = randomBytes(32).toString("base64url");
   const tokenHash = sha256(token);
   // A transaction-scoped advisory lock serialises every start, so the per-address and global
@@ -54,10 +58,11 @@ export async function startEmailLogin(
   const inserted = await transaction(async (q) => {
     await q("SELECT pg_advisory_xact_lock(hashtext('login_tokens_start'))");
     const rows = await q(
-      `INSERT INTO login_tokens (email_hash, email_enc, token_hash, expires_at, created_at)
-       SELECT $1::text, $2::text, $3::text, $4::timestamptz, $5::timestamptz
+      `INSERT INTO login_tokens (email_hash, email_enc, token_hash, expires_at, created_at, ip_hash)
+       SELECT $1::text, $2::text, $3::text, $4::timestamptz, $5::timestamptz, $9::text
        WHERE NOT EXISTS (SELECT 1 FROM login_tokens WHERE email_hash = $1 AND created_at > $6::timestamptz)
          AND (SELECT count(*) FROM login_tokens WHERE created_at > $7::timestamptz) < $8
+         AND ($9::text IS NULL OR (SELECT count(*) FROM login_tokens WHERE ip_hash = $9::text AND created_at > $7::timestamptz) < $10)
        RETURNING id`,
       [
         emailHash,
@@ -68,6 +73,8 @@ export async function startEmailLogin(
         new Date(now - RESEND_GAP_MS),
         new Date(now - HOUR_MS),
         MAX_TOKENS_PER_HOUR,
+        ipHash,
+        MAX_TOKENS_PER_IP_PER_HOUR,
       ],
     );
     return rows.length > 0;
@@ -119,7 +126,7 @@ export async function recordLogin(uid: number, method: "discord" | "email"): Pro
 export async function finishEmailLogin(
   token: string,
   now: number = Date.now(),
-): Promise<{ uid: number; isNew: boolean } | null> {
+): Promise<{ uid: number; isNew: boolean; email?: string } | null> {
   if (typeof token !== "string" || token.length === 0 || token.length > 200) return null;
   const used = await query<{ email_hash: string; email_enc: string | null }>(
     `UPDATE login_tokens SET used_at = $2::timestamptz
@@ -132,6 +139,7 @@ export async function finishEmailLogin(
 
   let uid: number;
   let isNew = false;
+  let email: string | undefined; // set for a brand-new account only, so the caller can send the welcome mail
   const existing = await query<{ id: number }>("SELECT id FROM users WHERE email_hash = $1", [emailHash]);
   if (existing.length > 0) {
     uid = Number(existing[0].id);
@@ -149,6 +157,7 @@ export async function finishEmailLogin(
     if (created.length > 0) {
       uid = Number(created[0].id);
       isNew = true;
+      email = decrypt(emailEnc, keyFromEnv());
     } else {
       const raced = await query<{ id: number }>("SELECT id FROM users WHERE email_hash = $1", [emailHash]);
       if (raced.length === 0) return null;
@@ -157,7 +166,7 @@ export async function finishEmailLogin(
   }
   await grantAdminIfListed(uid, emailHash);
   await recordLogin(uid, "email");
-  return { uid, isNew };
+  return { uid, isNew, email };
 }
 
 export async function findUser(uid: number): Promise<PublicUser | null> {

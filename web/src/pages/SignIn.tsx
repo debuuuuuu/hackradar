@@ -20,7 +20,7 @@ export default function SignIn() {
   }, []);
   const discordHref = `/api/auth/discord/start${next ? `?next=${encodeURIComponent(next)}` : ""}`;
   const [email, setEmail] = useState("");
-  const [state, setState] = useState<"idle" | "sending" | "sent" | "invalid" | "failed">("idle");
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "invalid" | "undeliverable" | "failed">("idle");
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -31,7 +31,7 @@ export default function SignIn() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email, next }),
       });
-      setState(res.ok ? "sent" : res.status === 400 ? "invalid" : "failed");
+      setState(res.ok ? "sent" : res.status === 400 ? "invalid" : res.status === 422 ? "undeliverable" : "failed");
     } catch {
       setState("failed");
     }
@@ -65,7 +65,8 @@ export default function SignIn() {
       )}
       {state === "sent" ? (
         <p className="notice" role="status">
-          If that address can receive mail, a sign-in link is on its way. It works once and expires in 15 minutes.
+          Check your inbox. A sign-in link is on its way and works once for 15 minutes. If it has not arrived after a few minutes,
+          look in spam, or go back and check the address for typos.
         </p>
       ) : (
         <form onSubmit={submit} className="signin-form">
@@ -89,9 +90,14 @@ export default function SignIn() {
               Enter a valid email address.
             </p>
           )}
+          {state === "undeliverable" && (
+            <p className="notice" role="alert">
+              We could not send to that address. Check it for typos, such as a missing letter in the domain, and try again.
+            </p>
+          )}
           {state === "failed" && (
             <p className="notice" role="alert">
-              Something went wrong. Try again in a moment.
+              We could not send the email just now. Try again in a minute.
             </p>
           )}
         </form>

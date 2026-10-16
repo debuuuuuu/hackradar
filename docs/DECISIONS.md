@@ -345,3 +345,10 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Debjit (2026-10-16): users may reach 1,000 or 1M. Manual approval, one sequential cron send, Gmail SMTP (~500/day), CallMeBot WhatsApp and Vercel Hobby (non-commercial) all fail at that size.
 - **Alternatives:** keep ₹0 as a hard limit (caps growth); set a fixed budget now (not chosen).
 - **Status:** active. Follow-ups, each needs its own research note and decision before changing: queue-based parallel sending, a transactional email provider, official WhatsApp Business API, paid Vercel/Neon tiers, automatic sign-up with rate limits.
+
+### D-045 · Public browsing; sign-in only for personal features; launch sign-in = email link + Google
+- **Date:** 2026-10-16
+- **Decision:** The landing page, Today list and event pages are open to everyone. Sign-in is required only for saved preferences, digests and WhatsApp or email opt-in. Launch sign-in methods: email link (built) and Google. Discord stays built but off. Phone-code sign-in is deferred (SMS costs money). LinkedIn and X posts appear inside Today and the digest, tagged with their source, found by keyword rules plus an LLM check. Personalisation covers ranking by saved preferences and per-user tone. The product board (claude.ai artifact "HackRadar Flow Board") holds the working flow.
+- **Why:** Debjit (2026-10-16, board comments and answers). Public pages also help search and sharing.
+- **Alternatives:** sign-in wall (rejected by Debjit); Supabase or Firebase Auth (not chosen yet: unverified free limits, extra dependency, and identities would need migrating).
+- **Status:** active. Open: where Google sign-in lives (own OAuth like Discord is the proposal), the keyword rule set, GIF source and terms.

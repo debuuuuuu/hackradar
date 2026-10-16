@@ -4,7 +4,6 @@ import Admin from "./pages/Admin.js";
 import EventDetail from "./pages/EventDetail.js";
 import ConfirmSignIn from "./pages/ConfirmSignIn.js";
 import Home from "./pages/Home.js";
-import RequireMe from "./components/RequireMe.js";
 import Onboarding from "./pages/Onboarding.js";
 import Settings from "./pages/Settings.js";
 import SignIn from "./pages/SignIn.js";
@@ -54,7 +53,7 @@ export default function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home state={state} />} />
-          <Route path="/events/:id" element={<RequireMe>{() => <EventDetail />}</RequireMe>} />
+          <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/welcome" element={<Onboarding />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/admin" element={<Admin />} />

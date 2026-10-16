@@ -4,10 +4,16 @@ import type { MeState } from "../lib/me.js";
 import type { PrefsResponse } from "../lib/prefsForm.js";
 import Events from "./Events.js";
 
-/** Signed out: landing. Signed in but not onboarded: onboarding. Otherwise: the personal feed. */
+/** Signed out: landing with the public events below it. Signed in but not onboarded: onboarding. Otherwise: the personal feed. */
 export default function Home({ state }: { state: MeState }) {
   if (state.status === "loading") return <p>Loading</p>;
-  if (state.status === "out") return <Landing />;
+  if (state.status === "out")
+    return (
+      <>
+        <Landing />
+        <Events heading="Open hackathons right now" />
+      </>
+    );
   if (!state.me.onboarded) return <Navigate to="/welcome" replace />;
   return <Today name={state.me.name} />;
 }
@@ -18,10 +24,10 @@ function Landing() {
       <h1>Never miss a hackathon you would actually want.</h1>
       <p className="lead">
         HackRadar checks Devpost, Unstop and Devfolio every day, keeps what is near you and fits your interests, and sends it
-        to Discord, WhatsApp or email. Free, no passwords.
+        to Discord, WhatsApp or email. Free, no passwords. Browse everything below without an account; sign in to get picks made for you.
       </p>
       <Link to="/signin" className="btn primary">
-        Sign in to start
+        Sign in for personal picks
       </Link>
       <ol className="steps">
         <li>

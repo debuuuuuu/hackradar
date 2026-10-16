@@ -163,8 +163,10 @@ CREATE TABLE IF NOT EXISTS login_tokens (
     token_hash text        NOT NULL UNIQUE,
     expires_at timestamptz NOT NULL,
     used_at    timestamptz,
-    created_at timestamptz NOT NULL DEFAULT now()
+    created_at timestamptz NOT NULL DEFAULT now(),
+    ip_hash    text                        -- blind index of the requester's IP, for the per-IP rate limit
 );
+CREATE INDEX IF NOT EXISTS login_tokens_ip_idx ON login_tokens (ip_hash, created_at);
 
 -- Mirror of config/places.yaml so the website can read it (place.sync_places).
 CREATE TABLE IF NOT EXISTS places (
