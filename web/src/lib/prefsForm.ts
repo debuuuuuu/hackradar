@@ -15,6 +15,10 @@ export interface FormState {
   phone: string;
   callmebotKey: string;
   hasCallmebotKey: boolean;
+  /** Write-only like the CallMeBot key: the saved URL never comes back, only whether one exists. */
+  discordWebhook: string;
+  discordWebhookSet: boolean;
+  clearDiscordWebhook: boolean;
 }
 
 export const TOPIC_LABELS: ReadonlyArray<readonly [string, string]> = [
@@ -36,6 +40,9 @@ export function fromApi(res: PrefsResponse): FormState {
     phone: res.contact.phone ?? "",
     callmebotKey: "",
     hasCallmebotKey: res.contact.hasCallmebotKey,
+    discordWebhook: "",
+    discordWebhookSet: res.contact.discordWebhookSet,
+    clearDiscordWebhook: false,
   };
 }
 
@@ -47,13 +54,16 @@ export function resolveCity(city: string, places: ReadonlyArray<{ key: string }>
 
 /**
  * Request body for PUT /api/me/prefs. A locked email (sign-in identity) is never sent; a blank
- * CallMeBot key is omitted so the stored one is kept.
+ * CallMeBot key or webhook is omitted so the stored one is kept.
  */
 export function toPayload(form: FormState, places: ReadonlyArray<{ key: string }> = []): { prefs: Prefs; contact: Record<string, string> } {
   const contact: Record<string, string> = { phone: form.phone.trim() };
   if (!form.emailLocked) contact.email = form.email.trim();
   const key = form.callmebotKey.trim();
   if (key !== "") contact.callmebotKey = key;
+  const hook = form.discordWebhook.trim();
+  if (hook !== "") contact.discordWebhook = hook;
+  else if (form.clearDiscordWebhook) contact.discordWebhook = "";
   return { prefs: { ...form.prefs, homeCity: resolveCity(form.prefs.homeCity, places) }, contact };
 }
 

@@ -130,7 +130,7 @@ describe("getPrefs and savePrefs", () => {
       const got = await getPrefs(uid);
       expect(got).toEqual({
         ...DEFAULT_PREFS,
-        contact: { email: null, emailLocked: false, phone: null, hasCallmebotKey: false },
+        contact: { email: null, emailLocked: false, phone: null, hasCallmebotKey: false, discordWebhookSet: false },
       });
       expect(await getPrefs(uid + 999)).toBeNull();
     }));
@@ -152,7 +152,7 @@ describe("getPrefs and savePrefs", () => {
       const got = (await getPrefs(uid))!;
       const { contact, ...rest } = got;
       expect(rest).toEqual(prefs);
-      expect(contact).toEqual({ email: "ann@example.com", emailLocked: false, phone: "+91 98765 43210", hasCallmebotKey: true });
+      expect(contact).toEqual({ email: "ann@example.com", emailLocked: false, phone: "+91 98765 43210", hasCallmebotKey: true, discordWebhookSet: false });
       expect(JSON.stringify(got)).not.toContain("k3y-123");
 
       const [raw] = await query<{ email_enc: string; callmebot_phone_enc: string; callmebot_key_enc: string; email_hash: string | null }>(
@@ -176,10 +176,10 @@ describe("getPrefs and savePrefs", () => {
       await savePrefs(uid, valid({ radiusKm: 50 }));
       let got = (await getPrefs(uid))!;
       expect(got.radiusKm).toBe(50);
-      expect(got.contact).toMatchObject({ email: "ann@example.com", phone: "+91 98765 43210", hasCallmebotKey: true });
+      expect(got.contact).toMatchObject({ email: "ann@example.com", phone: "+91 98765 43210", hasCallmebotKey: true, discordWebhookSet: false });
       await savePrefs(uid, valid(), { email: "", phone: "", callmebotKey: "" });
       got = (await getPrefs(uid))!;
-      expect(got.contact).toEqual({ email: null, emailLocked: false, phone: null, hasCallmebotKey: false });
+      expect(got.contact).toEqual({ email: null, emailLocked: false, phone: null, hasCallmebotKey: false, discordWebhookSet: false });
     }));
 
   dbIt("sets onboarded_at once and leaves it afterwards", () =>
@@ -270,7 +270,7 @@ describe("/api/me/prefs", () => {
       expect(get.headers.get("cache-control")).toBe("no-store");
       expect(await get.json()).toEqual({
         prefs: DEFAULT_PREFS,
-        contact: { email: null, emailLocked: false, phone: null, hasCallmebotKey: false },
+        contact: { email: null, emailLocked: false, phone: null, hasCallmebotKey: false, discordWebhookSet: false },
       });
 
       const prefs = valid({ homeCity: "mumbai", topics: ["data"] });
@@ -287,7 +287,7 @@ describe("/api/me/prefs", () => {
       expect(text).not.toContain("super-secret-key");
       expect(JSON.parse(text)).toEqual({
         prefs,
-        contact: { email: "ann@example.com", emailLocked: false, phone: "+91 98765 43210", hasCallmebotKey: true },
+        contact: { email: "ann@example.com", emailLocked: false, phone: "+91 98765 43210", hasCallmebotKey: true, discordWebhookSet: false },
       });
       const o = (await (await call("GET", other)).json()) as { prefs: unknown };
       expect(o.prefs).toEqual(DEFAULT_PREFS);
