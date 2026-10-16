@@ -3,7 +3,7 @@ import { signInHref, useMe } from "./lib/me.js";
 import Admin from "./pages/Admin.js";
 import EventDetail from "./pages/EventDetail.js";
 import ConfirmSignIn from "./pages/ConfirmSignIn.js";
-import Events from "./pages/Events.js";
+import Home from "./pages/Home.js";
 import Onboarding from "./pages/Onboarding.js";
 import Settings from "./pages/Settings.js";
 import SignIn from "./pages/SignIn.js";
@@ -52,7 +52,7 @@ export default function App() {
       </header>
       <main>
         <Routes>
-          <Route path="/" element={<Events />} />
+          <Route path="/" element={<Home state={state} />} />
           <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/welcome" element={<Onboarding />} />
           <Route path="/settings" element={<Settings />} />

@@ -24,7 +24,7 @@ async function user(
   }
   return id;
 }
-const login = (uid: number, method: "discord" | "email", at: string) =>
+const login = (uid: number, method: "discord" | "email" | "google", at: string) =>
   query("INSERT INTO logins (user_id, method, at) VALUES ($1, $2, $3)", [uid, method, at]);
 
 describe("adminStats", () => {
@@ -53,12 +53,12 @@ describe("adminStats", () => {
       const days = s.loginsByDay.map((d) => d.day);
       expect(days).toEqual([...days].sort());
       const expected = new Map([
-        ["2026-10-15", { discord: 1, email: 1 }],
-        ["2026-10-14", { discord: 0, email: 1 }],
-        ["2026-10-12", { discord: 0, email: 1 }],
-        ["2026-09-20", { discord: 1, email: 0 }],
+        ["2026-10-15", { discord: 1, email: 1, google: 0 }],
+        ["2026-10-14", { discord: 0, email: 1, google: 0 }],
+        ["2026-10-12", { discord: 0, email: 1, google: 0 }],
+        ["2026-09-20", { discord: 1, email: 0, google: 0 }],
       ]);
-      expect(s.loginsByDay).toEqual(days.map((day) => ({ day, ...(expected.get(day) ?? { discord: 0, email: 0 }) })));
+      expect(s.loginsByDay).toEqual(days.map((day) => ({ day, ...(expected.get(day) ?? { discord: 0, email: 0, google: 0 }) })));
 
       const signups = new Map([
         ["2026-10-15", 1],
@@ -77,7 +77,7 @@ describe("adminStats", () => {
       expect(s.newUsers7d).toBe(0);
       expect(s.activeUsers7d).toBe(0);
       expect(s.loginsByDay).toHaveLength(30);
-      expect(s.loginsByDay.every((d) => d.discord === 0 && d.email === 0)).toBe(true);
+      expect(s.loginsByDay.every((d) => d.discord === 0 && d.email === 0 && d.google === 0)).toBe(true);
       expect(s.signupsByDay.every((d) => d.count === 0)).toBe(true);
       expect(s.channelAdoption).toEqual({ email: 0, discord: 0, whatsapp: 0 });
       expect(s.lastPipelineRun).toBeNull();

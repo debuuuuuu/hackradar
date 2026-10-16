@@ -32,6 +32,24 @@ jobs:
           ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
           SITE_URL: ${{ secrets.SITE_URL }}
 
+      # Supabase pauses free projects after about a week without database activity (D-046).
+      # One real query a day through its REST API stops that. Skipped until the secrets exist; never fails the run.
+      - name: Supabase keep-alive query
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "Supabase secrets not set; skipping"
+            exit 0
+          fi
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 \
+            -H "apikey: ${SUPABASE_ANON_KEY}" -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "${SUPABASE_URL%/}/rest/v1/keepalive?select=id&limit=1" || true)
+          echo "Supabase keep-alive HTTP ${code}"
+          [ "${code}" = "200" ] || echo "::warning::Supabase keep-alive did not return 200 (got ${code})"
+
       # Runs even if the pipeline failed, so the schedule stays alive.
       - name: Keepalive commit to status branch
         if: always()
