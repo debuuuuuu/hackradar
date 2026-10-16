@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS users (
     email_hash          text        UNIQUE,         -- web login lookup; email itself stays encrypted
     last_login_at       timestamptz,
     onboarded_at        timestamptz,
-    approved_at         timestamptz     -- NULL = pending owner approval (D-041)
+    approved_at         timestamptz     -- unused since D-044 (automatic sign-up); kept so no migration is needed
 );
 
 -- Per-user filters and profile. Offset 0 = same-day morning alert (D-019).

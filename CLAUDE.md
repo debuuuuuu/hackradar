@@ -34,7 +34,7 @@ saves and reminders, for Debjit and friends. Full context lives in `docs/`.
 
 ## Hard constraints
 
-- **₹0 running cost.** Free tiers only, no credit card anywhere.
+- **Built for real scale (D-044, 2026-10-16).** Assume 1,000 to 1M users, not a friends group. Start on free tiers, but no hard ₹0 limit; never pick something that cannot be upgraded.
 - **Fully automated** after one-time setup.
 - **Legal, safe sourcing.** Public APIs and robots.txt-allowed pages only. No logged-in scraping:
   no cookies, no LinkedIn/X logins, no unofficial WhatsApp libraries. Agent Reach login channels stay off.

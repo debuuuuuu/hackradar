@@ -10,7 +10,7 @@ Format: date · decision · why · alternatives rejected · status.
 - **Decision:** Every service must have a free tier with no credit card.
 - **Why:** Personal/student project that must run indefinitely without cost or billing risk.
 - **Alternatives:** Paid APIs (cheap but needs card, ongoing cost) — rejected.
-- **Status:** active
+- **Status:** superseded by D-044 (2026-10-16): design for real scale, run on free tiers until traffic forces upgrades.
 
 ### D-002 · No logged-in scraping; robots.txt-allowed public endpoints only
 - **Date:** 2026-10-14 (planning)
@@ -323,7 +323,7 @@ Format: date · decision · why · alternatives rejected · status.
 - **Decision:** New accounts start pending. Nothing is sent and nothing is saved until the owner approves them in `/admin`.
 - **Why:** Limits abuse, email quota use, and personal data collection to people the owner knows.
 - **Alternatives:** invite codes (codes spread); open sign-up (abuse risk from day one).
-- **Status:** active. Implementation in product plan Phase 4.
+- **Status:** superseded by D-044 (2026-10-16). Sign-up is automatic; the `approved_at` column is unused.
 
 ### D-042 · Confirm the notification email before use
 - **Date:** 2026-10-15
@@ -338,3 +338,10 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Keeps analytics on our own tables (as D-039 does for sign-ins) and avoids an unverified free-tier limit.
 - **Alternatives:** Vercel Web Analytics (free limits unverified); no visit counts.
 - **Status:** active.
+
+### D-044 · Product is for real public scale (1,000 to 1M users); free tiers are a starting point, not a rule
+- **Date:** 2026-10-16
+- **Decision:** HackRadar is built as a public product, not a friends tool. Architecture must not assume a small group. Services still start on free tiers, but nothing is chosen that cannot be upgraded, and no hard ₹0 limit applies. Supersedes D-001. D-041 (manual owner approval) is under review: it does not scale, so replace it with automatic sign-up plus abuse limits.
+- **Why:** Debjit (2026-10-16): users may reach 1,000 or 1M. Manual approval, one sequential cron send, Gmail SMTP (~500/day), CallMeBot WhatsApp and Vercel Hobby (non-commercial) all fail at that size.
+- **Alternatives:** keep ₹0 as a hard limit (caps growth); set a fixed budget now (not chosen).
+- **Status:** active. Follow-ups, each needs its own research note and decision before changing: queue-based parallel sending, a transactional email provider, official WhatsApp Business API, paid Vercel/Neon tiers, automatic sign-up with rate limits.

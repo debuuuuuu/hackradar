@@ -1,7 +1,7 @@
 """Per-user digests (tasks 2.3, 2.9). Kinds come from the AI kind field (D-036).
 
 The owner's shared webhook digest stays in pipeline/digest.py + run.py (D-030). This module
-builds one digest per approved user (D-040, D-041) and sends it once per IST day per channel.
+builds one digest per onboarded user (D-040, D-044) and sends it once per IST day per channel.
 """
 
 from __future__ import annotations
@@ -67,7 +67,7 @@ Sender = Callable[[Recipient, Digest], None]
 
 
 def recipients(conn: psycopg.Connection, now: datetime) -> list[Recipient]:
-    """Approved, onboarded users with digests on, with only their usable channels."""
+    """Onboarded users with digests on, with only their usable channels."""
     del now  # reserved for time-based gating; the query needs no clock today
     rows = conn.execute("""
         SELECT u.id, COALESCE(p.channels -> 'digest', '[]'::jsonb), u.discord_webhook_enc,
@@ -75,7 +75,7 @@ def recipients(conn: psycopg.Connection, now: datetime) -> list[Recipient]:
                p.home_city, p.radius_km, p.format, p.priorities
           FROM users u
           JOIN preferences p ON p.user_id = u.id
-         WHERE u.digest_enabled AND u.approved_at IS NOT NULL AND u.onboarded_at IS NOT NULL
+         WHERE u.digest_enabled AND u.onboarded_at IS NOT NULL
          ORDER BY u.id
         """).fetchall()
     out = []
@@ -214,7 +214,7 @@ def _deliver(
 def run_user_digests(
     conn: psycopg.Connection, now: datetime, senders: Mapping[str, Sender]
 ) -> RunSummary:
-    """Build and send each approved user's digest. One user's failure never stops the others."""
+    """Build and send each onboarded user's digest. One user's failure never stops the others."""
     ist_date = now.astimezone(IST).date()
     summary = RunSummary()
     for r in recipients(conn, now):
