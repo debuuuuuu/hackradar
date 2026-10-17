@@ -1,7 +1,7 @@
 {
-  "run_id": 11,
+  "run_id": 12,
   "trigger": "schedule",
-  "status": "success",
-  "finished_at_utc": "2026-10-16T01:22:30+00:00",
-  "ist_date": "2026-10-16"
+  "status": "partial",
+  "finished_at_utc": "2026-10-17T01:21:18+00:00",
+  "ist_date": "2026-10-17"
 }
