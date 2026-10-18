@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import confetti from "canvas-confetti";
 import Icon from "../components/Icon.js";
+import Monitor from "../components/Monitor.js";
 import { fetchEvents, type EventRow } from "../lib/api.js";
 import { formatIstDate, sourceLabel } from "../lib/format.js";
 
@@ -115,37 +116,117 @@ export default function Landing() {
               </p>
             </div>
 
-            {/* Radar Scope */}
-            <svg
-              className="scope in late"
-              viewBox="0 0 400 400"
-              role="img"
-              aria-label="Radar screen picking up three hackathons"
-            >
-              <path className="ln draw" d="M48 20h304a18 18 0 0 1 18 18v324a18 18 0 0 1-18 18H48a18 18 0 0 1-18-18V38a18 18 0 0 1 18-18zM30 58h340" />
-              <path className="ln" d="M52 39a6 6 0 1 0 12 0a6 6 0 1 0-12 0M72 39a6 6 0 1 0 12 0a6 6 0 1 0-12 0" />
-              <text className="label mid" x="200" y="45">
-                today.digest
-              </text>
-              <g className="sweep">
-                <path className="wedge" d="M200 200 L200 70 A130 130 0 0 1 312 135 Z" />
-              </g>
-              <path className="ln draw" d="M70 200a130 130 0 1 0 260 0a130 130 0 1 0-260 0" />
-              <path className="ln draw late" d="M114 200a86 86 0 1 0 172 0a86 86 0 1 0-172 0M158 200a42 42 0 1 0 84 0a42 42 0 1 0-84 0M70 200h260M200 70v260" />
-              <circle className="blip" cx="268" cy="136" r="9" />
-              <text className="label" x="282" y="124">
-                AI · Pune
-              </text>
-              <circle className="blip b2" cx="140" cy="250" r="9" />
-              <text className="label" x="58" y="284">
-                Web3 · online
-              </text>
-              <circle className="blip b3" cx="236" cy="290" r="9" />
-              <text className="label" x="180" y="324">
-                Hardware · 120 km
-              </text>
-              <path className="ln draw late" d="M300 348c18-6 30-2 40 10m-6-14 6 14-14 2" />
-            </svg>
+            {/* Hero Right Visual: Animated Logo Mascot + Large Interactive Radar Scope */}
+            <div className="hero-radar-stage in late">
+              <div className="mascot-operator">
+                <div className="mascot-speech">
+                  <span className="dot-live" />
+                  <span>Tracking hackathons in real-time...</span>
+                </div>
+                <div className="mascot-avatar" title="HackRadar Mascot">
+                  <Monitor size={58} mood="wake" className="hero-mascot-pc" />
+                </div>
+              </div>
+
+              <div className="scope-box">
+                <svg
+                  className="scope"
+                  viewBox="0 0 460 460"
+                  role="img"
+                  aria-label="Radar screen picking up three hackathons"
+                >
+                  {/* Outer Window Terminal Frame */}
+                  <rect
+                    className="scope-frame"
+                    x="8"
+                    y="8"
+                    width="444"
+                    height="444"
+                    rx="22"
+                  />
+                  {/* Window Bar */}
+                  <line className="ln" x1="8" y1="50" x2="452" y2="50" />
+                  <circle cx="34" cy="29" r="6" className="dot-btn win-red" />
+                  <circle cx="54" cy="29" r="6" className="dot-btn win-yellow" />
+                  <circle cx="74" cy="29" r="6" className="dot-btn win-green" />
+                  <text className="scope-title" x="205" y="34">
+                    radar.digest · Pune Live
+                  </text>
+                  <circle cx="420" cy="29" r="4.5" className="live-beacon" />
+                  <text className="live-tag" x="408" y="33">
+                    LIVE
+                  </text>
+
+                  {/* Radar Scope Interior */}
+                  <g className="radar-grid" transform="translate(230, 240)">
+                    {/* Concentric Range Rings */}
+                    <circle className="range-ring outer" r="165" />
+                    <circle className="range-ring mid" r="110" />
+                    <circle className="range-ring inner" r="55" />
+                    <circle className="range-ring core" r="14" />
+
+                    {/* Crosshairs & Diagonals */}
+                    <line className="crosshair" x1="-165" y1="0" x2="165" y2="0" />
+                    <line className="crosshair" x1="0" y1="-165" x2="0" y2="165" />
+                    <line className="crosshair diagonal" x1="-117" y1="-117" x2="117" y2="117" />
+                    <line className="crosshair diagonal" x1="-117" y1="117" x2="117" y2="-117" />
+
+                    {/* Distance markers */}
+                    <text className="range-txt" x="4" y="-168">250 km</text>
+                    <text className="range-txt" x="4" y="-113">100 km</text>
+                    <text className="range-txt" x="4" y="-58">25 km</text>
+
+                    {/* Rotating Sweep Beam */}
+                    <g className="sweep">
+                      <path
+                        className="wedge"
+                        d="M0 0 L0 -165 A165 165 0 0 1 143 -82 Z"
+                      />
+                      <line className="sweep-line" x1="0" y1="0" x2="0" y2="-165" />
+                    </g>
+
+                    {/* Blip 1: AI · Pune */}
+                    <g className="blip-node b1" transform="translate(86, -72)">
+                      <circle className="blip-wave" r="18" />
+                      <circle className="blip-wave w2" r="28" />
+                      <circle className="blip-dot" r="8" />
+                      <g className="blip-pill" transform="translate(14, -14)">
+                        <rect width="86" height="24" rx="6" />
+                        <text x="8" y="16">AI · Pune</text>
+                      </g>
+                    </g>
+
+                    {/* Blip 2: Web3 · Online */}
+                    <g className="blip-node b2" transform="translate(-96, 42)">
+                      <circle className="blip-wave" r="18" />
+                      <circle className="blip-wave w2" r="28" />
+                      <circle className="blip-dot" r="8" />
+                      <g className="blip-pill" transform="translate(-108, -14)">
+                        <rect width="100" height="24" rx="6" />
+                        <text x="8" y="16">Web3 · Online</text>
+                      </g>
+                    </g>
+
+                    {/* Blip 3: Hardware · 120km */}
+                    <g className="blip-node b3" transform="translate(38, 92)">
+                      <circle className="blip-wave" r="18" />
+                      <circle className="blip-wave w2" r="28" />
+                      <circle className="blip-dot" r="8" />
+                      <g className="blip-pill" transform="translate(14, -12)">
+                        <rect width="122" height="24" rx="6" />
+                        <text x="8" y="16">Hardware · 120km</text>
+                      </g>
+                    </g>
+                  </g>
+
+                  {/* Terminal Ticker / Status Bar */}
+                  <rect className="terminal-bar" x="18" y="420" width="424" height="26" rx="6" />
+                  <text className="terminal-txt" x="28" y="437">
+                    ● DEVPOST / DEVFOLIO / UNSTOP / MLH SCANNED · 5 AM IST
+                  </text>
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -162,7 +243,7 @@ export default function Landing() {
           <svg className="ribbon" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true">
             <path className="ln" d="M0 60C120 20 220 80 340 46s200-30 300 6 220 34 330-6 170-20 230 10" />
           </svg>
-          <p className="note-hand" style={{ color: "var(--coral-deep)", margin: "0 0 10px" }}>
+          <p className="note-hand" style={{ color: "var(--coral-text)", margin: "0 0 16px" }}>
             how it works, in four notes
           </p>
           <h2 className="h2" id="how-h">
