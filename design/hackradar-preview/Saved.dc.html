@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My events</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;family=Gochi+Hand&amp;family=Instrument+Sans:wght@400;600&amp;family=Young+Serif&amp;display=swap">
+<style>
+body{margin:0;background:#1f1e1d}
+a{color:inherit}
+.page{max-width:1120px;margin:0 auto 96px}
+.hello{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 32px;margin:8px 0 28px}
+.hello .h1{color:var(--chalk);margin:0 0 8px}
+.hello .sub{font:24px/1.3 var(--hand);color:var(--coral-text);margin:0}
+.tabs{display:flex;gap:10px;margin-bottom:40px}
+.tabs .chip{border-color:var(--chalk);color:var(--chalk);font-size:15px}
+.tabs .chip.on{background:var(--chalk);color:var(--charcoal)}
+.ask-went{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:16px 24px;background:var(--coral);color:var(--ink);border-radius:20px;padding:20px 24px;margin-bottom:48px;transform:rotate(-.6deg);box-shadow:0 16px 34px -14px rgb(0 0 0/.7)}
+.ask-went p{margin:0;flex:1 1 320px;font:24px/1.25 var(--hand)}
+.ask-went .btn{border-color:var(--ink);color:var(--ink)}
+.ask-went .btn.yes{background:var(--ink);color:var(--cream)}
+.ask-went svg{width:54px;height:54px;color:var(--ink);flex:none}
+.timeline{list-style:none;margin:0;padding:0 0 0 0;position:relative}
+.timeline::before{content:"";position:absolute;left:150px;top:10px;bottom:10px;border-left:2.5px dashed var(--line-dark)}
+.tl{display:grid;grid-template-columns:130px 1fr;gap:40px;margin-bottom:28px;position:relative}
+.tl::before{content:"";position:absolute;left:143px;top:18px;width:16px;height:16px;border-radius:50%;background:var(--charcoal);border:2.5px solid var(--coral-text)}
+.tl.soon::before{background:var(--coral)}
+.tl-date{text-align:right;padding-top:6px}
+.tl-date b{display:block;font:28px/1 var(--hand);color:var(--chalk)}
+.tl-date span{font:500 12px var(--mono);color:var(--mute)}
+.tl-card{position:relative;background:var(--cream);color:var(--ink);border-radius:18px;padding:18px 20px;box-shadow:0 14px 30px -14px rgb(0 0 0/.7)}
+.tl-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-bottom:6px}
+.tl-top .what{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:#7a4b47}
+.count{font:18px var(--hand);background:var(--coral);color:var(--ink);padding:1px 10px;border-radius:999px;transform:rotate(-3deg)}
+.count.calm{background:transparent;border:1.5px solid var(--ink-red);color:var(--ink-red);transform:none}
+.tl-card h3{font:400 22px/1.15 var(--serif);margin:0 0 12px}
+.remind{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.remind small{font:600 13px var(--sans);color:#7a4b47;margin-right:4px}
+.remind .chip{min-height:40px;font-size:13px;padding-inline:12px}
+.tl-acts{display:flex;flex-wrap:wrap;gap:6px 16px}
+.tl-acts a,.tl-acts button{display:inline-flex;align-items:center;min-height:44px;background:none;border:0;padding:0;font:600 14px var(--sans);color:var(--ink-red);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.tl-acts button.rm{color:#7a4b47}
+.scrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:48px 40px;padding-top:12px}
+.went{--r:0deg}
+.went .pic{min-height:170px;display:grid;place-items:center;background:var(--coral);color:var(--coal)}
+.went .pic svg.big{width:72px;height:72px}
+.went.dark .pic{background:var(--coal);color:var(--coral-text)}
+.went h3{font:400 20px/1.15 var(--serif);margin:12px 4px 2px}
+.went .when{font:500 12px var(--mono);color:#7a4b47;margin:0 4px 10px}
+.jot{margin:0 4px;min-height:36px;border-bottom:2px dashed color-mix(in oklch,var(--ink-red) 45%,transparent);font:20px/1.4 var(--hand);color:var(--ink)}
+.went .result{position:absolute;top:-14px;right:-10px;font:20px var(--hand);background:var(--cream);color:var(--ink-red);border:2px solid var(--ink-red);border-radius:999px;padding:2px 12px;transform:rotate(8deg)}
+.went .iwent{position:absolute;top:22px;left:20px;font:22px var(--hand);color:var(--cream);background:var(--ink);padding:0 10px;border-radius:6px;transform:rotate(-6deg)}
+.went{padding-bottom:18px}
+.add-went{display:grid;place-items:center;gap:8px;min-height:300px;border:2.5px dashed var(--line-dark);border-radius:14px;color:var(--mute);font:22px var(--hand);text-align:center;padding:20px;background:none;cursor:pointer}
+.add-went:hover{border-color:var(--coral-text);color:var(--coral-text)}
+.add-went svg{width:48px;height:48px}
+.empty{font:24px var(--hand);color:var(--mute);text-align:center;padding:40px 0}
+.tally{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 36px}
+.tally span{font:20px var(--hand);color:var(--chalk);border:1.5px solid var(--line-dark);border-radius:999px;padding:4px 14px}
+.tally b{color:var(--coral-text);font-weight:400}
+@media (max-width:760px){.timeline::before,.tl::before{display:none}.tl{grid-template-columns:1fr;gap:8px}.tl-date{text-align:left}}
+</style>
+</helmet>
+<div class="hr {{motionClass}}" style="--coral: {{accent}}">
+<div class="frame">
+<nav class="nav" aria-label="Main">
+<sc-if value="{{quipOn}}" hint-placeholder-val="{{ false }}"><div class="quip show" role="status" aria-label="{{quip}}" data-q="{{quip}}"></div></sc-if>
+<a class="brand {{talkCls}}" href="Main.dc.html" onMouseEnter="{{sayNow}}"><svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g></svg>HackRadar</a>
+<a class="navlink" href="Today.dc.html"><span>today</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">picked for you</em></a>
+<a class="navlink here" href="Saved.dc.html" aria-current="page"><span>my events</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">saved and went</em></a>
+<a class="navlink" href="Setup.dc.html"><span>your picks</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">change anytime</em></a>
+<a class="navlink pill" href="Main.dc.html"><span>sign out</span><em class="cap">see you tomorrow</em></a>
+</nav>
+
+<main class="page">
+<header class="hello fade-in">
+<div>
+<h1 class="h1">Your events</h1>
+<p class="sub">{{subline}}</p>
+</div>
+<span class="note-hand">we remind you before things close</span>
+</header>
+
+<div class="tabs" role="tablist" aria-label="My events">
+<button type="button" role="tab" class="{{upTab}}" aria-selected="{{upSel}}" onClick="{{showUp}}">Coming up · {{upCount}}</button>
+<button type="button" role="tab" class="{{wentTab}}" aria-selected="{{wentSel}}" onClick="{{showWent}}">Went to · {{wentCount}}</button>
+</div>
+
+<sc-if value="{{isUp}}" hint-placeholder-val="{{ true }}">
+<div>
+<sc-if value="{{askOpen}}" hint-placeholder-val="{{ true }}">
+<div class="ask-went" role="region" aria-label="Did you go?">
+<svg viewBox="0 0 40 40" aria-hidden="true"><path class="ln" d="M13 7h14v8a7 7 0 0 1-14 0zM13 10H8a4 4 0 0 0 5 6M27 10h5a4 4 0 0 1-5 6M20 22v6M14 33h12M16 28h8"></path></svg>
+<p>Web3 Builders Night ended yesterday. Did you go?</p>
+<button type="button" class="btn yes" onClick="{{saidYes}}">Yes, I went!</button>
+<button type="button" class="btn" onClick="{{saidNo}}">Didn't make it</button>
+</div>
+</sc-if>
+<ol class="timeline">
+<sc-for list="{{upcoming}}" as="u" hint-placeholder-count="3">
+<li class="{{u.cls}}">
+<div class="tl-date"><b>{{u.date}}</b><span>{{u.day}}</span></div>
+<article class="tl-card">
+<div class="tl-top"><span class="what">{{u.what}}</span><span class="{{u.countCls}}">{{u.in}}</span><span class="platform" style="position: static">{{u.platform}}</span></div>
+<h3>{{u.title}}</h3>
+<div class="remind" role="group" aria-label="{{u.remindLabel}}"><small>Remind me</small>
+<sc-for list="{{u.reminders}}" as="r" hint-placeholder-count="3">
+<button type="button" class="{{r.cls}}" aria-pressed="{{r.pressed}}" onClick="{{r.toggle}}">{{r.label}}</button>
+</sc-for>
+</div>
+<div class="tl-acts"><a href="Event.dc.html">Open event</a><a href="Saved.dc.html">Add to calendar</a><button type="button" class="rm" onClick="{{u.remove}}">Remove</button></div>
+</article>
+</li>
+</sc-for>
+</ol>
+<sc-if value="{{upEmpty}}" hint-placeholder-val="{{ false }}">
+<p class="empty">Nothing saved. Tap Save on any event in <a href="Today.dc.html" style="color: var(--coral-text)">Today</a>.</p>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isWent}}" hint-placeholder-val="{{ false }}">
+<div>
+<div class="tally"><span><b>{{wentCount}}</b> events this year</span><span><b>1</b> finalist sticker</span><span>next one: <b>8 Nov</b></span></div>
+<div class="scrap">
+<sc-for list="{{went}}" as="w" hint-placeholder-count="3">
+<figure class="{{w.cls}}" style="--r: {{w.r}}; margin: 0">
+<div class="pic"><svg class="big" viewBox="0 0 40 40" aria-hidden="true"><path class="ln" d="{{w.icon}}"></path></svg></div>
+<span class="iwent">I went!</span>
+<span class="result">{{w.result}}</span>
+<h3>{{w.title}}</h3>
+<p class="when">{{w.when}}</p>
+<p class="jot">{{w.noteText}}</p>
+</figure>
+</sc-for>
+<button type="button" class="add-went"><svg viewBox="0 0 40 40" aria-hidden="true"><path class="ln" d="M20 8v24M8 20h24"></path></svg>add one we didn't list</button>
+</div>
+</div>
+</sc-if>
+</main>
+
+<footer class="site-foot">
+<div class="ticker" aria-label="Sources we check"><div class="track"><span>Devpost</span><span>Unstop</span><span>Devfolio</span><span>MLH</span><span>Luma</span><span>LinkedIn and X posts</span><span>checked every morning</span><span aria-hidden="true">Devpost</span><span aria-hidden="true">Unstop</span><span aria-hidden="true">Devfolio</span><span aria-hidden="true">MLH</span><span aria-hidden="true">Luma</span><span aria-hidden="true">LinkedIn and X posts</span><span aria-hidden="true">checked every morning</span></div></div>
+<svg class="foot-wave" viewBox="0 0 1200 28" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M0 14c40-14 80 14 120 0s80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0"></path></svg>
+<div class="foot-grid">
+<div class="foot-brand"><a href="Main.dc.html"><svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g></svg>HackRadar</a><p>Hackathons near you, every morning. Made in Pune for people who build on <b>weekends</b>.</p></div>
+<nav aria-label="Explore"><h2 class="foot-h">Explore</h2><ul class="foot-links"><li><a href="Main.dc.html">How it works</a></li><li><a href="Today.dc.html">Open hackathons</a></li><li><a href="Setup.dc.html">Your picks</a></li></ul></nav>
+<nav aria-label="Messages"><h2 class="foot-h">Messages</h2><ul class="foot-links"><li><a href="Messages.dc.html">See a sample</a></li><li><a href="Setup.dc.html">Change channels</a></li><li><a href="Messages.dc.html">Unsubscribe</a></li></ul></nav>
+<div class="foot-doodle"><svg class="pc sleepy" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g><text class="zz" x="40" y="8">z</text></svg>next list lands around 5 AM IST</div>
+</div>
+<div class="foot-base"><span>Dates and prizes come from the source, never from AI.</span><span>Free · no card · one message a morning at most</span></div>
+</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#e5484d","options":["#e5484d","#f2602a","#d6336c","#2f9e8f"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":2500}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this.quipTimer = setTimeout(() => this.quipNow(), 4000);
+  }
+  componentWillUnmount() {
+    clearTimeout(this.quipTimer);
+    clearTimeout(this.quipHide);
+  }
+  quipNow() {
+    const lines = ['404: sleep not found.', 'Pizza at 3 AM is a valid food group.', 'git commit -m "final final FINAL"', "I check five sites so you don't have to.", 'Your next big idea is one weekend away.', 'Beep boop. Scanning for prizes.', 'Teammates wanted. Snacks provided. Probably.', 'I woke up at 4:47 AM for you.', 'Ship it. Fix it. Ship it again.', 'Is it a bug or a feature? Yes.', 'Coffee status: dangerously low.', 'Psst. Save the ones you like!', 'Dates come from the source. I never guess.', 'Have you had water today, builder?', "Mentors are friends you haven't met yet.", 'Ctrl+S your code. And your weekend.', 'Tip: give your team a silly name.', 'One more feature, they said. 6 hours ago.'];
+    clearTimeout(this.quipTimer);
+    clearTimeout(this.quipHide);
+    if (typeof document !== 'undefined' && document.hidden) {
+      this.quipTimer = setTimeout(() => this.quipNow(), 10000);
+      return;
+    }
+    // shortcut: fixed lines for the preview; the real site shows fresh questions and jokes from the daily LLM run
+    const questions = ['Pikachu or Charmander? Think fast.', 'Would you pet a Snorlax? Be honest.', 'Is Bulbasaur underrated? (Yes.)', 'Tabs or spaces? Choose wisely.', 'Dark mode or light mode? I know mine.', '3 AM snack: pizza or biryani?', 'Solo or team hackathons?', 'Coffee or chai, builder?'];
+    const last = (this.state || {}).quip;
+    const pool = lines.concat(questions).filter((l) => l !== last);
+    this.setState({ quip: pool[Math.floor(Math.random() * pool.length)], quipOn: true });
+    this.quipHide = setTimeout(() => this.setState({ quipOn: false }), 4500);
+    // shortcut: 15-40 s gaps so the preview shows it often; use 30-90 s on the real site
+    this.quipTimer = setTimeout(() => this.quipNow(), 15000 + Math.random() * 25000);
+  }
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'up',
+      removed: [],
+      asked: false,
+      wentWeb3: false,
+      remind: { fintech: ['day before'], ai: ['3 days before', 'morning of'], climate: ['3 days before'] }
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const ups = [
+      { id: 'fintech', date: '7 Nov', day: 'Friday', what: 'Registration closes', in: 'in 2 days', soon: true, platform: 'Unstop', title: 'Campus FinTech Challenge' },
+      { id: 'ai', date: '8 Nov', day: 'Saturday', what: 'Hackathon starts · Pune, 6 km', in: 'in 3 days', soon: true, platform: 'Devfolio', title: 'Pune AI Build Weekend' },
+      { id: 'climate', date: '30 Nov', day: 'Sunday', what: 'Submissions close · online', in: 'in 25 days', soon: false, platform: 'Devpost', title: 'Open Source Climate Sprint' }
+    ].filter((u) => !s.removed.includes(u.id));
+    const opts = ['3 days before', 'day before', 'morning of'];
+    const upcoming = ups.map((u) => ({
+      ...u,
+      cls: u.soon ? 'tl soon' : 'tl',
+      countCls: u.soon ? 'count' : 'count calm',
+      remindLabel: 'Reminders for ' + u.title,
+      reminders: opts.map((o) => {
+        const on = (s.remind[u.id] || []).includes(o);
+        return {
+          label: o, cls: on ? 'chip on' : 'chip', pressed: on ? 'true' : 'false',
+          toggle: () => this.setState({ remind: { ...s.remind, [u.id]: on ? s.remind[u.id].filter((x) => x !== o) : [...(s.remind[u.id] || []), o] } })
+        };
+      }),
+      remove: () => this.setState({ removed: [...s.removed, u.id] })
+    }));
+    const wentBase = [
+      { title: 'Smart City Hack', when: 'Sep 2026 · Pune', result: 'finalist', note: 'traffic light app, team of 3', cls: 'polaroid went', r: '-3deg', icon: 'M13 7h14v8a7 7 0 0 1-14 0zM13 10H8a4 4 0 0 0 5 6M27 10h5a4 4 0 0 1-5 6M20 22v6M14 33h12M16 28h8' },
+      { title: 'Campus CTF Night', when: 'Aug 2026 · online', result: 'top 20', note: '', cls: 'polaroid went dark', r: '2deg', icon: 'M14 12l-8 8 8 8M26 12l8 8-8 8M23 9l-6 22' },
+      { title: 'Pune Web3 Meetup Jam', when: 'Jul 2026 · Pune', result: 'first one!', note: 'my first ever hackathon', cls: 'polaroid went', r: '-1.5deg', icon: 'M7 10q13-7 26 0L20 35zM15.2 15a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0M21.2 19a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0'
+      }
+    ];
+    const went = s.wentWeb3
+      ? [{ title: 'Web3 Builders Night', when: 'Nov 2026 · online', result: 'just now!', note: '', cls: 'polaroid went dark', r: '2.5deg', icon: 'M10 9h20a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2zM4 30h32l-2 4H6z' }, ...wentBase]
+      : wentBase;
+    const up = s.tab === 'up';
+    return {
+      accent: this.props.accent ?? '#e5484d',
+      quip: (this.state || {}).quip || '',
+      quipOn: !!(this.state || {}).quipOn,
+      talkCls: (this.state || {}).quipOn ? 'talking' : '',
+      sayNow: () => this.quipNow(),
+      motionClass: (this.props.motion ?? true) ? 'motion' : '',
+      subline: upcoming.length + ' coming up · ' + went.length + ' you went to this year',
+      isUp: up, isWent: !up,
+      upTab: up ? 'chip on' : 'chip', wentTab: up ? 'chip' : 'chip on',
+      upSel: up ? 'true' : 'false', wentSel: up ? 'false' : 'true',
+      showUp: () => this.setState({ tab: 'up' }),
+      showWent: () => this.setState({ tab: 'went' }),
+      upCount: upcoming.length, wentCount: went.length,
+      upcoming, upEmpty: upcoming.length === 0,
+      askOpen: !s.asked,
+      saidYes: () => this.setState({ asked: true, wentWeb3: true, tab: 'went' }),
+      saidNo: () => this.setState({ asked: true }),
+      went: went.map((w) => ({ ...w, noteText: w.note || 'what did you build? add a note' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

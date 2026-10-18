@@ -359,3 +359,11 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Debjit (2026-10-16) wants passwords as well as Google at 1,000 to 1M users. Passwords, reset and lockout are better handled by a managed service than by new code of ours. Research: `research/2026-10-16-supabase-auth.md`.
 - **Alternatives:** own passwords (more security work and breach risk); Firebase Auth (limits unverified); Clerk (not researched).
 - **Status:** active. Supersedes D-005 only for sign-in, not for the database. Unverified: whether free signup needs a card, default email limits. Debjit checks the card question at sign-up.
+
+### D-047 · Web frontend fun theme (charcoal + coral + cream hand-drawn style)
+- **Date:** 2026-10-18
+- **Decision:** The web frontend adopts the "fun theme" exactly as specified in `design/hackradar-preview/` and `docs/design/DESIGN.md`. A dark charcoal (`#1f1e1d`) frame with coral accent (`#e5484d`), cream paper cards (`#f3e7d7`), ink-red lines (`#9b2b2f`), hand-drawn doodles, and the cycling monitor mascot logo (`<Monitor />`) with random speech bubble quips. Frontend only (`web/src/**`, `web/index.html`); backend API shapes, server routes, pipelines, workflows, and database models remain untouched. The side stamp film strips were intentionally rejected in favor of a clean, focused, max-1120px responsive container.
+- **Why:** Delivers distinctive, engaging personality and visual delight for builders while keeping complete feature parity, rock-solid accessibility (44px touch targets, visible focus, full `prefers-reduced-motion` suppression), and zero fake data.
+- **Alternatives:** Generic clean SaaS dashboard (boring, low retention); keep original minimal theme; keep side film strips (rejected: cluttered viewport on medium/mobile widths).
+- **Status:** active.
+
