@@ -10,7 +10,7 @@ Format: date · decision · why · alternatives rejected · status.
 - **Decision:** Every service must have a free tier with no credit card.
 - **Why:** Personal/student project that must run indefinitely without cost or billing risk.
 - **Alternatives:** Paid APIs (cheap but needs card, ongoing cost) — rejected.
-- **Status:** active
+- **Status:** superseded by D-044 (2026-10-16): design for real scale, run on free tiers until traffic forces upgrades.
 
 ### D-002 · No logged-in scraping; robots.txt-allowed public endpoints only
 - **Date:** 2026-10-14 (planning)
@@ -323,7 +323,7 @@ Format: date · decision · why · alternatives rejected · status.
 - **Decision:** New accounts start pending. Nothing is sent and nothing is saved until the owner approves them in `/admin`.
 - **Why:** Limits abuse, email quota use, and personal data collection to people the owner knows.
 - **Alternatives:** invite codes (codes spread); open sign-up (abuse risk from day one).
-- **Status:** active. Implementation in product plan Phase 4.
+- **Status:** superseded by D-044 (2026-10-16). Sign-up is automatic; the `approved_at` column is unused.
 
 ### D-042 · Confirm the notification email before use
 - **Date:** 2026-10-15
@@ -338,3 +338,46 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Keeps analytics on our own tables (as D-039 does for sign-ins) and avoids an unverified free-tier limit.
 - **Alternatives:** Vercel Web Analytics (free limits unverified); no visit counts.
 - **Status:** active.
+
+### D-044 · Product is for real public scale (1,000 to 1M users); free tiers are a starting point, not a rule
+- **Date:** 2026-10-16
+- **Decision:** HackRadar is built as a public product, not a friends tool. Architecture must not assume a small group. Services still start on free tiers, but nothing is chosen that cannot be upgraded, and no hard ₹0 limit applies. Supersedes D-001. D-041 (manual owner approval) is under review: it does not scale, so replace it with automatic sign-up plus abuse limits.
+- **Why:** Debjit (2026-10-16): users may reach 1,000 or 1M. Manual approval, one sequential cron send, Gmail SMTP (~500/day), CallMeBot WhatsApp and Vercel Hobby (non-commercial) all fail at that size.
+- **Alternatives:** keep ₹0 as a hard limit (caps growth); set a fixed budget now (not chosen).
+- **Status:** active. Follow-ups, each needs its own research note and decision before changing: queue-based parallel sending, a transactional email provider, official WhatsApp Business API, paid Vercel/Neon tiers, automatic sign-up with rate limits.
+
+### D-045 · Public browsing; sign-in only for personal features; launch sign-in = email link + Google
+- **Date:** 2026-10-16
+- **Decision:** The landing page, Today list and event pages are open to everyone. Sign-in is required only for saved preferences, digests and WhatsApp or email opt-in. Launch sign-in methods: email link (built) and Google. Discord stays built but off. Phone-code sign-in is deferred (SMS costs money). LinkedIn and X posts appear inside Today and the digest, tagged with their source, found by keyword rules plus an LLM check. Personalisation covers ranking by saved preferences and per-user tone. The product board (claude.ai artifact "HackRadar Flow Board") holds the working flow.
+- **Why:** Debjit (2026-10-16, board comments and answers). Public pages also help search and sharing.
+- **Alternatives:** sign-in wall (rejected by Debjit); Supabase or Firebase Auth (not chosen yet: unverified free limits, extra dependency, and identities would need migrating).
+- **Status:** active. Open: where Google sign-in lives (own OAuth like Discord is the proposal), the keyword rule set, GIF source and terms. The auth-service question is settled by D-046.
+
+### D-046 · Supabase Auth for email + password; our own session and database stay
+- **Date:** 2026-10-16
+- **Decision:** Add Supabase Auth for email-and-password sign-in, account confirmation and password reset. After Supabase signs someone in, our server validates the token with Supabase, finds or creates our user by email, and sets our own session cookie. Neon stays the database. Email link, Google (own OAuth) and Discord stay on our code. One account per email across all methods. A daily keep-alive query (GitHub Actions) stops the free project pausing; move to Pro at public launch.
+- **Why:** Debjit (2026-10-16) wants passwords as well as Google at 1,000 to 1M users. Passwords, reset and lockout are better handled by a managed service than by new code of ours. Research: `research/2026-10-16-supabase-auth.md`.
+- **Alternatives:** own passwords (more security work and breach risk); Firebase Auth (limits unverified); Clerk (not researched).
+- **Status:** active. Supersedes D-005 only for sign-in, not for the database. Unverified: whether free signup needs a card, default email limits. Debjit checks the card question at sign-up.
+
+### D-047 · Web frontend fun theme (charcoal + coral + cream hand-drawn style)
+- **Date:** 2026-10-18
+- **Decision:** The web frontend adopts the "fun theme" exactly as specified in `design/hackradar-preview/` and `docs/design/DESIGN.md`. A dark charcoal (`#1f1e1d`) frame with coral accent (`#e5484d`), cream paper cards (`#f3e7d7`), ink-red lines (`#9b2b2f`), hand-drawn doodles, and the cycling monitor mascot logo (`<Monitor />`) with random speech bubble quips. Frontend only (`web/src/**`, `web/index.html`); backend API shapes, server routes, pipelines, workflows, and database models remain untouched. The side stamp film strips were intentionally rejected in favor of a clean, focused, max-1120px responsive container.
+- **Why:** Delivers distinctive, engaging personality and visual delight for builders while keeping complete feature parity, rock-solid accessibility (44px touch targets, visible focus, full `prefers-reduced-motion` suppression), and zero fake data.
+- **Alternatives:** Generic clean SaaS dashboard (boring, low retention); keep original minimal theme; keep side film strips (rejected: cluttered viewport on medium/mobile widths).
+- **Status:** active.
+
+
+### D-048 · Sessions can be ended server-side; users can delete their account
+- **Date:** 2026-10-18
+- **Decision:** Session cookies now carry `iat`. `users.sessions_valid_after` (migration 0011) lets "Sign out everywhere" refuse every older cookie. `DELETE /api/me` with an explicit confirm deletes the user and cascades their data. Spec: `specs/auth.md`.
+- **Why:** Debjit (2026-10-18) asked for a complete login plan before launch to about 100 users. A stolen cookie was valid for 30 days with no way to end it, and users had no way to remove their data.
+- **Alternatives:** a `sessions` table (per-device list, more writes on every request) — not needed yet; deleting only on request by email — does not scale.
+- **Status:** active. Open: removing the Supabase Auth record on deletion.
+
+### D-049 · One-click unsubscribe in every daily email deletes the account; branded HTML emails
+- **Date:** 2026-10-18
+- **Decision:** Welcome and digest emails carry a signed link (`<uid>.<HMAC>`, key derived from `ENCRYPTION_KEY`, no expiry). `GET /api/auth/unsubscribe` only forwards to `/unsubscribe`; the button there sends `POST`, which deletes the account (same cascade as D-048). Emails are HTML in the `design/hackradar-preview/Messages.dc.html` look, with a plain-text part and a `List-Unsubscribe` header. Users are asked for a name after first sign-in (`PUT /api/me/name`).
+- **Why:** Debjit (2026-10-18) wanted unsubscribe to also delete the account, and the designed emails. A confirm step keeps link scanners from deleting accounts.
+- **Alternatives:** pause the digest only (`digest_enabled = false`) — rejected by Debjit; a new signing secret — not needed.
+- **Status:** active. Known: the link has no expiry, so anyone holding a user's email can delete that account. Digest has no "joke of the day" or top-pick stamp yet (no AI ranking in the digest).

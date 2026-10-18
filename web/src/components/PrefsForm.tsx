@@ -14,32 +14,39 @@ import {
   type MessageType,
   type PrefsResponse,
 } from "../lib/prefsForm.js";
+import Icon from "./Icon.js";
+import Monitor from "./Monitor.js";
 
 type Mode = "onboarding" | "settings";
 
-const KIND_ROWS: ReadonlyArray<{ kind: Kind; title: string; sub: string; sparse?: boolean }> = [
-  { kind: "hackathon", title: "Hackathons", sub: "Build a project in a weekend or two" },
-  { kind: "contest", title: "Coding contests and CTFs", sub: "Competitive programming, security, quizzes" },
-  { kind: "workshop", title: "Workshops and meetups", sub: "Talks, bootcamps, community events", sparse: true },
-  { kind: "fest", title: "Fests and conferences", sub: "College techfests, summits, expos", sparse: true },
+const KIND_DEFS: ReadonlyArray<{ id: Kind; label: string; sub: string }> = [
+  { id: "hackathon", label: "Hackathons", sub: "Devpost, Unstop, Devfolio, MLH" },
+  { id: "contest", label: "Coding contests and CTFs", sub: "Online rounds and capture-the-flag" },
+  { id: "workshop", label: "Workshops and meetups", sub: "Few listed yet: more arrive with Luma" },
+  { id: "fest", label: "Fests and conferences", sub: "Few listed yet" },
 ];
-const LEVEL_ROWS: ReadonlyArray<readonly [Level, string]> = [
-  ["top", "Top"],
-  ["normal", "Normal"],
-  ["off", "Off"],
+
+const LEVEL_LABELS: ReadonlyArray<readonly [Level, string]> = [
+  ["top", "ping me!"],
+  ["normal", "digest"],
+  ["off", "nah"],
 ];
-const MESSAGE_ROWS: ReadonlyArray<{ type: MessageType; title: string; sub: string }> = [
-  { type: "digest", title: "Daily digest", sub: "One message around 5:00 AM" },
-  { type: "ping", title: "Top pings", sub: "In the next morning's run, when a Top kind appears" },
-  { type: "reminders", title: "Reminders for saved events", sub: "7 days, 3 days, 1 day, and the morning of" },
+
+const MESSAGE_DEFS: ReadonlyArray<{ id: MessageType; label: string; sub: string }> = [
+  { id: "digest", label: "Daily digest", sub: "Normal picks, every morning" },
+  { id: "ping", label: "Top pings", sub: "One message per Top pick" },
+  { id: "reminders", label: "Reminders", sub: "Before saved events close" },
 ];
-const CHANNEL_ROWS: ReadonlyArray<readonly [Channel, string]> = [
+
+const CHANNELS: ReadonlyArray<readonly [Channel, string]> = [
   ["email", "Email"],
   ["discord", "Discord"],
   ["whatsapp", "WhatsApp"],
 ];
+
 const CHANNEL_ORDER: readonly Channel[] = ["email", "discord", "whatsapp"];
 const TOPIC_ORDER = TOPIC_LABELS.map(([k]) => k);
+
 const FIELD_LABEL: Record<string, string> = {
   email: "email",
   phone: "WhatsApp number",
@@ -62,7 +69,9 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
   const [places, setPlaces] = useState<Place[]>([]);
   const [loadError, setLoadError] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
-  const [hookTest, setHookTest] = useState<{ kind: "idle" } | { kind: "sending" } | { kind: "ok" } | { kind: "fail"; message: string }>({ kind: "idle" });
+  const [hookTest, setHookTest] = useState<
+    { kind: "idle" } | { kind: "sending" } | { kind: "ok" } | { kind: "fail"; message: string }
+  >({ kind: "idle" });
 
   useEffect(() => {
     let live = true;
@@ -84,8 +93,8 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
     };
   }, []);
 
-  if (loadError) return <p role="alert">Could not load your settings. Reload the page to try again.</p>;
-  if (!form) return <p>Loading</p>;
+  if (loadError) return <p role="alert" className="notice">Could not load your settings. Reload the page to try again.</p>;
+  if (!form) return <p className="lead dark" style={{ textAlign: "center", padding: "40px 0" }}>Loading settings...</p>;
 
   const { prefs } = form;
   const patch = (p: Partial<FormState["prefs"]>) => {
@@ -96,6 +105,7 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
     setStatus({ kind: "idle" });
     setForm({ ...form, ...p });
   };
+
   const city = resolveCity(prefs.homeCity, places);
 
   async function save(e: FormEvent) {
@@ -110,7 +120,6 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
       });
       if (res.ok) {
         if (onboarding) {
-          // Full navigation so the header re-reads /api/me and drops "Finish setup".
           window.location.assign("/");
           return;
         }
@@ -131,7 +140,12 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
       const label = body?.field ? FIELD_LABEL[body.field] : undefined;
       setStatus({
         kind: "error",
-        message: res.status === 401 ? "You are signed out. Sign in again." : label ? `Please check the ${label} field.` : "Could not save. Please check your choices.",
+        message:
+          res.status === 401
+            ? "You are signed out. Sign in again."
+            : label
+            ? `Please check the ${label} field.`
+            : "Could not save. Please check your choices.",
       });
     } catch {
       setStatus({ kind: "error", message: "Could not save. Check your connection and try again." });
@@ -151,7 +165,8 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
       else
         setHookTest({
           kind: "fail",
-          message: res.status === 401 ? "You are signed out. Sign in again." : (body?.reason ?? "The test message failed."),
+          message:
+            res.status === 401 ? "You are signed out. Sign in again." : body?.reason ?? "The test message failed.",
         });
     } catch {
       setHookTest({ kind: "fail", message: "Could not send the test. Check your connection and try again." });
@@ -161,282 +176,459 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
   const hookTyped = form.discordWebhook.trim() !== "";
   const canTestHook = form.discordWebhookSet && !form.clearDiscordWebhook && !hookTyped && hookTest.kind !== "sending";
 
-  const step = (n: number) => (onboarding ? `Step ${n} of 4` : null);
+  // Distance vibe text
+  const r = prefs.radiusKm;
+  const vibe =
+    r <= 50
+      ? "auto-rickshaw range"
+      : r <= 150
+      ? "a bus ride away"
+      : r <= 400
+      ? "worth a weekend trip"
+      : r < 3000
+      ? "overnight-train energy"
+      : "anywhere in India";
+
+  const allOff = KIND_DEFS.every((k) => prefs.priorities[k.id] === "off");
+  const tops = KIND_DEFS.filter((k) => prefs.priorities[k.id] === "top").map((k) => k.label.toLowerCase());
+
+  // Mascot dynamic reaction line
+  const mascotSay = allOff
+    ? "Everything on nah? I'll just sit here quietly then."
+    : r >= 3000
+    ? "Anywhere in India? Bold. Pack snacks."
+    : !prefs.includeSocial
+    ? "Skipping LinkedIn and X finds? Those are the hidden gems!"
+    : prefs.topics.length === 0
+    ? "No topics means you get everything. Brave."
+    : prefs.topics.length >= 5
+    ? "That's a lot of topics. Love the energy."
+    : "Ooh, " +
+      prefs.topics
+        .slice(0, 2)
+        .map((t) => TOPIC_LABELS.find(([k]) => k === t)?.[1] ?? t)
+        .join(" and ") +
+      ". Good taste.";
 
   return (
-    <div className="prefs">
-      <h1>{onboarding ? "Pick what you hear about" : "Settings"}</h1>
-      <p className="lead">
-        {onboarding
-          ? "The site lists every event. Your picks below decide which ones we message you about. Skip anything, and change it later in Settings."
-          : "Your picks decide which events we message you about. The site always lists every event."}
-      </p>
-      {!onboarding && name && (
-        <p className="small prefs-who">
-          Signed in as <b>{name}</b>
-        </p>
-      )}
-
-      <div className="prefs-layout">
-        <nav className="rail" aria-label="Sections">
-          <a href="#reach">
-            Where to reach you<span>Optional</span>
-          </a>
-          <a href="#place">
-            Where you are<span>Home city and distance</span>
-          </a>
-          <a href="#interests">
-            What you follow<span>Event types and topics</span>
-          </a>
-          <a href="#notify">
-            How we message you<span>Digest, pings, reminders</span>
-          </a>
-        </nav>
-
-        <form className="prefs-main" onSubmit={(e) => void save(e)}>
-          <section id="reach">
-            {step(1) && <p className="eyebrow">{step(1)}</p>}
-            <h2>Where to reach you</h2>
-            <p className="hint">All optional. We use each only for the notifications you turn on for it.</p>
-            <div className="grid">
-              <div className="field">
-                <label htmlFor="email">Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  autoComplete="email"
-                  readOnly={form.emailLocked}
-                  value={form.email}
-                  onChange={(e) => patchForm({ email: e.target.value })}
-                />
-                {form.emailLocked && <span className="note">This is your sign-in email, so it cannot be changed here.</span>}
-              </div>
-              <div className="field">
-                <label htmlFor="phone">WhatsApp number</label>
-                <input
-                  id="phone"
-                  type="tel"
-                  placeholder="+91 98765 43210"
-                  autoComplete="tel"
-                  value={form.phone}
-                  onChange={(e) => patchForm({ phone: e.target.value })}
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="cbkey">CallMeBot key</label>
-                <input
-                  id="cbkey"
-                  type="password"
-                  autoComplete="off"
-                  placeholder={form.hasCallmebotKey ? "Saved. Leave blank to keep it." : "Paste your key"}
-                  value={form.callmebotKey}
-                  onChange={(e) => patchForm({ callmebotKey: e.target.value })}
-                />
-              </div>
-            </div>
-            <p className="small">
-              WhatsApp messages use CallMeBot, a free service. Send it a message from your own phone to get a personal key, then paste the key here.
-              Optional.
+    <div style={{ maxWidth: 1120, margin: "0 auto 96px" }}>
+      <header
+        className="fade-in"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: 16,
+          margin: "8px auto 36px",
+        }}
+      >
+        <div>
+          <p className="eyebrow" style={{ color: "var(--mute)" }}>
+            {onboarding ? "Step 3 of 3 · change any of it later in Settings" : "Your personal radar filters"}
+          </p>
+          <h1 className="h1" style={{ color: "var(--chalk)", margin: 0 }}>
+            {onboarding ? "What should we look out for?" : "Settings"}
+          </h1>
+          <span className="note-hand" style={{ marginTop: 10 }}>
+            four quick parts, skip any of them
+          </span>
+          {!onboarding && name && (
+            <p className="lead dark" style={{ marginTop: 8, fontSize: 16 }}>
+              Signed in as <b>{name}</b>
             </p>
-            <div className="field webhook">
-              <label htmlFor="dwebhook">Discord webhook URL (optional)</label>
+          )}
+        </div>
+
+        {/* Mascot Buddy speech bubble */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <Monitor size={96} mood="happy" />
+          <p
+            aria-live="polite"
+            style={{
+              position: "relative",
+              margin: 0,
+              maxWidth: 280,
+              background: "var(--cream)",
+              color: "var(--ink)",
+              font: "21px/1.25 var(--hand)",
+              padding: "14px 18px",
+              borderRadius: 18,
+              boxShadow: "0 12px 26px -12px rgb(0 0 0 / 0.7)",
+            }}
+          >
+            {mascotSay}
+          </p>
+        </div>
+      </header>
+
+      <form
+        className="card-paper grid-paper fade-in"
+        style={{ border: "10px solid var(--coral)", borderRadius: 28 }}
+        onSubmit={(e) => void save(e)}
+      >
+        {/* PART 1: Where should we ping you? */}
+        <section className="part" style={{ paddingBottom: 24 }} aria-labelledby="p1">
+          <div className="step-tab">
+            <span className="num" aria-hidden="true">
+              1
+            </span>
+            <h2 className="h3" id="p1">
+              Where should we ping you?
+            </h2>
+            <Icon name="phone" className="sec-doodle" size={32} />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 18 }}>
+            <label className="field">
+              Email
               <input
-                id="dwebhook"
-                type="url"
-                autoComplete="off"
-                spellCheck={false}
-                placeholder="https://discord.com/api/webhooks/..."
-                value={form.discordWebhook}
-                onChange={(e) => {
-                  setHookTest({ kind: "idle" });
-                  patchForm({ discordWebhook: e.target.value, clearDiscordWebhook: false });
-                }}
+                type="email"
+                readOnly={form.emailLocked}
+                value={form.email}
+                placeholder="name@example.com"
+                onChange={(e) => patchForm({ email: e.target.value })}
               />
-              <span className="note">
-                Anyone with this URL can post to that channel, so keep it private. Create one in your Discord channel settings under Integrations.
-              </span>
-              {form.discordWebhookSet && !form.clearDiscordWebhook && !hookTyped && (
-                <span className="note">A webhook is saved. Paste a new one to replace it.</span>
-              )}
-              {form.clearDiscordWebhook && <span className="note">The saved webhook will be removed when you save.</span>}
-              <div className="row">
-                <button type="button" className="btn" disabled={!canTestHook} onClick={() => void testWebhook()}>
-                  {hookTest.kind === "sending" ? "Sending" : "Send test message"}
-                </button>
-                {form.discordWebhookSet && (
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={() => {
-                      setHookTest({ kind: "idle" });
-                      patchForm({ discordWebhook: "", clearDiscordWebhook: !form.clearDiscordWebhook });
-                    }}
-                  >
-                    {form.clearDiscordWebhook ? "Keep saved webhook" : "Remove saved webhook"}
-                  </button>
-                )}
-                <span role="status" aria-live="polite" className={hookTest.kind === "fail" ? "failed" : "saved"}>
-                  {hookTest.kind === "ok" && "Test message sent. Check your Discord channel."}
-                  {hookTest.kind === "fail" && hookTest.message}
-                  {hookTest.kind === "idle" && !canTestHook && !form.discordWebhookSet && "Save a webhook to enable the test."}
-                  {hookTest.kind === "idle" && hookHint(form.discordWebhookSet, hookTyped)}
-                </span>
-              </div>
-            </div>
-            {DISCORD_INVITE && (
-              <div className="row spaced">
-                <a className="btn" href={DISCORD_INVITE} target="_blank" rel="noreferrer">
-                  Join the Discord server
-                </a>
-                <span className="hint">The digest arrives there with Save and Not interested buttons.</span>
-              </div>
-            )}
-            <p className="small">Email and number are stored encrypted and are never sent to the AI. Only public event text is.</p>
-          </section>
-
-          <section id="place">
-            {step(2) && <p className="eyebrow">{step(2)}</p>}
-            <h2>Where you are</h2>
-            <p className="hint">Decides which in-person events count as nearby. Online events always count.</p>
-            <div className="grid">
-              <div className="field">
-                <label htmlFor="city">Home city</label>
-                <select id="city" value={city} onChange={(e) => patch({ homeCity: e.target.value })}>
-                  {places.length === 0 && <option value={city}>{city}</option>}
-                  {places.map((p) => (
-                    <option key={p.key} value={p.key}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="field">
-                <label htmlFor="radius">Willing to travel</label>
-                <select id="radius" value={prefs.radiusKm} onChange={(e) => patch({ radiusKm: Number(e.target.value) as FormState["prefs"]["radiusKm"] })}>
-                  <option value={50}>50 km</option>
-                  <option value={150}>150 km</option>
-                  <option value={300}>300 km</option>
-                  <option value={3000}>Anywhere in India</option>
-                </select>
-              </div>
-              <div className="field">
-                <label htmlFor="format">Format</label>
-                <select id="format" value={prefs.format} onChange={(e) => patch({ format: e.target.value as FormState["prefs"]["format"] })}>
-                  <option value="online_near">Online and near me</option>
-                  <option value="online">Online only</option>
-                  <option value="in_person">In person only</option>
-                  <option value="anything">Anything</option>
-                </select>
-              </div>
-            </div>
-          </section>
-
-          <section id="interests">
-            {step(3) && <p className="eyebrow">{step(3)}</p>}
-            <h2>What you follow</h2>
-            <p className="hint">
-              Top means we message you in the next morning's run. Normal puts it in your daily digest. Off means no messages; it still shows on the
-              site.
-            </p>
-
-            {KIND_ROWS.map((row) => (
-              <div className="line" key={row.kind}>
-                <div>
-                  <b>{row.title}</b>
-                  <small>{row.sub}</small>
-                  {row.sparse && <small>Few events of this kind are tracked yet.</small>}
-                </div>
-                <fieldset className="seg top">
-                  <legend className="sr">{row.title} priority</legend>
-                  {LEVEL_ROWS.map(([level, label]) => (
-                    <label key={level}>
-                      <input
-                        type="radio"
-                        name={`p-${row.kind}`}
-                        checked={prefs.priorities[row.kind] === level}
-                        onChange={() => patch({ priorities: { ...prefs.priorities, [row.kind]: level } })}
-                      />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </fieldset>
-              </div>
-            ))}
-
-            <fieldset className="topics">
-              <legend className="label-strong">Topics</legend>
-              <div className="chips">
-                {TOPIC_LABELS.map(([key, label]) => (
-                  <label key={key}>
-                    <input
-                      type="checkbox"
-                      checked={prefs.topics.includes(key)}
-                      onChange={(e) => patch({ topics: toggle(prefs.topics, key, e.target.checked, TOPIC_ORDER) })}
-                    />
-                    <span>{label}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            <label className="check">
-              <input type="checkbox" checked={prefs.includeSocial} onChange={(e) => patch({ includeSocial: e.target.checked })} />
-              <span>
-                <b>Include posts found on LinkedIn and X</b>
-                <br />
-                <span className="sub">Organisers often announce there first. We read public posts through search only, with no logins.</span>
+              <span className="hint">
+                {form.emailLocked ? "From your sign-in. Locked to your account." : "Messages can go to this address."}
               </span>
             </label>
-          </section>
 
-          <section id="notify">
-            {step(4) && <p className="eyebrow">{step(4)}</p>}
-            <h2>How we message you</h2>
-            <p className="hint">Only for the kinds you set to Top or Normal above.</p>
-            {MESSAGE_ROWS.map((row) => (
-              <div className="line" key={row.type}>
-                <div>
-                  <b>{row.title}</b>
-                  <small>{row.sub}</small>
-                </div>
-                <fieldset className="chips">
-                  <legend className="sr">{row.title} channels</legend>
-                  {CHANNEL_ROWS.map(([channel, label]) => (
-                    <label key={channel}>
-                      <input
-                        type="checkbox"
-                        checked={prefs.channels[row.type].includes(channel)}
-                        onChange={(e) =>
-                          patch({ channels: { ...prefs.channels, [row.type]: toggle(prefs.channels[row.type], channel, e.target.checked, CHANNEL_ORDER) } })
-                        }
-                      />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </fieldset>
-              </div>
-            ))}
-          </section>
+            <label className="field">
+              WhatsApp number
+              <input
+                type="tel"
+                placeholder="+91 98765 43210"
+                value={form.phone}
+                onChange={(e) => patchForm({ phone: e.target.value })}
+              />
+              <span className="hint">Optional. Needs the one-time CallMeBot key below.</span>
+            </label>
 
-          <div className="foot">
-            {status.kind === "saved" && (
-              <span role="status" className="saved">
-                Saved
+            <label className="field">
+              CallMeBot key
+              <input
+                type="password"
+                autoComplete="off"
+                placeholder={form.hasCallmebotKey ? "Saved. Leave blank to keep." : "Paste key from WhatsApp bot"}
+                value={form.callmebotKey}
+                onChange={(e) => patchForm({ callmebotKey: e.target.value })}
+              />
+              <span className="hint">Free WhatsApp bot key. Send a message to CallMeBot to get it.</span>
+            </label>
+          </div>
+
+          {/* Discord Webhook Section */}
+          <div className="field" style={{ marginTop: 18 }}>
+            <label htmlFor="dwebhook">Discord webhook URL (optional)</label>
+            <input
+              id="dwebhook"
+              type="url"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="https://discord.com/api/webhooks/..."
+              value={form.discordWebhook}
+              onChange={(e) => {
+                setHookTest({ kind: "idle" });
+                patchForm({ discordWebhook: e.target.value, clearDiscordWebhook: false });
+              }}
+            />
+            <span className="hint">
+              Anyone with this URL can post to that channel, so keep it private. Create one in Discord channel settings.
+            </span>
+
+            {form.discordWebhookSet && !form.clearDiscordWebhook && !hookTyped && (
+              <span className="note">A webhook is saved. Paste a new one to replace it.</span>
+            )}
+            {form.clearDiscordWebhook && (
+              <span className="note" style={{ color: "var(--ink-red)" }}>
+                The saved webhook will be removed when you save.
               </span>
+            )}
+
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginTop: 8 }}>
+              <button type="button" className="btn chalk" disabled={!canTestHook} onClick={() => void testWebhook()}>
+                {hookTest.kind === "sending" ? "Sending..." : "Send test message"}
+              </button>
+              {form.discordWebhookSet && (
+                <button
+                  type="button"
+                  className="btn ghost"
+                  onClick={() => {
+                    setHookTest({ kind: "idle" });
+                    patchForm({ discordWebhook: "", clearDiscordWebhook: !form.clearDiscordWebhook });
+                  }}
+                >
+                  {form.clearDiscordWebhook ? "Keep saved webhook" : "Remove saved webhook"}
+                </button>
+              )}
+              {DISCORD_INVITE && (
+                <a className="btn ghost" href={DISCORD_INVITE} target="_blank" rel="noreferrer">
+                  Join HackRadar Discord
+                </a>
+              )}
+              <span role="status" aria-live="polite" style={{ fontSize: 13, color: hookTest.kind === "fail" ? "var(--ink-red)" : "var(--coral-deep)" }}>
+                {hookTest.kind === "ok" && "Test message sent! Check your Discord channel."}
+                {hookTest.kind === "fail" && hookTest.message}
+                {hookTest.kind === "idle" && !canTestHook && !form.discordWebhookSet && "Save a webhook to enable the test."}
+                {hookTest.kind === "idle" && hookHint(form.discordWebhookSet, hookTyped)}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* PART 2: Where's home base? */}
+        <section className="part" style={{ borderTop: "2px dashed color-mix(in oklch, var(--ink-red) 35%, transparent)", paddingTop: 32, paddingBottom: 24 }} aria-labelledby="p2">
+          <div className="step-tab">
+            <span className="num" aria-hidden="true">
+              2
+            </span>
+            <h2 className="h3" id="p2">
+              Where's home base?
+            </h2>
+            <Icon name="pin" className="sec-doodle" size={32} />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: 18 }}>
+            <label className="field">
+              Home city
+              <select value={city} onChange={(e) => patch({ homeCity: e.target.value })}>
+                {places.length === 0 && <option value={city}>{city}</option>}
+                {places.map((p) => (
+                  <option key={p.key} value={p.key}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="range-row">
+              <label className="field" htmlFor="radius">
+                How far you'd travel
+              </label>
+              <input
+                id="radius"
+                type="range"
+                min="50"
+                max="3000"
+                step="50"
+                value={prefs.radiusKm}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  const nearest = val <= 100 ? 50 : val <= 225 ? 150 : val <= 1500 ? 300 : 3000;
+                  patch({ radiusKm: nearest as FormState["prefs"]["radiusKm"] });
+                }}
+                style={{ width: "100%", accentColor: "var(--coral-deep)", minHeight: 44 }}
+              />
+              <span className="val" style={{ font: "24px var(--hand)", color: "var(--ink-red)" }}>
+                {r >= 3000 ? "anywhere in India" : `${r} km · ${vibe}`}
+              </span>
+            </div>
+
+            <div className="field">
+              Format
+              <div className="seg" role="group" aria-label="Format">
+                {[
+                  { value: "in_person", label: "In person" },
+                  { value: "online", label: "Online" },
+                  { value: "online_near", label: "Both" },
+                ].map((f) => (
+                  <button
+                    key={f.value}
+                    type="button"
+                    className={prefs.format === f.value ? "on" : ""}
+                    aria-pressed={prefs.format === f.value}
+                    onClick={() => patch({ format: f.value as FormState["prefs"]["format"] })}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PART 3: What gets you out of bed on a weekend? */}
+        <section className="part" style={{ borderTop: "2px dashed color-mix(in oklch, var(--ink-red) 35%, transparent)", paddingTop: 32, paddingBottom: 24 }} aria-labelledby="p3">
+          <div className="step-tab">
+            <span className="num" aria-hidden="true">
+              3
+            </span>
+            <h2 className="h3" id="p3">
+              What gets you out of bed on a weekend?
+            </h2>
+            <Icon name="rocket" className="sec-doodle" size={32} />
+          </div>
+
+          {KIND_DEFS.map((k) => (
+            <div className="kind-row" key={k.id}>
+              <div>
+                <b>{k.label}</b>
+                <small>{k.sub}</small>
+              </div>
+              <div className="seg" role="group" aria-label={`${k.label} priority`}>
+                {LEVEL_LABELS.map(([level, label]) => {
+                  const on = prefs.priorities[k.id] === level;
+                  return (
+                    <button
+                      key={level}
+                      type="button"
+                      className={on ? (level === "top" ? "on top" : "on") : ""}
+                      aria-pressed={on}
+                      onClick={() => patch({ priorities: { ...prefs.priorities, [k.id]: level } })}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+
+          <p style={{ font: "15px/1.45 var(--sans)", color: "#7a4b47", margin: "14px 0 0" }}>
+            <b>ping me!</b> its own message in the next morning's run. <b>digest</b>: rolled into your daily digest.{" "}
+            <b>nah</b>: never messaged, still on the site.
+          </p>
+
+          <p style={{ fontWeight: 600, fontSize: 14, color: "var(--ink-soft)", margin: "20px 0 10px" }}>
+            Topics you nerd out about (pick none to get everything)
+          </p>
+          <div className="chips">
+            {TOPIC_LABELS.map(([key, label]) => {
+              const on = prefs.topics.includes(key);
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  className={on ? "chip on" : "chip"}
+                  aria-pressed={on}
+                  onClick={() => patch({ topics: toggle(prefs.topics, key, !on, TOPIC_ORDER) })}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          <p style={{ fontWeight: 600, fontSize: 14, color: "var(--ink-soft)", margin: "24px 0 8px" }}>
+            Social finds
+          </p>
+          <button
+            type="button"
+            className={prefs.includeSocial ? "switch on" : "switch"}
+            aria-pressed={prefs.includeSocial}
+            onClick={() => patch({ includeSocial: !prefs.includeSocial })}
+          >
+            <span className="track" aria-hidden="true" />
+            Include hackathons found in LinkedIn and X posts (marked unverified)
+          </button>
+        </section>
+
+        {/* PART 4: How loud should we be? */}
+        <section className="part" style={{ borderTop: "2px dashed color-mix(in oklch, var(--ink-red) 35%, transparent)", paddingTop: 32, paddingBottom: 24 }} aria-labelledby="p4">
+          <div className="step-tab">
+            <span className="num" aria-hidden="true">
+              4
+            </span>
+            <h2 className="h3" id="p4">
+              How loud should we be?
+            </h2>
+            <Icon name="clock" className="sec-doodle" size={32} />
+          </div>
+
+          <div style={{ overflowX: "auto" }}>
+            <table className="matrix">
+              <thead>
+                <tr>
+                  <th scope="col">Message</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Discord</th>
+                  <th scope="col">WhatsApp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {MESSAGE_DEFS.map((row) => (
+                  <tr key={row.id}>
+                    <td>
+                      <b>{row.label}</b>
+                      <small>{row.sub}</small>
+                    </td>
+                    {CHANNELS.map(([channel, channelLabel]) => {
+                      const on = prefs.channels[row.id].includes(channel);
+                      return (
+                        <td key={channel}>
+                          <button
+                            type="button"
+                            className={on ? "cell on" : "cell"}
+                            aria-pressed={on}
+                            aria-label={`${row.label} by ${channelLabel}`}
+                            onClick={() =>
+                              patch({
+                                channels: {
+                                  ...prefs.channels,
+                                  [row.id]: toggle(prefs.channels[row.id], channel, !on, CHANNEL_ORDER),
+                                },
+                              })
+                            }
+                          >
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path className="tick" d="M3 8.5l3 3 7-7" />
+                            </svg>
+                          </button>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Save footer */}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            paddingTop: 24,
+            borderTop: "2px dashed color-mix(in oklch, var(--ink-red) 35%, transparent)",
+          }}
+        >
+          <div>
+            <p style={{ margin: 0, font: "20px var(--hand)", color: "#7a4b47" }}>
+              {tops.length > 0
+                ? `Top pings for ${tops.join(" and ")}. Everything else in your morning digest.`
+                : "Everything you follow arrives in your morning digest."}
+            </p>
+            {status.kind === "saved" && (
+              <p style={{ color: "var(--ink-red)", fontWeight: 600, margin: "4px 0 0" }}>Saved!</p>
             )}
             {status.kind === "error" && (
-              <span role="alert" className="failed">
+              <p style={{ color: "var(--coral-deep)", fontWeight: 600, margin: "4px 0 0" }} role="alert">
                 {status.message}
-              </span>
+              </p>
             )}
-            {onboarding && <Link to="/">Skip for now</Link>}
-            <button className="btn primary" type="submit" disabled={status.kind === "saving"}>
-              {onboarding ? "Save and open the site" : "Save changes"}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            {onboarding && (
+              <Link to="/" className="btn ghost">
+                Skip for now
+              </Link>
+            )}
+            <button className="btn solid" type="submit" disabled={status.kind === "saving"}>
+              {status.kind === "saving"
+                ? "Saving..."
+                : onboarding
+                ? "Save and show me hackathons"
+                : "Save changes"}
             </button>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

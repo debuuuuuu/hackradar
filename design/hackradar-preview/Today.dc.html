@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Today</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;family=Gochi+Hand&amp;family=Instrument+Sans:wght@400;600&amp;family=Young+Serif&amp;display=swap">
+<style>
+body{margin:0;background:#1f1e1d}
+a{color:inherit}
+.page{max-width:1120px;margin:0 auto 96px}
+.hello{position:relative;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;margin:8px 0 28px}
+.hello .h1{color:var(--chalk);margin:0 0 8px}
+.hello .sub{font:24px/1.3 var(--hand);color:var(--coral-text);margin:0}
+.hello svg{width:120px;height:120px;color:var(--chalk)}
+.bar{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;justify-content:space-between;background:var(--cream);color:var(--ink);border-radius:18px;padding:12px 14px;margin-bottom:56px}
+.bar .chips .chip{min-height:44px}
+.bar .field{grid-auto-flow:column;align-items:center}
+.bar input{min-width:240px}
+.picks-line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font:500 13px var(--mono);color:var(--mute);margin:-36px 0 48px}
+.picks-line span{border:1.5px solid var(--line-dark);border-radius:999px;padding:4px 10px;color:var(--chalk)}
+.picks-line a{color:var(--coral-text);min-height:44px;display:inline-flex;align-items:center;padding-inline:6px}
+.sec-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin:0 0 32px}
+.top-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:40px 36px;margin-bottom:32px}
+.more-row{display:flex;justify-content:center;margin:0 0 96px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.tg{display:inline-flex;align-items:center;gap:4px;font:600 12px/1 var(--sans);padding:5px 10px 5px 7px;border-radius:999px;border:1.5px solid transparent;white-space:nowrap}
+.tg .mo{width:15px;height:15px;margin:0;color:currentColor}
+.tg.topic{background:var(--coral);color:var(--ink)}
+.tg.near{border-color:var(--ink-red);color:var(--ink-red)}
+.tg.online{border-color:var(--ink-soft);color:var(--ink-soft);border-style:dashed}
+.tg.multi{background:var(--ink);color:var(--cream)}
+.tg.soon{background:#fbf5ec;border:1.5px dashed var(--coral-deep);color:var(--coral-deep);font:17px/1 var(--hand);padding:3px 10px 3px 7px;transform:rotate(-3deg)}
+.tg.more{background:var(--cream-2);color:var(--ink-soft)}
+@keyframes wob{50%{transform:rotate(3deg) scale(1.05)}}
+.list-tools{display:flex;flex-wrap:wrap;gap:8px}
+.list-tools .chip{border-color:var(--chalk);color:var(--chalk)}
+.list-tools .chip.on{background:var(--chalk);color:var(--charcoal)}
+.rows{list-style:none;margin:0;padding:0}
+.grp-h{margin:0;padding:18px 0 2px;font:23px var(--hand);color:var(--coral-deep);display:flex;align-items:center;gap:8px}
+.grp-n{font:500 12px var(--mono);background:var(--ink);color:var(--cream);border-radius:999px;padding:2px 8px}
+.list .plat.devpost{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+.list .plat.unstop{background:var(--coral);color:var(--ink);border-color:var(--coral)}
+.list .plat.devfolio{background:#fbf5ec}
+.list .plat.mlh{border-style:dashed}
+.list .plat.luma{background:var(--cream-2)}
+@media (prefers-reduced-motion:no-preference){.motion .tg.soon{animation:wob 1.8s ease-in-out infinite}}
+.save-btn{position:absolute;top:14px;right:14px;z-index:2;min-height:44px;padding-inline:14px;border-radius:999px;border:2px solid var(--cream);background:color-mix(in oklch,var(--coal) 70%,transparent);color:var(--cream);font:600 13px var(--sans);cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.save-btn svg{width:16px;height:16px}
+.save-btn.on{background:var(--cream);color:var(--ink-red);border-color:var(--cream)}
+.save-btn.on path{fill:currentColor}
+.social{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:40px;margin-bottom:96px}
+.polaroid .open{display:inline-flex;align-items:center;min-height:44px;color:var(--coral-text);font:600 14px var(--sans);margin-top:10px}
+.list{background:var(--cream);color:var(--ink);border-radius:22px;padding:4px 28px 12px;margin:0 0 24px}
+.list li{display:grid;grid-template-columns:96px minmax(0,1fr) 150px 170px;gap:6px 20px;align-items:center;padding:14px 0;border-bottom:1.5px dashed color-mix(in oklch,var(--ink-red) 35%,transparent);position:relative}
+.list li:last-child{border-bottom:0}
+.list .plat{justify-self:start;font:500 11px var(--mono);text-transform:uppercase;color:var(--ink-red);border:1.5px solid var(--ink-red);border-radius:5px;padding:2px 7px}
+.list b{font:400 19px var(--serif)}
+.list .when{font:500 13px var(--mono);color:#7a4b47}
+.list .where{font-size:14px;color:var(--ink-soft)}
+.list li:hover b{text-decoration:underline wavy var(--coral) 1.5px;text-underline-offset:5px}
+@media (max-width:760px){.list li{grid-template-columns:1fr}.hello{grid-template-columns:1fr}.hello svg{display:none}}
+</style>
+</helmet>
+<div class="hr {{motionClass}}" style="--coral: {{accent}}">
+<div class="frame">
+<nav class="nav" aria-label="Main">
+<sc-if value="{{quipOn}}" hint-placeholder-val="{{ false }}"><div class="quip show" role="status" aria-label="{{quip}}" data-q="{{quip}}"></div></sc-if>
+<a class="brand {{talkCls}}" href="Main.dc.html" onMouseEnter="{{sayNow}}"><svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g></svg>HackRadar</a>
+<a class="navlink here" href="Today.dc.html" aria-current="page"><span>today</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">picked for you</em></a>
+<a class="navlink" href="Saved.dc.html"><span>my events</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">saved and went</em></a>
+<a class="navlink" href="Setup.dc.html"><span>your picks</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">change anytime</em></a>
+<a class="navlink pill" href="Main.dc.html"><span>sign out</span><em class="cap">see you tomorrow</em></a>
+</nav>
+
+<main class="page">
+<header class="hello fade-in">
+<div>
+<h1 class="h1">Morning, Debjit.</h1>
+<p class="sub">3 new near Pune since yesterday. The FinTech one closes Friday.</p>
+</div>
+<svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g><text class="zz" x="40" y="8">z</text></svg>
+</header>
+
+<div class="bar" role="search">
+<div class="chips" role="group" aria-label="Show">
+<sc-for list="{{views}}" as="v" hint-placeholder-count="3">
+<button type="button" class="{{v.cls}}" aria-pressed="{{v.pressed}}" onClick="{{v.pick}}">{{v.label}}</button>
+</sc-for>
+</div>
+<label class="field"><span class="sr">Search events</span><input type="search" placeholder="Search by name, topic or city"></label>
+</div>
+<p class="picks-line">Picked for <span>Pune · 150 km</span><span>Hackathons: ping me!</span><span>AI/ML</span><span>Web3</span><a href="Setup.dc.html">edit</a></p>
+
+<section aria-labelledby="top-h">
+<div class="sec-head"><h2 class="h2" id="top-h">Top picks for you</h2><span class="note-hand">matched on topic and distance</span></div>
+<div class="top-grid">
+<sc-for list="{{tops}}" as="e" hint-placeholder-count="3">
+<article class="shot" style="--r: {{e.r}}">
+<div class="{{e.poster}}"><span class="platform">{{e.platform}}</span><svg viewBox="0 0 40 40" aria-hidden="true"><path class="ln" d="{{e.icon}}"></path></svg></div>
+<button type="button" class="{{e.saveCls}}" aria-pressed="{{e.saved}}" onClick="{{e.toggle}}"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="ln" d="M4 2h8v12l-4-3-4 3z"></path></svg>{{e.saveText}}</button>
+<div class="shot-body"><h3 class="shot-title">{{e.title}}</h3>
+<dl class="facts"><dt>When</dt><dd>{{e.when}}</dd><dt>Where</dt><dd>{{e.where}}</dd><dt>Prize</dt><dd>{{e.prize}}</dd></dl>
+<div class="tags"><sc-for list="{{e.tags}}" as="w" hint-placeholder-count="3"><span class="{{w.cls}}"><svg class="mo" viewBox="0 0 24 24" aria-hidden="true"><path class="ln" d="{{w.icon}}"></path></svg>{{w.label}}</span></sc-for></div>
+</div>
+<a class="over" href="Event.dc.html" aria-label="{{e.aria}}"></a>
+</article>
+</sc-for>
+</div>
+<sc-if value="{{hasMoreTops}}" hint-placeholder-val="{{ true }}">
+<div class="more-row"><button type="button" class="btn chalk" onClick="{{toggleTops}}">{{topsMoreText}}</button></div>
+</sc-if>
+</section>
+
+<section aria-labelledby="soc-h">
+<div class="sec-head"><h2 class="h2" id="soc-h">Found in posts on LinkedIn and X</h2><span class="note-hand">not on any listing site yet</span></div>
+<div class="social">
+<figure class="polaroid scroll" style="--r: -3deg; margin: 0" tabindex="0">
+<div class="pic">
+<p class="who">public post on LinkedIn</p>
+<p>We're hosting a 36-hour campus hackathon on 29–30 Nov in Pune. Open to all colleges, team size 2–4.</p>
+<a class="open" href="Event.dc.html">Open post and details</a>
+<svg class="scribble" viewBox="0 0 300 170" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M20 60C10 20 140 6 250 22c40 6 44 52 4 70-50 22-200 22-226-6C8 66 50 40 120 36"></path></svg>
+</div>
+<figcaption class="sig">unverified · check the post</figcaption>
+</figure>
+<figure class="polaroid scroll" style="--r: 2.5deg; margin: 0" tabindex="0">
+<div class="pic">
+<p class="who">@pune_builders · public post on X</p>
+<p>Registrations open for our 24-hour build night on 22 Nov. Beginners welcome. Link in thread.</p>
+<a class="open" href="Event.dc.html">Open post and details</a>
+<svg class="scribble" viewBox="0 0 300 170" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M20 60C10 20 140 6 250 22c40 6 44 52 4 70-50 22-200 22-226-6C8 66 50 40 120 36"></path></svg>
+</div>
+<figcaption class="sig">unverified · check the post</figcaption>
+</figure>
+<p class="note-hand" style="align-self: center; max-width: 280px">Dates here come from the post itself. We always link to it.</p>
+</div>
+</section>
+
+<section aria-labelledby="all-h">
+<div class="sec-head"><h2 class="h2" id="all-h">Also open near you · {{listTotal}}</h2><div class="list-tools" role="group" aria-label="Sort the list"><sc-for list="{{sorts}}" as="o" hint-placeholder-count="2"><button type="button" class="{{o.cls}}" aria-pressed="{{o.pressed}}" onClick="{{o.pick}}">{{o.label}}</button></sc-for></div></div>
+<div class="list">
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+<div>
+<p class="grp-h">{{g.label}}<span class="grp-n">{{g.count}}</span></p>
+<ul class="rows">
+<sc-for list="{{g.items}}" as="r" hint-placeholder-count="3">
+<li><span class="{{r.platCls}}">{{r.plat}}</span><b>{{r.title}}</b><span class="when">{{r.when}}</span><span class="where">{{r.where}}</span><a class="over" href="Event.dc.html" aria-label="{{r.aria}}"></a></li>
+</sc-for>
+</ul>
+</div>
+</sc-for>
+</div>
+<div class="more-row"><button type="button" class="btn chalk" onClick="{{toggleList}}">{{listMoreText}}</button></div>
+</section>
+</main>
+<footer class="site-foot">
+<div class="ticker" aria-label="Sources we check"><div class="track"><span>Devpost</span><span>Unstop</span><span>Devfolio</span><span>MLH</span><span>Luma</span><span>LinkedIn and X posts</span><span>checked every morning</span><span aria-hidden="true">Devpost</span><span aria-hidden="true">Unstop</span><span aria-hidden="true">Devfolio</span><span aria-hidden="true">MLH</span><span aria-hidden="true">Luma</span><span aria-hidden="true">LinkedIn and X posts</span><span aria-hidden="true">checked every morning</span></div></div>
+<svg class="foot-wave" viewBox="0 0 1200 28" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M0 14c40-14 80 14 120 0s80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0"></path></svg>
+<div class="foot-grid">
+<div class="foot-brand"><a href="Main.dc.html"><svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g></svg>HackRadar</a><p>Hackathons near you, every morning. Made in Pune for people who build on <b>weekends</b>.</p></div>
+<nav aria-label="Explore"><h2 class="foot-h">Explore</h2><ul class="foot-links"><li><a href="Main.dc.html">How it works</a></li><li><a href="Today.dc.html">Open hackathons</a></li><li><a href="Setup.dc.html">Your picks</a></li></ul></nav>
+<nav aria-label="Messages"><h2 class="foot-h">Messages</h2><ul class="foot-links"><li><a href="Messages.dc.html">See a sample</a></li><li><a href="Setup.dc.html">Change channels</a></li><li><a href="Messages.dc.html">Unsubscribe</a></li></ul></nav>
+<div class="foot-doodle"><svg class="pc sleepy" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g><text class="zz" x="40" y="8">z</text></svg>next list lands around 5 AM IST</div>
+</div>
+<div class="foot-base"><span>Dates and prizes come from the source, never from AI.</span><span>Free · no card · one message a morning at most</span></div>
+</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#e5484d","options":["#e5484d","#f2602a","#d6336c","#2f9e8f"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":2800}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this.quipTimer = setTimeout(() => this.quipNow(), 4000);
+  }
+  componentWillUnmount() {
+    clearTimeout(this.quipTimer);
+    clearTimeout(this.quipHide);
+  }
+  quipNow() {
+    const lines = ['404: sleep not found.', 'Pizza at 3 AM is a valid food group.', 'git commit -m "final final FINAL"', "I check five sites so you don't have to.", 'Your next big idea is one weekend away.', 'Beep boop. Scanning for prizes.', 'Teammates wanted. Snacks provided. Probably.', 'I woke up at 4:47 AM for you.', 'Ship it. Fix it. Ship it again.', 'Is it a bug or a feature? Yes.', 'Coffee status: dangerously low.', 'Psst. Save the ones you like!', 'Dates come from the source. I never guess.', 'Have you had water today, builder?', "Mentors are friends you haven't met yet.", 'Ctrl+S your code. And your weekend.', 'Tip: give your team a silly name.', 'One more feature, they said. 6 hours ago.'];
+    clearTimeout(this.quipTimer);
+    clearTimeout(this.quipHide);
+    if (typeof document !== 'undefined' && document.hidden) {
+      this.quipTimer = setTimeout(() => this.quipNow(), 10000);
+      return;
+    }
+    // shortcut: fixed lines for the preview; the real site shows fresh questions and jokes from the daily LLM run
+    const questions = ['Pikachu or Charmander? Think fast.', 'Would you pet a Snorlax? Be honest.', 'Is Bulbasaur underrated? (Yes.)', 'Tabs or spaces? Choose wisely.', 'Dark mode or light mode? I know mine.', '3 AM snack: pizza or biryani?', 'Solo or team hackathons?', 'Coffee or chai, builder?'];
+    const last = (this.state || {}).quip;
+    const pool = lines.concat(questions).filter((l) => l !== last);
+    this.setState({ quip: pool[Math.floor(Math.random() * pool.length)], quipOn: true });
+    this.quipHide = setTimeout(() => this.setState({ quipOn: false }), 4500);
+    // shortcut: 15-40 s gaps so the preview shows it often; use 30-90 s on the real site
+    this.quipTimer = setTimeout(() => this.quipNow(), 15000 + Math.random() * 25000);
+  }
+  constructor(props) {
+    super(props);
+    this.state = { view: 'for', saved: ['fintech'], moreTops: false, allList: false, sort: 'soon' };
+  }
+  renderVals() {
+    const s = this.state;
+    const tagIcons = {
+      topic: 'M8.5 13.5a5.5 5.5 0 1 1 7 0c-.9.8-1.2 1.8-1.2 3h-4.6c0-1.2-.3-2.2-1.2-3zM9.8 19h4.4M10.5 21.5h3',
+      near: 'M12 21s-6-6-6-11a6 6 0 0 1 12 0c0 5-6 11-6 11zM10 10a2 2 0 1 0 4 0a2 2 0 1 0-4 0',
+      online: 'M3 9c5-5 13-5 18 0M6 12.5c3.5-3 8.5-3 12 0M9 16c1.8-1.4 4.2-1.4 6 0M12 19.5v.5',
+      multi: 'M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6z',
+      soon: 'M12 21a9 9 0 1 0 0-18a9 9 0 1 0 0 18zM12 7v5l3 2',
+      more: 'M6 12h.5M12 12h.5M18 12h.5'
+    };
+    const events = [
+      { id: 'ai', title: 'Pune AI Build Weekend', platform: 'Devfolio', poster: 'poster', r: '-2deg', when: '8–9 Nov', where: 'Pune · 6 km', prize: '₹1,50,000', why: [['topic', 'AI/ML'], ['near', '6 km'], ['multi', 'on 2 sites']], icon: 'M14 22a9 9 0 1 1 12 0c-1.5 1.3-2 3-2 5h-8c0-2-.5-3.7-2-5zM16 31h8M17 35h6' },
+      { id: 'fintech', title: 'Campus FinTech Challenge', platform: 'Unstop', poster: 'poster dark', r: '1.6deg', when: '1–3 Dec · register by Fri', where: 'Pune · 14 km', prize: '₹2,00,000', why: [['soon', 'closes Fri'], ['near', '14 km']], icon: 'M13 7h14v8a7 7 0 0 1-14 0zM13 10H8a4 4 0 0 0 5 6M27 10h5a4 4 0 0 1-5 6M20 22v6M14 33h12M16 28h8' },
+      { id: 'web3', title: 'Web3 Builders Night', platform: 'Devfolio', poster: 'poster paper', r: '-1deg', when: '22 Nov', where: 'Online', prize: '$5,000', why: [['topic', 'Web3'], ['online', 'online']], icon: 'M10 9h20a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2zM4 30h32l-2 4H6zM15 15l-3 2 3 2M25 15l3 2-3 2' },
+      { id: 'iot', title: 'Smart Campus IoT Sprint', platform: 'Unstop', poster: 'poster', r: '1.2deg', when: '29–30 Nov', where: 'Pune · 9 km', prize: '₹60,000', why: [['topic', 'IoT/hardware'], ['near', '9 km']], icon: 'M20 5c6 5 8 12 6 20H14c-2-8 0-15 6-20zM17.5 15a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M14 21l-5 7 6-1M26 21l5 7-6-1M17 29l3 6 3-6' },
+      { id: 'design', title: 'Design × Code Jam', platform: 'Devpost', poster: 'poster dark', r: '-1.4deg', when: '6–7 Dec', where: 'Online', prize: '$3,000', why: [['topic', 'Design'], ['topic', 'Beginner friendly'], ['online', 'online'], ['multi', 'on 2 sites']], icon: 'M14 12l-8 8 8 8M26 12l8 8-8 8M23 9l-6 22' }
+    ];
+    // more than 3 tags: show 2 and fold the rest into a "+N" chip
+    const toTags = (why) => (why.length > 3 ? [...why.slice(0, 2), ['more', '+' + (why.length - 2)]] : why)
+      .map(([kind, label]) => ({ cls: 'tg ' + kind, label, icon: tagIcons[kind] }));
+    const pool = s.view === 'saved' ? events.filter((e) => s.saved.includes(e.id)) : events;
+    const shown = s.moreTops ? pool : pool.slice(0, 3);
+    const rows = [
+      ['Devpost', 'Open Source Climate Sprint', 'until 30 Nov', 'Online', 9999, 12],
+      ['Unstop', 'Mumbai Hardware Jam', '15–16 Nov', 'Mumbai · 120 km', 120, 4],
+      ['MLH', 'Global Hack Week: Data', '4–10 Dec', 'Online', 9999, 20],
+      ['Unstop', 'CodeSprint CTF, Round 1', '16 Nov', 'Online · contest', 9999, 2],
+      ['Devfolio', 'Pune Blockchain Weekend', '13–14 Dec', 'Pune · 11 km', 11, 26],
+      ['Luma', 'GDG Pune build night', '20 Nov', 'Pune · 4 km', 4, 6],
+      ['Devfolio', 'Nashik Smart Agri Hack', '10–11 Jan', 'Nashik · 210 km', 210, 60],
+      ['Devpost', 'Accessibility Jam 2026', 'until 15 Dec', 'Online', 9999, 34],
+      ['Unstop', 'Code Relay: Campus Edition', '19 Nov', 'Pune · 7 km', 7, 1],
+      ['MLH', 'Hack for Good: Winter', '3–5 Jan', 'Online', 9999, 52],
+      ['Devfolio', 'Satara Robotics Hack', '24–25 Jan', 'Satara · 110 km', 110, 70],
+      ['Luma', 'AI Tinkerers Pune meetup', '27 Nov', 'Pune · 5 km', 5, 9]
+    ].map(([plat, title, when, where, km, days]) => ({ plat, title, when, where, km, days, platCls: 'plat ' + plat.toLowerCase(), aria: 'Open ' + title }));
+    const sorted = [...rows].sort((a, b) => (s.sort === 'near' ? a.km - b.km : a.days - b.days));
+    const visible = s.allList ? sorted : sorted.slice(0, 5);
+    const groupDefs = s.sort === 'near'
+      ? [['Nearest first', () => true]]
+      : [['Closing this week', (r) => r.days <= 7], ['This month', (r) => r.days > 7 && r.days <= 31], ['Later', (r) => r.days > 31]];
+    const groups = groupDefs
+      .map(([label, test]) => ({ label, items: visible.filter(test), count: sorted.filter(test).length }))
+      .filter((g) => g.items.length);
+    const views = [['for', 'For you'], ['all', 'Everything open'], ['saved', 'Saved']].map(([v, l]) => ({
+      label: l, cls: s.view === v ? 'chip on' : 'chip', pressed: s.view === v ? 'true' : 'false',
+      pick: () => this.setState({ view: v })
+    }));
+    return {
+      accent: this.props.accent ?? '#e5484d',
+      quip: (this.state || {}).quip || '',
+      quipOn: !!(this.state || {}).quipOn,
+      talkCls: (this.state || {}).quipOn ? 'talking' : '',
+      sayNow: () => this.quipNow(),
+      motionClass: (this.props.motion ?? true) ? 'motion' : '',
+      views,
+      hasMoreTops: pool.length > 3,
+      topsMoreText: s.moreTops ? 'Show fewer picks' : 'Show ' + (pool.length - 3) + ' more picks',
+      toggleTops: () => this.setState({ moreTops: !s.moreTops }),
+      listTotal: rows.length,
+      groups,
+      sorts: [['soon', 'Closing soon'], ['near', 'Nearest']].map(([v, l]) => ({
+        label: l, cls: s.sort === v ? 'chip on' : 'chip', pressed: s.sort === v ? 'true' : 'false',
+        pick: () => this.setState({ sort: v })
+      })),
+      listMoreText: s.allList ? 'Show fewer' : 'Show ' + (rows.length - 5) + ' more',
+      toggleList: () => this.setState({ allList: !s.allList }),
+      tops: shown.map((e) => {
+        const on = s.saved.includes(e.id);
+        return {
+          ...e,
+          tags: toTags(e.why),
+          aria: 'Open ' + e.title,
+          saved: on ? 'true' : 'false',
+          saveCls: on ? 'save-btn on' : 'save-btn',
+          saveText: on ? 'Saved' : 'Save',
+          toggle: () => this.setState({ saved: on ? s.saved.filter((x) => x !== e.id) : [...s.saved, e.id] })
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

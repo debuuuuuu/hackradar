@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Set up your picks</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;family=Gochi+Hand&amp;family=Instrument+Sans:wght@400;600&amp;family=Young+Serif&amp;display=swap">
+<style>
+body{margin:0;background:#1f1e1d}
+a{color:inherit}
+.head{position:relative;max-width:1120px;margin:8px auto 36px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.head .h1{color:var(--chalk);margin:0}
+.body{max-width:1120px;margin:0 auto 96px;display:grid;gap:28px}
+.part{padding-bottom:8px}
+.part+.part{border-top:2px dashed color-mix(in oklch,var(--ink-red) 35%,transparent);padding-top:32px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:18px}
+.discord{background:#fbf5ec}
+.range-row{display:grid;gap:8px}
+.range-row input{width:100%;accent-color:var(--coral-deep);min-height:44px}
+.range-row .val{font:24px var(--hand);color:var(--ink-red)}
+.legend{font:15px/1.45 var(--sans);color:#7a4b47;margin:12px 0 0}
+.legend b{color:var(--ink)}
+.few{font:15px var(--hand);color:var(--coral-deep)}
+.scroll{overflow-x:auto}
+.save{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding-top:24px;border-top:2px dashed color-mix(in oklch,var(--ink-red) 35%,transparent)}
+.save p{margin:0;font:20px var(--hand);color:#7a4b47}
+.label-sm{font:600 14px var(--sans);color:var(--ink-soft);margin:18px 0 10px}
+.buddy{display:flex;align-items:center;gap:14px}
+.buddy svg{width:96px;height:96px;color:var(--chalk);flex:none}
+.say{position:relative;margin:0;max-width:280px;background:var(--cream);color:var(--ink);font:21px/1.25 var(--hand);padding:14px 18px;border-radius:18px;box-shadow:0 12px 26px -12px rgb(0 0 0/.7)}
+.say::before{content:"";position:absolute;left:-10px;top:50%;width:20px;height:20px;background:var(--cream);transform:translateY(-50%) rotate(45deg);border-radius:3px}
+.step-tab .num{transform:rotate(-6deg);background:var(--cream)}
+.part:nth-child(even) .step-tab .num{transform:rotate(5deg)}
+.sec-doodle{width:40px;height:40px;color:var(--coral-deep);margin-left:auto;flex:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.part:hover .sec-doodle{transform:rotate(-12deg) scale(1.15)}
+.chip{transition:transform .2s cubic-bezier(.34,1.56,.64,1),background .2s}
+.chip.on{transform:rotate(-2deg)}
+.chip:nth-child(even).on{transform:rotate(2deg)}
+.seg button.on.top{font-family:var(--hand);font-size:18px}
+@media (prefers-reduced-motion:no-preference){.motion .buddy svg{animation:bob 5s ease-in-out infinite}}
+</style>
+</helmet>
+<div class="hr {{motionClass}}" style="--coral: {{accent}}">
+<div class="frame">
+<nav class="nav" aria-label="Main">
+<sc-if value="{{quipOn}}" hint-placeholder-val="{{ false }}"><div class="quip show" role="status" aria-label="{{quip}}" data-q="{{quip}}"></div></sc-if>
+<a class="brand {{talkCls}}" href="Main.dc.html" onMouseEnter="{{sayNow}}"><svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g></svg>HackRadar</a>
+<a class="navlink" href="Today.dc.html"><span>today</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">picked for you</em></a>
+<a class="navlink" href="Saved.dc.html"><span>my events</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">saved and went</em></a>
+<a class="navlink here" href="Setup.dc.html" aria-current="page"><span>your picks</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">change anytime</em></a>
+<a class="navlink pill" href="Main.dc.html"><span>sign out</span><em class="cap">see you tomorrow</em></a>
+</nav>
+
+<header class="head fade-in">
+<div>
+<p class="eyebrow" style="color: var(--mute)">Step 3 of 3 · change any of it later in Settings</p>
+<h1 class="h1">What should we look out for?</h1>
+<span class="note-hand" style="margin-top: 10px">four quick parts, skip any of them</span>
+</div>
+<div class="buddy">
+<svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g><text class="zz" x="40" y="8">z</text></svg>
+<p class="say" aria-live="polite">{{say}}</p>
+</div>
+</header>
+
+<div class="body">
+<form class="card-paper grid-paper fade-in" style="border: 10px solid var(--coral); border-radius: 28px">
+
+<section class="part" aria-labelledby="p1">
+<div class="step-tab"><span class="num" aria-hidden="true">1</span><h2 class="h3" id="p1">Where should we ping you?</h2><svg class="sec-doodle" viewBox="0 0 40 40" aria-hidden="true"><path class="ln" d="M14 5h12a3 3 0 0 1 3 3v24a3 3 0 0 1-3 3H14a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3zM18 30h4M6 12c-3 4-3 10 0 14M34 12c3 4 3 10 0 14"></path></svg></div>
+<div class="two">
+<label class="field">Email<input type="email" value="you@college.edu"><span class="hint">From your sign-in. Messages can go to a different address.</span></label>
+<label class="field">WhatsApp number<input type="tel" placeholder="+91 98765 43210"><span class="hint">Optional. Needs the one-time CallMeBot key.</span></label>
+<div class="field">Discord<a class="btn discord" href="Setup.dc.html">Connect Discord</a><span class="hint">For messages in your DMs.</span></div>
+</div>
+</section>
+
+<section class="part" aria-labelledby="p2">
+<div class="step-tab"><span class="num" aria-hidden="true">2</span><h2 class="h3" id="p2">Where's home base?</h2><svg class="sec-doodle" viewBox="0 0 40 40" aria-hidden="true"><path class="ln" d="M20 35s-10-10-10-18a10 10 0 0 1 20 0c0 8-10 18-10 18zM16.5 17a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0-7 0"></path></svg></div>
+<div class="two">
+<label class="field">Home city<input type="text" value="Pune"></label>
+<div class="range-row">
+<label class="field" for="radius">How far you'd travel</label>
+<input id="radius" type="range" min="25" max="1000" step="25" value="{{radius}}" onChange="{{setRadius}}">
+<span class="val">{{radiusText}}</span>
+</div>
+<div class="field">Format
+<div class="seg" role="group" aria-label="Format">
+<sc-for list="{{formats}}" as="f" hint-placeholder-count="3">
+<button type="button" class="{{f.cls}}" aria-pressed="{{f.pressed}}" onClick="{{f.pick}}">{{f.label}}</button>
+</sc-for>
+</div>
+</div>
+</div>
+</section>
+
+<section class="part" aria-labelledby="p3">
+<div class="step-tab"><span class="num" aria-hidden="true">3</span><h2 class="h3" id="p3">What gets you out of bed on a weekend?</h2><svg class="sec-doodle" viewBox="0 0 40 40" aria-hidden="true"><path class="ln" d="M20 5c6 5 8 12 6 20H14c-2-8 0-15 6-20zM17.5 15a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M14 21l-5 7 6-1M26 21l5 7-6-1M17 29l3 6 3-6"></path></svg></div>
+<sc-for list="{{kinds}}" as="k" hint-placeholder-count="4">
+<div class="kind-row">
+<div><b>{{k.label}}</b><small>{{k.sub}}</small></div>
+<div class="seg" role="group" aria-label="{{k.label}} priority">
+<sc-for list="{{k.opts}}" as="o" hint-placeholder-count="3">
+<button type="button" class="{{o.cls}}" aria-pressed="{{o.pressed}}" onClick="{{o.pick}}">{{o.label}}</button>
+</sc-for>
+</div>
+</div>
+</sc-for>
+<p class="legend"><b>ping me!</b> its own message in the next morning's run. <b>digest</b>: rolled into your daily digest. <b>nah</b>: never messaged, still on the site.</p>
+<p class="label-sm">Topics you nerd out about (pick none to get everything)</p>
+<div class="chips">
+<sc-for list="{{topics}}" as="t" hint-placeholder-count="8">
+<button type="button" class="{{t.cls}}" aria-pressed="{{t.pressed}}" onClick="{{t.toggle}}">{{t.label}}</button>
+</sc-for>
+</div>
+<p class="label-sm">Social finds</p>
+<button type="button" class="{{socialCls}}" aria-pressed="{{socialPressed}}" onClick="{{toggleSocial}}"><span class="track" aria-hidden="true"></span>Include hackathons found in LinkedIn and X posts (marked unverified)</button>
+</section>
+
+<section class="part" aria-labelledby="p4">
+<div class="step-tab"><span class="num" aria-hidden="true">4</span><h2 class="h3" id="p4">How loud should we be?</h2><svg class="sec-doodle" viewBox="0 0 40 40" aria-hidden="true"><path class="ln" d="M6 16h6l14-8v24l-14-8H6zM12 24l3 9h4l-2-9M30 14c3 3 3 9 0 12M34 10c5 5 5 15 0 20"></path></svg></div>
+<div class="scroll">
+<table class="matrix">
+<thead><tr><th scope="col">Message</th><th scope="col">Email</th><th scope="col">Discord</th><th scope="col">WhatsApp</th></tr></thead>
+<tbody>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+<tr>
+<td><b>{{r.label}}</b><small>{{r.sub}}</small></td>
+<sc-for list="{{r.cells}}" as="c" hint-placeholder-count="3">
+<td><button type="button" class="{{c.cls}}" aria-pressed="{{c.pressed}}" aria-label="{{c.aria}}" onClick="{{c.toggle}}"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="tick" d="M3 8.5l3 3 7-7"></path></svg></button></td>
+</sc-for>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+
+<div class="save">
+<p>{{summary}}</p>
+<a class="btn solid" href="Today.dc.html">Save and show me hackathons</a>
+</div>
+</form>
+</div>
+<footer class="site-foot">
+<div class="ticker" aria-label="Sources we check"><div class="track"><span>Devpost</span><span>Unstop</span><span>Devfolio</span><span>MLH</span><span>Luma</span><span>LinkedIn and X posts</span><span>checked every morning</span><span aria-hidden="true">Devpost</span><span aria-hidden="true">Unstop</span><span aria-hidden="true">Devfolio</span><span aria-hidden="true">MLH</span><span aria-hidden="true">Luma</span><span aria-hidden="true">LinkedIn and X posts</span><span aria-hidden="true">checked every morning</span></div></div>
+<svg class="foot-wave" viewBox="0 0 1200 28" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M0 14c40-14 80 14 120 0s80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0"></path></svg>
+<div class="foot-grid">
+<div class="foot-brand"><a href="Main.dc.html"><svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g></svg>HackRadar</a><p>Hackathons near you, every morning. Made in Pune for people who build on <b>weekends</b>.</p></div>
+<nav aria-label="Explore"><h2 class="foot-h">Explore</h2><ul class="foot-links"><li><a href="Main.dc.html">How it works</a></li><li><a href="Today.dc.html">Open hackathons</a></li><li><a href="Setup.dc.html">Your picks</a></li></ul></nav>
+<nav aria-label="Messages"><h2 class="foot-h">Messages</h2><ul class="foot-links"><li><a href="Messages.dc.html">See a sample</a></li><li><a href="Setup.dc.html">Change channels</a></li><li><a href="Messages.dc.html">Unsubscribe</a></li></ul></nav>
+<div class="foot-doodle"><svg class="pc sleepy" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g><text class="zz" x="40" y="8">z</text></svg>next list lands around 5 AM IST</div>
+</div>
+<div class="foot-base"><span>Dates and prizes come from the source, never from AI.</span><span>Free · no card · one message a morning at most</span></div>
+</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#e5484d","options":["#e5484d","#f2602a","#d6336c","#2f9e8f"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":2900}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this.quipTimer = setTimeout(() => this.quipNow(), 4000);
+  }
+  componentWillUnmount() {
+    clearTimeout(this.quipTimer);
+    clearTimeout(this.quipHide);
+  }
+  quipNow() {
+    const lines = ['404: sleep not found.', 'Pizza at 3 AM is a valid food group.', 'git commit -m "final final FINAL"', "I check five sites so you don't have to.", 'Your next big idea is one weekend away.', 'Beep boop. Scanning for prizes.', 'Teammates wanted. Snacks provided. Probably.', 'I woke up at 4:47 AM for you.', 'Ship it. Fix it. Ship it again.', 'Is it a bug or a feature? Yes.', 'Coffee status: dangerously low.', 'Psst. Save the ones you like!', 'Dates come from the source. I never guess.', 'Have you had water today, builder?', "Mentors are friends you haven't met yet.", 'Ctrl+S your code. And your weekend.', 'Tip: give your team a silly name.', 'One more feature, they said. 6 hours ago.'];
+    clearTimeout(this.quipTimer);
+    clearTimeout(this.quipHide);
+    if (typeof document !== 'undefined' && document.hidden) {
+      this.quipTimer = setTimeout(() => this.quipNow(), 10000);
+      return;
+    }
+    // shortcut: fixed lines for the preview; the real site shows fresh questions and jokes from the daily LLM run
+    const questions = ['Pikachu or Charmander? Think fast.', 'Would you pet a Snorlax? Be honest.', 'Is Bulbasaur underrated? (Yes.)', 'Tabs or spaces? Choose wisely.', 'Dark mode or light mode? I know mine.', '3 AM snack: pizza or biryani?', 'Solo or team hackathons?', 'Coffee or chai, builder?'];
+    const last = (this.state || {}).quip;
+    const pool = lines.concat(questions).filter((l) => l !== last);
+    this.setState({ quip: pool[Math.floor(Math.random() * pool.length)], quipOn: true });
+    this.quipHide = setTimeout(() => this.setState({ quipOn: false }), 4500);
+    // shortcut: 15-40 s gaps so the preview shows it often; use 30-90 s on the real site
+    this.quipTimer = setTimeout(() => this.quipNow(), 15000 + Math.random() * 25000);
+  }
+  constructor(props) {
+    super(props);
+    this.state = {
+      radius: 150,
+      format: 'both',
+      kinds: { hack: 'top', contest: 'normal', workshop: 'normal', fest: 'off' },
+      topics: ['AI/ML', 'Web3'],
+      social: true,
+      msg: { digest: ['email', 'whatsapp'], top: ['whatsapp'], remind: ['email'] }
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const kindDefs = [
+      ['hack', 'Hackathons', 'Devpost, Unstop, Devfolio, MLH'],
+      ['contest', 'Coding contests and CTFs', 'Online rounds and capture-the-flag'],
+      ['workshop', 'Workshops and meetups', 'Few listed yet: more arrive with Luma'],
+      ['fest', 'Fests and conferences', 'Few listed yet']
+    ];
+    const levels = [['top', 'ping me!'], ['normal', 'digest'], ['off', 'nah']];
+    const kinds = kindDefs.map(([id, label, sub]) => ({
+      label, sub,
+      opts: levels.map(([v, l]) => ({
+        label: l,
+        cls: s.kinds[id] === v ? (v === 'top' ? 'on top' : 'on') : '',
+        pressed: s.kinds[id] === v ? 'true' : 'false',
+        pick: () => this.setState({ kinds: { ...s.kinds, [id]: v } })
+      }))
+    }));
+    const topicList = ['AI/ML', 'Web3', 'Web/full-stack', 'Data', 'IoT/hardware', 'Cybersecurity', 'Design', 'Beginner friendly'];
+    const topics = topicList.map((t) => {
+      const on = s.topics.includes(t);
+      return {
+        label: t, cls: on ? 'chip on' : 'chip', pressed: on ? 'true' : 'false',
+        toggle: () => this.setState({ topics: on ? s.topics.filter((x) => x !== t) : [...s.topics, t] })
+      };
+    });
+    const formats = [['in-person', 'In person'], ['online', 'Online'], ['both', 'Both']].map(([v, l]) => ({
+      label: l, cls: s.format === v ? 'on' : '', pressed: s.format === v ? 'true' : 'false',
+      pick: () => this.setState({ format: v })
+    }));
+    const chans = [['email', 'Email'], ['discord', 'Discord'], ['whatsapp', 'WhatsApp']];
+    const rowDefs = [['digest', 'Daily digest', 'Normal picks, every morning'], ['top', 'Top pings', 'One message per Top pick'], ['remind', 'Reminders', 'Before saved events close']];
+    const rows = rowDefs.map(([id, label, sub]) => ({
+      label, sub,
+      cells: chans.map(([c, cl]) => {
+        const on = s.msg[id].includes(c);
+        return {
+          cls: on ? 'cell on' : 'cell', pressed: on ? 'true' : 'false', aria: label + ' by ' + cl,
+          toggle: () => this.setState({ msg: { ...s.msg, [id]: on ? s.msg[id].filter((x) => x !== c) : [...s.msg[id], c] } })
+        };
+      })
+    }));
+    const tops = kindDefs.filter(([id]) => s.kinds[id] === 'top').map(([, l]) => l.toLowerCase());
+    const r = s.radius;
+    const vibe = r <= 50 ? 'auto-rickshaw range' : r <= 150 ? 'a bus ride away' : r <= 400 ? 'worth a weekend trip' : r < 1000 ? 'overnight-train energy' : 'anywhere in India';
+    const allOff = kindDefs.every(([id]) => s.kinds[id] === 'off');
+    const say = allOff ? "Everything on nah? I'll just sit here quietly then."
+      : r >= 1000 ? 'Anywhere in India? Bold. Pack snacks.'
+      : !s.social ? 'Skipping LinkedIn and X finds? Those are the hidden gems!'
+      : s.topics.length === 0 ? 'No topics means you get everything. Brave.'
+      : s.topics.length >= 5 ? "That's a lot of topics. Love the energy."
+      : 'Ooh, ' + s.topics.slice(0, 2).join(' and ') + '. Good taste.';
+    return {
+      say,
+      accent: this.props.accent ?? '#e5484d',
+      quip: (this.state || {}).quip || '',
+      quipOn: !!(this.state || {}).quipOn,
+      talkCls: (this.state || {}).quipOn ? 'talking' : '',
+      sayNow: () => this.quipNow(),
+      motionClass: (this.props.motion ?? true) ? 'motion' : '',
+      radius: s.radius,
+      radiusText: r >= 1000 ? 'anywhere in India' : r + ' km · ' + vibe,
+      setRadius: (e) => this.setState({ radius: Number(e.target.value) }),
+      formats, kinds, topics, rows,
+      socialCls: s.social ? 'switch on' : 'switch',
+      socialPressed: s.social ? 'true' : 'false',
+      toggleSocial: () => this.setState({ social: !s.social }),
+      summary: tops.length ? 'Top pings for ' + tops.join(' and ') + '. Everything else in your morning digest.' : 'Everything you follow arrives in your morning digest.'
+    };
+  }
+}
+</script>
+</body>
+</html>

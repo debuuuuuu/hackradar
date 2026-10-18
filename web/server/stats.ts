@@ -5,7 +5,7 @@ export interface AdminStats {
   newUsers7d: number;
   activeUsers7d: number;
   onboardedPct: number;
-  loginsByDay: { day: string; discord: number; email: number }[];
+  loginsByDay: { day: string; discord: number; email: number; google: number }[];
   signupsByDay: { day: string; count: number }[];
   channelAdoption: { email: number; discord: number; whatsapp: number };
   lastPipelineRun: { startedAt: string; status: string; notificationsSent: number } | null;
@@ -45,13 +45,14 @@ export async function adminStats(now: Date = new Date()): Promise<AdminStats> {
   );
 
   // 30 IST days ending today, oldest first, LEFT JOINed so empty days come back as zero.
-  const loginRows = await query<{ day: string; discord: string; email: string }>(
+  const loginRows = await query<{ day: string; discord: string; email: string; google: string }>(
     `WITH d AS (
        SELECT (($1::timestamptz AT TIME ZONE 'Asia/Kolkata')::date - g) AS day FROM generate_series(0, ${DAYS - 1}) AS g
      )
      SELECT to_char(d.day, 'YYYY-MM-DD') AS day,
             count(l.id) FILTER (WHERE l.method = 'discord') AS discord,
-            count(l.id) FILTER (WHERE l.method = 'email') AS email
+            count(l.id) FILTER (WHERE l.method = 'email') AS email,
+            count(l.id) FILTER (WHERE l.method = 'google') AS google
        FROM d
        LEFT JOIN logins l
          ON (l.at AT TIME ZONE 'Asia/Kolkata')::date = d.day
@@ -96,7 +97,7 @@ export async function adminStats(now: Date = new Date()): Promise<AdminStats> {
     newUsers7d: Number(u.new7),
     activeUsers7d: Number(a.n),
     onboardedPct,
-    loginsByDay: loginRows.map((r) => ({ day: r.day, discord: Number(r.discord), email: Number(r.email) })),
+    loginsByDay: loginRows.map((r) => ({ day: r.day, discord: Number(r.discord), email: Number(r.email), google: Number(r.google) })),
     signupsByDay: signupRows.map((r) => ({ day: r.day, count: Number(r.n) })),
     channelAdoption: { email: ch.email ?? 0, discord: ch.discord ?? 0, whatsapp: ch.whatsapp ?? 0 },
     lastPipelineRun: runs[0]

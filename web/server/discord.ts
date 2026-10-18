@@ -93,13 +93,13 @@ const sign = (body: string, secret: string): Buffer => createHmac("sha256", secr
 export const newState = (): string => randomBytes(32).toString("base64url");
 
 /** Cookie value = base64url(JSON {state, next}) + "." + base64url(HMAC-SHA256). */
-export function oauthCookie(state: string, next: string, secret: string): string {
+export function oauthCookie(state: string, next: string, secret: string, path = "/api/auth/discord"): string {
   const body = Buffer.from(JSON.stringify({ state, next })).toString("base64url");
-  return `${COOKIE}=${body}.${sign(body, secret).toString("base64url")}; HttpOnly; Secure; SameSite=Lax; Path=/api/auth/discord; Max-Age=${MAX_AGE_S}`;
+  return `${COOKIE}=${body}.${sign(body, secret).toString("base64url")}; HttpOnly; Secure; SameSite=Lax; Path=${path}; Max-Age=${MAX_AGE_S}`;
 }
 
-export const clearOauthCookie = (): string =>
-  `${COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/api/auth/discord; Max-Age=0`;
+export const clearOauthCookie = (path = "/api/auth/discord"): string =>
+  `${COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=${path}; Max-Age=0`;
 
 export function readOauthCookie(
   cookieHeader: string | null,

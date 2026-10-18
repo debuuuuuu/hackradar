@@ -118,15 +118,15 @@ describe("oauth cookie", () => {
 describe("GET /api/auth/providers", () => {
   const get = async () => (await route(new Request(`${ORIGIN}/api/auth/providers`))).json();
   it("reports discord only when both variables are non-empty", async () => {
-    expect(await get()).toEqual({ email: true, discord: true });
+    expect(await get()).toMatchObject({ email: true, discord: true });
     delete process.env.DISCORD_CLIENT_SECRET;
-    expect(await get()).toEqual({ email: true, discord: false });
+    expect(await get()).toMatchObject({ email: true, discord: false });
     process.env.DISCORD_CLIENT_SECRET = "x";
     process.env.DISCORD_CLIENT_ID = "";
-    expect(await get()).toEqual({ email: true, discord: false });
+    expect(await get()).toMatchObject({ email: true, discord: false });
     delete process.env.DISCORD_CLIENT_ID;
     delete process.env.DISCORD_CLIENT_SECRET;
-    expect(await get()).toEqual({ email: true, discord: false });
+    expect(await get()).toMatchObject({ email: true, discord: false });
   });
 });
 

@@ -116,10 +116,43 @@ hackradar/
 │   ├── db.py  models.sql  migrations/
 │   └── run.py          # python -m pipeline.run
 ├── bot/                # Vercel Python function: /api/interactions
-├── web/                # React + Vite dashboard
+├── web/                # React + Vite dashboard (fun theme SPA)
+│   ├── src/
+│   │   ├── components/ # Nav, Footer, Monitor, Quip, Icon, PrefsForm, PasswordSignIn
+│   │   ├── pages/      # Home (Landing/Today), Events, EventDetail, MyEvents, SignIn, Setup, Admin
+│   │   ├── lib/        # api.ts, auth.ts, time.ts
+│   │   └── styles.css  # Hand-drawn fun theme design tokens and component styles
 ├── tests/              # fixtures/ (saved real responses) + unit tests
 ├── config/             sources.yaml settings.yaml
 ├── data/last_run.json  # lives on the status branch (D-023)
-├── docs/
+├── docs/               # ARCHITECTURE, CONTEXT, DECISIONS, ROADMAP, design/DESIGN.md
 └── .github/workflows/  daily.yml ci.yml
 ```
+
+## Web frontend (`web/`)
+
+Built with React 18, Vite, and TypeScript. Styled with vanilla CSS design tokens (`web/src/styles.css`) following the hand-drawn "fun theme" (D-047, [design/DESIGN.md](design/DESIGN.md)).
+
+### Routes
+
+| Route | Component | Access | Description |
+|---|---|---|---|
+| `/` | `Home` | Public / Auth | Landing page (hero, how it works, blueprint preview, checklist) when signed out; Today feed (top picks, deadline list) when signed in |
+| `/events` | `Events` | Public | Public searchable directory with query filter, closing-soon / nearest tabs, pagination |
+| `/events/:id` | `EventDetail` | Public | Event tablet card, real-date countdown sticker, notched ticket stub, AI summary label, Ask an AI card |
+| `/my-events` | `MyEvents` | Signed-in | Saved events timeline & scrapbook shell (empty state with `TODO(backend)`) |
+| `/welcome` | `Welcome` | Signed-in | Onboarding questionnaire (4 playful steps: notification channels, home base, themes, volume) |
+| `/settings` | `Settings` | Signed-in | Preferences editor (same 4-step form with live Discord webhook test & CallMeBot key) |
+| `/signin` | `SignIn` | Signed-out | Google OAuth, email magic link, and Supabase password authentication |
+| `/signin/confirm` | `ConfirmSignIn` | Public | OTP / magic-link token verification handler |
+| `/admin` | `Admin` | Signed-in (Owner) | System status, run logs, trigger pipeline run |
+
+### Key Components
+
+- `Monitor` (`src/components/Monitor.tsx`): Mascot logo with stand, coral screen, cycling faces (sleepy, awake, focused, happy, reading, sad, hands-over-eyes).
+- `Quip` (`src/components/Quip.tsx`): Floating mascot speech bubble with 30–90 s random intervals, 4.5 s display, click-through courtesy, and pause when tab hidden.
+- `Nav` (`src/components/Nav.tsx`): Handwritten navigation links with drawn SVG loops on hover/active, caption chips, mascot hover reaction, and responsive layout.
+- `Footer` (`src/components/Footer.tsx`): Continuous marquee source ticker, coral wavy separator, link directory, sleeping mascot doodle, and source-trust guarantee.
+- `Icon` (`src/components/Icon.tsx`): Hand-drawn SVG line icon set (`pin`, `bulb`, `code`, `sparkle`, `clock`, `wifi`, `heart`, `cup`, `rocket`, `trophy`, `people`, `ticket`, `monitor`).
+- `PrefsForm` (`src/components/PrefsForm.tsx`): Interactive 4-step preferences editor with interactive slider distance vibes, channel testing, and reactive mascot commentary.
+

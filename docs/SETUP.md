@@ -82,6 +82,32 @@ Do steps in the phase they are needed — no need to set everything up on day on
 ## 12. Serper (Phase 4, fallback)
 1. https://serper.dev → sign up → API key → `SERPER_API_KEY`. One-time 2,500 credits; don't burn them in testing.
 
+## 12b. Google sign-in (D-045)
+Free, no card. Console labels may differ slightly (unverified, as of 2026-10-16); the idea is the same.
+1. https://console.cloud.google.com → create a project (for example `hackradar`).
+2. APIs and Services → OAuth consent screen → External → app name HackRadar, your support email. Scopes: `openid`, `email`, `profile` only.
+3. Set the publishing status to **In production**. Left on Testing, only listed test users can sign in. These basic scopes need no Google review.
+4. Credentials → Create credentials → OAuth client ID → Web application. Authorised redirect URI: `https://hackradar-two.vercel.app/api/auth/google/callback` (add your own domain later).
+5. Copy the client ID and secret into `.env` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, then add both to Vercel (Production) and redeploy.
+6. Run `pipeline/migrations/0010_login_google.sql` on the live database BEFORE deploying, or Google logins fail to record.
+
+## 12c. Supabase Auth for passwords (D-046)
+Free project, but **stop if it asks for a credit card** (project rule). Dashboard labels may differ (unverified, as of 2026-10-16).
+1. https://supabase.com → New project (pick the Singapore region). It is used for sign-in only; the database stays on Neon.
+2. SQL editor → run this once, so the daily keep-alive has a real table to query:
+   ```sql
+   create table public.keepalive (id int primary key);
+   insert into public.keepalive values (1);
+   alter table public.keepalive enable row level security;
+   create policy "keepalive read" on public.keepalive for select to anon using (true);
+   ```
+3. Authentication → Providers → Email: on, "Confirm email" on. Password minimum length 8 or more.
+4. Authentication → URL configuration: Site URL `https://hackradar-two.vercel.app`; add redirect URL `https://hackradar-two.vercel.app/signin`.
+5. Project settings → API: copy the Project URL and the anon public key into `.env` as `SUPABASE_URL` and `SUPABASE_ANON_KEY` (the anon key is public by design; never use the service_role key anywhere here).
+6. Add both to Vercel (Production) and GitHub secrets, then redeploy. The daily workflow then runs the keep-alive query.
+7. Email sending: Supabase's built-in mail is for testing and rate-limited (unverified). For real use set custom SMTP (Authentication → SMTP) with the same Gmail app password until a transactional provider replaces it.
+8. Before public launch move the project to Pro so it can never pause.
+
 ## 13. Discord OAuth for dashboard (Phase 5)
 1. Developer portal → OAuth2 → add redirect `https://<vercel-app>/auth/callback`.
 2. Client Secret → `DISCORD_CLIENT_SECRET` (Vercel only).

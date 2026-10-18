@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign in</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;family=Gochi+Hand&amp;family=Instrument+Sans:wght@400;600&amp;family=Young+Serif&amp;display=swap">
+<style>
+body{margin:0;background:#1f1e1d}
+a{color:inherit}
+.wrap{position:relative;max-width:1120px;margin:24px auto 96px;display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:56px;align-items:center}
+.tabs{display:flex;gap:6px;margin:0 0 22px;border-bottom:2px solid color-mix(in oklch,var(--ink-red) 30%,transparent)}
+.tab{min-height:46px;padding:0 16px;background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;font:21px var(--hand);color:#7a4b47;cursor:pointer}
+.tab.on{color:var(--ink-red);border-bottom-color:var(--coral)}
+.stack{display:grid;gap:14px}
+.google{background:#fbf5ec}
+.links{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:14px}
+.links a{color:var(--ink-red);min-height:44px;display:inline-flex;align-items:center}
+.side{display:grid;gap:36px;justify-items:start}
+.memo{position:relative;background:#fbf5ec;padding:34px 26px 26px;font:26px/34px var(--hand);color:var(--ink);transform:rotate(3deg);max-width:340px;box-shadow:0 18px 36px -16px rgb(0 0 0/.7);margin:0}
+.side-note{font:20px/1.35 var(--hand);color:var(--mute);max-width:320px;margin:0}
+.side-note b{color:var(--coral-text);font-weight:400}
+.or-fun{display:flex;align-items:center;gap:10px;margin:6px 0 0}
+.squig{flex:1;height:16px;color:var(--coral-deep);overflow:visible}
+.squig path{stroke-width:2.6;stroke-dasharray:14 6}
+.or-stamp{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--coral);color:var(--ink);font:24px/1 var(--hand);box-shadow:2px 2px 0 var(--ink-red);transform:rotate(-8deg);transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+.or-fun:hover .or-stamp{transform:rotate(352deg) scale(1.12)}
+.or-sub{margin:-2px 0 4px;text-align:center;font:19px var(--hand);color:#7a4b47}
+@keyframes flow{to{stroke-dashoffset:-40}}
+@keyframes wobble{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg) translateY(-2px)}}
+@media (prefers-reduced-motion:no-preference){.motion .squig path{animation:flow 1.6s linear infinite}.motion .squig.r path{animation-direction:reverse}.motion .or-fun:hover .squig path{animation-duration:.5s}.motion .or-stamp{animation:wobble 2.4s ease-in-out infinite}.motion .or-fun:hover .or-stamp{animation:none}}
+.pips{display:flex;align-items:center;gap:10px;margin:0 0 14px;font:19px var(--hand);color:#7a4b47}
+.pips i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink-red);display:inline-block}
+.pips i.on{background:var(--coral);border-color:var(--coral-deep)}
+.pal{display:grid;justify-items:center;gap:18px;position:relative}
+.pal .pc{width:230px;height:230px}
+.hr .pc.fixed .face{animation:none !important;opacity:0}
+.hr .pc.mood-google .f-happy,.hr .pc.mood-email .f-read,.hr .pc.mood-password .f-sleep{opacity:1}
+.pc .hands{opacity:0;transform:translateY(16px);transition:opacity .25s,transform .35s cubic-bezier(.34,1.56,.64,1)}
+.pc .hands path{fill:var(--cream);stroke:var(--ink-red)}
+.hr .pc.mood-password .hands{opacity:1;transform:none}
+.hr .pc.mood-google{animation:pc-hop .6s ease-in-out infinite}
+.talk{position:relative;margin:0;max-width:300px;background:var(--cream);color:var(--ink);font:24px/1.25 var(--hand);padding:16px 20px;border-radius:20px;box-shadow:0 14px 30px -14px rgb(0 0 0/.7);text-align:center}
+.talk::before{content:"";position:absolute;top:-9px;left:50%;width:20px;height:20px;background:var(--cream);transform:translateX(-50%) rotate(45deg);border-radius:3px}
+.memo.small{font-size:21px;line-height:28px;max-width:280px;padding:28px 20px 20px}
+.star{position:absolute;width:26px;height:26px;color:var(--coral-text);pointer-events:none}
+.star svg{width:100%;height:100%}
+@keyframes twinkle{0%,100%{transform:scale(.6) rotate(0);opacity:.4}50%{transform:scale(1.15) rotate(25deg);opacity:1}}
+.plane{width:22px;height:22px;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.btn:hover .plane{transform:translate(6px,-6px) rotate(-12deg)}
+@media (prefers-reduced-motion:no-preference){.motion .star{animation:twinkle 2.6s ease-in-out infinite}.motion .star.s2{animation-delay:-.9s}.motion .star.s3{animation-delay:-1.7s}}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}.pal .pc{width:150px;height:150px}}
+</style>
+</helmet>
+<div class="hr {{motionClass}}" style="--coral: {{accent}}">
+<div class="frame">
+<nav class="nav" aria-label="Main">
+<sc-if value="{{quipOn}}" hint-placeholder-val="{{ false }}"><div class="quip show" role="status" aria-label="{{quip}}" data-q="{{quip}}"></div></sc-if>
+<a class="brand {{talkCls}}" href="Main.dc.html" onMouseEnter="{{sayNow}}"><svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g></svg>HackRadar</a>
+<a class="navlink" href="Main.dc.html"><span>how it works</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">four notes</em></a>
+<a class="navlink" href="Today.dc.html"><span>browse</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">no sign-in needed</em></a>
+<a class="navlink" href="SignIn.dc.html"><span>your picks</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">about 2 minutes</em></a>
+<a class="navlink pill here" href="SignIn.dc.html" aria-current="page"><span>sign in</span><em class="cap">free, no card</em></a>
+</nav>
+
+<div class="wrap">
+<div class="doodle o1" style="width: 64px; height: 64px; left: -90px; top: 20%" aria-hidden="true"><svg viewBox="0 0 40 40"><path class="ln" d="M20 35s-10-10-10-18a10 10 0 0 1 20 0c0 8-10 18-10 18zM16.5 17a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0-7 0"></path></svg></div>
+<section class="tablet grid-paper enter" aria-labelledby="si-h">
+<div class="in">
+<p class="pips"><i class="on"></i><i></i><i></i>step 1 of 3, about 2 minutes</p>
+<h1 class="h1" id="si-h" style="font-size: 54px">Hey, builder.</h1>
+<p class="lead" style="margin-bottom: 20px">Sign in and we'll do the hackathon hunting. Browsing stays free without an account.</p>
+<div class="stack">
+<a class="btn google wide" href="Phone.dc.html" onMouseEnter="{{lookGoogle}}" onMouseLeave="{{rest}}" onFocus="{{lookGoogle}}" onBlur="{{rest}}"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ln" d="M20 12.2c0-.6-.1-1.2-.2-1.7H12v3.3h4.5a3.9 3.9 0 0 1-1.7 2.5M12 20a8 8 0 1 1 5.4-13.9"></path></svg>Continue with Google</a>
+<p class="or-fun"><svg class="squig" viewBox="0 0 180 16" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M2 8c7.5-8 15 8 22.5 0s15 8 22.5 0 15 8 22.5 0 15 8 22.5 0 15 8 22.5 0 15 8 22.5 0 15 8 22.5 0 15 8 22.5 0"></path></svg><span class="or-stamp">or</span><svg class="squig r" viewBox="0 0 180 16" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M2 8c7.5-8 15 8 22.5 0s15 8 22.5 0 15 8 22.5 0 15 8 22.5 0 15 8 22.5 0 15 8 22.5 0 15 8 22.5 0 15 8 22.5 0"></path></svg></p><p class="or-sub">use your email instead</p>
+<div class="tabs" role="tablist" aria-label="Email sign-in method">
+<button type="button" role="tab" class="{{linkTab}}" aria-selected="{{linkSel}}" onClick="{{pickLink}}">Magic link</button>
+<button type="button" role="tab" class="{{pwTab}}" aria-selected="{{pwSel}}" onClick="{{pickPw}}">Password</button>
+</div>
+<sc-if value="{{isLink}}" hint-placeholder-val="{{ true }}">
+<div class="stack">
+<label class="field">Email<input type="email" placeholder="you@college.edu" autocomplete="email" onFocus="{{lookEmail}}" onBlur="{{rest}}"></label>
+<a class="btn solid wide" href="Phone.dc.html">Send the magic link<svg class="plane" viewBox="0 0 24 24" aria-hidden="true"><path class="ln" d="M3 11l18-8-6 18-3-7zM12 14l9-11"></path></svg></a>
+<p class="field" style="margin: 0"><span class="hint">Works once, expires in 15 minutes. No password to forget.</span></p>
+</div>
+</sc-if>
+<sc-if value="{{isPw}}" hint-placeholder-val="{{ false }}">
+<div class="stack">
+<label class="field">Email<input type="email" placeholder="you@college.edu" autocomplete="email" onFocus="{{lookEmail}}" onBlur="{{rest}}"></label>
+<label class="field">Password<input type="password" placeholder="At least 8 characters" autocomplete="current-password" onFocus="{{hideEyes}}" onBlur="{{rest}}"></label>
+<a class="btn solid wide" href="Phone.dc.html">Let me in<svg class="plane" viewBox="0 0 24 24" aria-hidden="true"><path class="ln" d="M3 11l18-8-6 18-3-7zM12 14l9-11"></path></svg></a>
+<div class="links"><a href="SignIn.dc.html">Create an account</a><a href="SignIn.dc.html">Forgot password?</a></div>
+</div>
+</sc-if>
+</div>
+</div>
+</section>
+<div class="pal">
+<span class="star s1" style="left: 4%; top: 2%" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="ln" d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"></path></svg></span>
+<span class="star s2" style="right: 8%; top: 18%" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="ln" d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"></path></svg></span>
+<span class="star s3" style="left: 12%; top: 46%" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="ln" d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"></path></svg></span>
+<svg class="{{pcClass}}" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g><g class="face f-read"><path class="ln" d="M19 21.5h2.5M31 21.5h2.5M21.5 26.5c1.6 1.2 3.9 1.2 5.5 0"></path></g><g class="hands"><path class="ln" d="M11 24c-.5-4 1-8 3.5-9.5 1.4-.8 2.4.6 2 1.8l1-3c.6-1.4 2.4-1.1 2.4.4l.4-1.6c.5-1.3 2.3-1 2.2.5l-.3 11.4zM37 24c.5-4-1-8-3.5-9.5-1.4-.8-2.4.6-2 1.8l-1-3c-.6-1.4-2.4-1.1-2.4.4l-.4-1.6c-.5-1.3-2.3-1-2.2.5l.3 11.4z"></path></g></svg>
+<p class="talk" aria-live="polite">{{say}}</p>
+<p class="memo ruled torn small"><span class="tape"></span>One message a morning, at most. Unsubscribe anytime.</p>
+</div>
+</div>
+<footer class="site-foot">
+<div class="ticker" aria-label="Sources we check"><div class="track"><span>Devpost</span><span>Unstop</span><span>Devfolio</span><span>MLH</span><span>Luma</span><span>LinkedIn and X posts</span><span>checked every morning</span><span aria-hidden="true">Devpost</span><span aria-hidden="true">Unstop</span><span aria-hidden="true">Devfolio</span><span aria-hidden="true">MLH</span><span aria-hidden="true">Luma</span><span aria-hidden="true">LinkedIn and X posts</span><span aria-hidden="true">checked every morning</span></div></div>
+<svg class="foot-wave" viewBox="0 0 1200 28" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M0 14c40-14 80 14 120 0s80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0"></path></svg>
+<div class="foot-grid">
+<div class="foot-brand"><a href="Main.dc.html"><svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g></svg>HackRadar</a><p>Hackathons near you, every morning. Made in Pune for people who build on <b>weekends</b>.</p></div>
+<nav aria-label="Explore"><h2 class="foot-h">Explore</h2><ul class="foot-links"><li><a href="Main.dc.html">How it works</a></li><li><a href="Today.dc.html">Open hackathons</a></li><li><a href="Setup.dc.html">Your picks</a></li></ul></nav>
+<nav aria-label="Messages"><h2 class="foot-h">Messages</h2><ul class="foot-links"><li><a href="Messages.dc.html">See a sample</a></li><li><a href="Setup.dc.html">Change channels</a></li><li><a href="Messages.dc.html">Unsubscribe</a></li></ul></nav>
+<div class="foot-doodle"><svg class="pc sleepy" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g><text class="zz" x="40" y="8">z</text></svg>next list lands around 5 AM IST</div>
+</div>
+<div class="foot-base"><span>Dates and prizes come from the source, never from AI.</span><span>Free · no card · one message a morning at most</span></div>
+</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#e5484d","options":["#e5484d","#f2602a","#d6336c","#2f9e8f"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this.quipTimer = setTimeout(() => this.quipNow(), 4000);
+  }
+  componentWillUnmount() {
+    clearTimeout(this.quipTimer);
+    clearTimeout(this.quipHide);
+  }
+  quipNow() {
+    const lines = ['404: sleep not found.', 'Pizza at 3 AM is a valid food group.', 'git commit -m "final final FINAL"', "I check five sites so you don't have to.", 'Your next big idea is one weekend away.', 'Beep boop. Scanning for prizes.', 'Teammates wanted. Snacks provided. Probably.', 'I woke up at 4:47 AM for you.', 'Ship it. Fix it. Ship it again.', 'Is it a bug or a feature? Yes.', 'Coffee status: dangerously low.', 'Psst. Save the ones you like!', 'Dates come from the source. I never guess.', 'Have you had water today, builder?', "Mentors are friends you haven't met yet.", 'Ctrl+S your code. And your weekend.', 'Tip: give your team a silly name.', 'One more feature, they said. 6 hours ago.'];
+    clearTimeout(this.quipTimer);
+    clearTimeout(this.quipHide);
+    if (typeof document !== 'undefined' && document.hidden) {
+      this.quipTimer = setTimeout(() => this.quipNow(), 10000);
+      return;
+    }
+    // shortcut: fixed lines for the preview; the real site shows fresh questions and jokes from the daily LLM run
+    const questions = ['Pikachu or Charmander? Think fast.', 'Would you pet a Snorlax? Be honest.', 'Is Bulbasaur underrated? (Yes.)', 'Tabs or spaces? Choose wisely.', 'Dark mode or light mode? I know mine.', '3 AM snack: pizza or biryani?', 'Solo or team hackathons?', 'Coffee or chai, builder?'];
+    const last = (this.state || {}).quip;
+    const pool = lines.concat(questions).filter((l) => l !== last);
+    this.setState({ quip: pool[Math.floor(Math.random() * pool.length)], quipOn: true });
+    this.quipHide = setTimeout(() => this.setState({ quipOn: false }), 4500);
+    // shortcut: 15-40 s gaps so the preview shows it often; use 30-90 s on the real site
+    this.quipTimer = setTimeout(() => this.quipNow(), 15000 + Math.random() * 25000);
+  }
+  constructor(props) {
+    super(props);
+    this.state = { mode: 'link', mood: 'idle' };
+  }
+  renderVals() {
+    const link = this.state.mode === 'link';
+    const mood = this.state.mood;
+    const lines = {
+      idle: "Psst. Sign in and I'll find your next hackathon.",
+      google: 'One click? My favourite.',
+      email: "Ooh, typing. I'll send you a magic link.",
+      password: "I'm not looking. Promise."
+    };
+    return {
+      say: lines[mood],
+      pcClass: mood === 'idle' ? 'pc' : 'pc fixed mood-' + mood,
+      lookGoogle: () => this.setState({ mood: 'google' }),
+      lookEmail: () => this.setState({ mood: 'email' }),
+      hideEyes: () => this.setState({ mood: 'password' }),
+      rest: () => this.setState({ mood: 'idle' }),
+      accent: this.props.accent ?? '#e5484d',
+      quip: (this.state || {}).quip || '',
+      quipOn: !!(this.state || {}).quipOn,
+      talkCls: (this.state || {}).quipOn ? 'talking' : '',
+      sayNow: () => this.quipNow(),
+      motionClass: (this.props.motion ?? true) ? 'motion' : '',
+      isLink: link,
+      isPw: !link,
+      linkTab: link ? 'tab on' : 'tab',
+      pwTab: link ? 'tab' : 'tab on',
+      linkSel: link ? 'true' : 'false',
+      pwSel: link ? 'false' : 'true',
+      pickLink: () => this.setState({ mode: 'link' }),
+      pickPw: () => this.setState({ mode: 'password' })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mobile number</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;family=Gochi+Hand&amp;family=Instrument+Sans:wght@400;600&amp;family=Young+Serif&amp;display=swap">
+<style>
+body{margin:0;background:#1f1e1d}
+a{color:inherit}
+.wrap{position:relative;max-width:1120px;margin:24px auto 96px;display:grid;grid-template-columns:minmax(0,580px) minmax(0,1fr);gap:56px;align-items:center}
+.stack{display:grid;gap:16px}
+.phone-row{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:end}
+.cc{min-height:48px;display:grid;place-items:center;padding-inline:14px;border:2px solid var(--ink-red);border-radius:12px;font:500 16px var(--mono);color:var(--ink-red);background:#fbf5ec}
+.more{border:2px dashed color-mix(in oklch,var(--ink-red) 45%,transparent);border-radius:14px;padding:0 16px}
+.more summary{min-height:48px;display:flex;align-items:center;font:21px var(--hand);color:var(--ink-red);cursor:pointer}
+.more ol{margin:0 0 14px;padding-left:20px;color:var(--ink-soft);font-size:15px;display:grid;gap:6px}
+.btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.art{width:100%;max-width:320px;color:var(--chalk);justify-self:center}
+.art text{font:18px var(--hand);fill:var(--chalk)}
+.art .coral{color:var(--coral-text)}
+.why{font:20px/1.35 var(--hand);color:var(--mute);max-width:320px;margin:20px auto 0;text-align:center}
+.ph-buddy{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px}
+.ph-buddy .pc{width:112px;height:112px;flex:none}
+.ph-buddy .talk{position:relative;margin:0;max-width:250px;background:var(--cream);color:var(--ink);font:21px/1.25 var(--hand);padding:12px 16px;border-radius:16px;box-shadow:0 12px 26px -12px rgb(0 0 0/.7)}
+.ph-buddy .talk::before{content:"";position:absolute;left:-8px;top:50%;width:16px;height:16px;background:var(--cream);transform:translateY(-50%) rotate(45deg);border-radius:2px}
+.art .notif,.art .notif-t{opacity:0;transform:scale(.5);transform-origin:150px 110px;transition:opacity .3s,transform .45s cubic-bezier(.34,1.56,.64,1)}
+.art.ring .notif,.art.ring .notif-t{opacity:1;transform:none}
+.art .digits{font:19px var(--mono);fill:var(--coral-text);text-anchor:middle}
+.skip-btn:hover{transform:rotate(-3deg)}
+@keyframes buzz{0%,100%{transform:rotate(0)}20%{transform:rotate(-5deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-3deg)}80%{transform:rotate(3deg)}}
+@media (prefers-reduced-motion:no-preference){.motion .art.ring{animation:buzz .45s ease-in-out 3}}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+</style>
+</helmet>
+<div class="hr {{motionClass}}" style="--coral: {{accent}}">
+<div class="frame">
+<nav class="nav" aria-label="Main">
+<sc-if value="{{quipOn}}" hint-placeholder-val="{{ false }}"><div class="quip show" role="status" aria-label="{{quip}}" data-q="{{quip}}"></div></sc-if>
+<a class="brand {{talkCls}}" href="Main.dc.html" onMouseEnter="{{sayNow}}"><svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g></svg>HackRadar</a>
+<a class="navlink" href="Today.dc.html"><span>today</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">picked for you</em></a>
+<a class="navlink" href="Saved.dc.html"><span>my events</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">saved and went</em></a>
+<a class="navlink here" href="Setup.dc.html" aria-current="page"><span>your picks</span><svg class="loop" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M10 30C8 12 60 4 104 14c16 4 14 24-8 28-34 7-82 4-88-12C4 18 34 6 70 8"></path></svg><em class="cap">change anytime</em></a>
+<a class="navlink pill" href="Main.dc.html"><span>sign out</span><em class="cap">see you tomorrow</em></a>
+</nav>
+
+<div class="wrap">
+<section class="tablet grid-paper enter" aria-labelledby="ph-h">
+<div class="in stack">
+<p class="eyebrow" style="margin: 0">Step 2 of 3 · optional</p>
+<h1 class="h1" id="ph-h" style="font-size: 48px; margin: 0">Want your picks on WhatsApp?</h1>
+<p class="lead" style="margin: 0">Add your number and we'll message you there each morning. No number, no WhatsApp: you still get Discord or email.</p>
+<div class="phone-row">
+<span class="cc" aria-hidden="true">+91</span>
+<label class="field">Mobile number<input type="tel" inputmode="numeric" placeholder="98765 43210" autocomplete="tel-national" onChange="{{typed}}"></label>
+</div>
+<details class="more">
+<summary>WhatsApp needs a one-time key</summary>
+<ol>
+<li>From this phone, send one message to the CallMeBot WhatsApp bot. We show the exact text after you save.</li>
+<li>It replies with your key. Paste it below. You can also do this later in Settings.</li>
+</ol>
+<label class="field" style="margin-bottom: 16px">Key (optional for now)<input type="text" placeholder="e.g. 123456"></label>
+</details>
+<div class="btns">
+<a class="btn solid" href="Setup.dc.html">Save and continue</a>
+<a class="btn ghost skip-btn" href="Setup.dc.html" onMouseEnter="{{skipOn}}" onMouseLeave="{{skipOff}}" onFocus="{{skipOn}}" onBlur="{{skipOff}}">Skip for now</a>
+</div>
+</div>
+</section>
+<div>
+<div class="ph-buddy">
+<svg class="{{buddyCls}}" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g><g class="face f-read"><path class="ln" d="M19 21.5h2.5M31 21.5h2.5M21.5 26.5c1.6 1.2 3.9 1.2 5.5 0"></path></g><g class="face f-sad"><path class="ln" d="M15.5 17l4 1.5M32.5 17l-4 1.5M17.5 20v2.5M30.5 20v2.5M18.5 28.5c3-3 8-3 11 0"></path></g></svg>
+<p class="talk" aria-live="polite">{{say}}</p>
+</div>
+<svg class="{{artCls}}" viewBox="0 0 300 340" role="img" aria-label="Doodle of a phone getting a morning message">
+<path class="ln draw" d="M92 30h116a18 18 0 0 1 18 18v244a18 18 0 0 1-18 18H92a18 18 0 0 1-18-18V48a18 18 0 0 1 18-18zM128 46h44M140 290a10 10 0 1 0 20 0a10 10 0 1 0-20 0"></path>
+<g class="coral notif"><path class="ln draw late" d="M96 84h96a10 10 0 0 1 10 10v38a10 10 0 0 1-10 10h-70l-16 14v-14a10 10 0 0 1-10-10V94a10 10 0 0 1 10-10z"></path></g>
+<text class="notif-t" x="104" y="110">3 new near</text>
+<text class="notif-t" x="104" y="130">Pune today!</text>
+<path class="ln draw late" d="M100 170h100M100 190h76M100 210h88M30 90c-12 14-12 34 0 48M16 78c-20 22-20 50 0 72M270 90c12 14 12 34 0 48M284 78c20 22 20 50 0 72"></path>
+<text class="digits" x="150" y="252">{{digitsShown}}</text>
+</svg>
+<p class="why">We only use your number for the messages you pick. Never shared, never sent to AI.</p>
+</div>
+</div>
+<footer class="site-foot">
+<div class="ticker" aria-label="Sources we check"><div class="track"><span>Devpost</span><span>Unstop</span><span>Devfolio</span><span>MLH</span><span>Luma</span><span>LinkedIn and X posts</span><span>checked every morning</span><span aria-hidden="true">Devpost</span><span aria-hidden="true">Unstop</span><span aria-hidden="true">Devfolio</span><span aria-hidden="true">MLH</span><span aria-hidden="true">Luma</span><span aria-hidden="true">LinkedIn and X posts</span><span aria-hidden="true">checked every morning</span></div></div>
+<svg class="foot-wave" viewBox="0 0 1200 28" preserveAspectRatio="none" aria-hidden="true"><path class="ln" d="M0 14c40-14 80 14 120 0s80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0 80 14 120 0"></path></svg>
+<div class="foot-grid">
+<div class="foot-brand"><a href="Main.dc.html"><svg class="pc" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-wake"><path class="ln" d="M17 17.5v4M31 17.5v4M23 26.5h2"></path></g><g class="face f-focus"><path class="ln" d="M14.5 16.5l5 2.5M33.5 16.5l-5 2.5M17 20.5v2M31 20.5v2M22 26.5h4"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g></svg>HackRadar</a><p>Hackathons near you, every morning. Made in Pune for people who build on <b>weekends</b>.</p></div>
+<nav aria-label="Explore"><h2 class="foot-h">Explore</h2><ul class="foot-links"><li><a href="Main.dc.html">How it works</a></li><li><a href="Today.dc.html">Open hackathons</a></li><li><a href="Setup.dc.html">Your picks</a></li></ul></nav>
+<nav aria-label="Messages"><h2 class="foot-h">Messages</h2><ul class="foot-links"><li><a href="Messages.dc.html">See a sample</a></li><li><a href="Setup.dc.html">Change channels</a></li><li><a href="Messages.dc.html">Unsubscribe</a></li></ul></nav>
+<div class="foot-doodle"><svg class="pc sleepy" viewBox="0 0 48 48" aria-hidden="true"><path class="screen" d="M9.6 12.2h28.8l1.3 18.6H10.4z"></path><path class="ln" d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM5.4 11.6l1.5 20.6M22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"></path><g class="face f-sleep"><path class="ln" d="M14.5 20.5h5M28.5 20.5h5M21.5 26.5h5"></path></g><g class="face f-happy"><path class="ln" d="M17.5 16.5v4M30.5 16.5v4M16.5 23.5c3.6 4.6 11.4 4.6 15 0"></path></g><text class="zz" x="40" y="8">z</text></svg>next list lands around 5 AM IST</div>
+</div>
+<div class="foot-base"><span>Dates and prizes come from the source, never from AI.</span><span>Free · no card · one message a morning at most</span></div>
+</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#e5484d","options":["#e5484d","#f2602a","#d6336c","#2f9e8f"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this.quipTimer = setTimeout(() => this.quipNow(), 4000);
+  }
+  componentWillUnmount() {
+    clearTimeout(this.quipTimer);
+    clearTimeout(this.quipHide);
+  }
+  quipNow() {
+    const lines = ['404: sleep not found.', 'Pizza at 3 AM is a valid food group.', 'git commit -m "final final FINAL"', "I check five sites so you don't have to.", 'Your next big idea is one weekend away.', 'Beep boop. Scanning for prizes.', 'Teammates wanted. Snacks provided. Probably.', 'I woke up at 4:47 AM for you.', 'Ship it. Fix it. Ship it again.', 'Is it a bug or a feature? Yes.', 'Coffee status: dangerously low.', 'Psst. Save the ones you like!', 'Dates come from the source. I never guess.', 'Have you had water today, builder?', "Mentors are friends you haven't met yet.", 'Ctrl+S your code. And your weekend.', 'Tip: give your team a silly name.', 'One more feature, they said. 6 hours ago.'];
+    clearTimeout(this.quipTimer);
+    clearTimeout(this.quipHide);
+    if (typeof document !== 'undefined' && document.hidden) {
+      this.quipTimer = setTimeout(() => this.quipNow(), 10000);
+      return;
+    }
+    // shortcut: fixed lines for the preview; the real site shows fresh questions and jokes from the daily LLM run
+    const questions = ['Pikachu or Charmander? Think fast.', 'Would you pet a Snorlax? Be honest.', 'Is Bulbasaur underrated? (Yes.)', 'Tabs or spaces? Choose wisely.', 'Dark mode or light mode? I know mine.', '3 AM snack: pizza or biryani?', 'Solo or team hackathons?', 'Coffee or chai, builder?'];
+    const last = (this.state || {}).quip;
+    const pool = lines.concat(questions).filter((l) => l !== last);
+    this.setState({ quip: pool[Math.floor(Math.random() * pool.length)], quipOn: true });
+    this.quipHide = setTimeout(() => this.setState({ quipOn: false }), 4500);
+    // shortcut: 15-40 s gaps so the preview shows it often; use 30-90 s on the real site
+    this.quipTimer = setTimeout(() => this.quipNow(), 15000 + Math.random() * 25000);
+  }
+  renderVals() {
+    return {
+      accent: this.props.accent ?? '#e5484d',
+      quip: (this.state || {}).quip || '',
+      quipOn: !!(this.state || {}).quipOn,
+      talkCls: (this.state || {}).quipOn ? 'talking' : '',
+      sayNow: () => this.quipNow(),
+      ...(() => {
+        const s = this.state || {};
+        const num = s.num || '';
+        const n = num.length;
+        const mood = s.skipHover ? 'sad' : n >= 10 ? 'google' : n > 0 ? 'email' : 'idle';
+        const left = 10 - n;
+        const say = s.skipHover ? 'Aww. Email works too. No hard feelings.'
+          : n === 0 ? "Your number goes here. I won't call. I can't. I'm a monitor."
+          : n < 10 ? left + (left === 1 ? ' more digit...' : ' more digits...')
+          : n === 10 ? 'Ding! Your phone just joined the radar.'
+          : "Whoa, that's a lot of digits. Indian numbers have 10.";
+        return {
+          say,
+          buddyCls: mood === 'idle' ? 'pc' : 'pc fixed mood-' + mood,
+          artCls: n === 10 ? 'art ring' : 'art',
+          digitsShown: n ? num.slice(0, 5) + (n > 5 ? ' ' + num.slice(5) : '') : 'waiting...',
+          typed: (e) => this.setState({ num: e.target.value.replace(/\D/g, '') }),
+          skipOn: () => this.setState({ skipHover: true }),
+          skipOff: () => this.setState({ skipHover: false })
+        };
+      })(),
+      motionClass: (this.props.motion ?? true) ? 'motion' : ''
+    };
+  }
+}
+</script>
+</body>
+</html>

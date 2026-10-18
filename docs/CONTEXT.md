@@ -1,6 +1,6 @@
 # HackRadar — CONTEXT (single source of truth)
 
-_Last updated: 2026-10-15_
+_Last updated: 2026-10-16_
 
 ## 1. Resume here
 
@@ -8,15 +8,21 @@ _Last updated: 2026-10-15_
 [`sessions/`](sessions/README.md)** (last session's done/problems/next steps), then only the sub-docs the task needs (index in §7).
 
 - **Phase:** 1 · MVP digest, in progress. Phase 0 gate passed 2026-10-14.
-- **Just finished (2026-10-15):** Devfolio source; place filter (Pune ± 150 km, contests hidden; D-038); dedupe + "listed on 2+ platforms" badge (D-037, 61 tests); digest now shows AI summaries and a separate "Contests & other" section (kind filter, 52 tests); first live Discord digest; "new" cutoff fix; trust signals (D-031); batched
+- **Just finished (2026-10-18, branch `feat/fun-theme`, ready for review):** rebuilt the entire web frontend in the new "fun theme" (D-047, [design/DESIGN.md](design/DESIGN.md)) matching `design/hackradar-preview/`. All existing features preserved (Google, Magic Link, Supabase password auth, onboarding redirect, Settings with Discord webhook test & CallMeBot key, public events directory with search/filters/paging, Event Detail with Ask an AI prompts and live countdown sticker, and Admin dashboard). Added new routes `/events`, `/my-events`. Monitor mascot with cycling moods, interactive speech bubble ("quips"), mini icon set, full accessibility (reduced-motion safe, 44px targets, 4.5:1 contrast). Verified clean build (`tsc --noEmit && vite build`), vitest 116 passed (66 DB skipped), zero hardcoded sample data.
+- **Earlier (2026-10-16, branch `feat/landing-flow`, not merged to `main`):** public landing page; automatic sign-up
+  (D-044); abuse limits and welcome email (D-045); Google sign-in, Supabase email+password sign-in, daily Supabase
+  keep-alive (D-045, D-046). Cron runs 15 and 16 Oct green. Local checks: ruff/black clean, pytest 130 passed (24 DB tests skipped,
+  no `TEST_DATABASE_URL`), web vitest 116 passed (66 DB tests skipped), `tsc` and web build clean.
+- **Earlier (2026-10-15):** Devfolio source; place filter (Pune ± 150 km, contests hidden; D-038); dedupe + "listed on 2+ platforms" badge (D-037, 61 tests); digest now shows AI summaries and a separate "Contests & other" section (kind filter, 52 tests); first live Discord digest; "new" cutoff fix; trust signals (D-031); batched
   upserts (run 155 s → 15 s); calendar plan (D-032); Luma via ICS (D-033); place filter (D-034); dashboard design
   direction D (canvas https://claude.ai/artifact/SDLHqTM56wgrjpXHTgdbAx, private); Phase 2 source research.
   34 tests green.
-- **Next task:** check each 04:47 IST cron digest on 15, 16, 17 Oct (Phase 1 gate): `gh run list --workflow
+- **Next task:** code review of `feat/fun-theme` frontend rebuild; check the 04:47 IST cron digest on 17/18 Oct (Phase 1 gate, third day): `gh run list --workflow
   daily.yml`, the Discord channel, the `runs` table. Fix anything flaky. Then Phase 2 (ROADMAP).
+- **Open for web:** review and merge `feat/fun-theme`; run DB tests with a throwaway `TEST_DATABASE_URL`; production smoke test (plan Task 8).
 - **Blockers for Phase 2 (Debjit):** Groq API key (console.groq.com; if it asks for a card, stop) and Gmail app password → `.env`; Claude
   copies them to GitHub Secrets with `gh secret set` (never pasted in chat).
-- **Web platform:** plan [superpowers/plans/2026-10-15-web-platform.md](superpowers/plans/2026-10-15-web-platform.md), spec [superpowers/specs/2026-10-15-user-onboarding-design.md](superpowers/specs/2026-10-15-user-onboarding-design.md) (D-039). Run its tests: `cd web && npm test` (needs `TEST_DATABASE_URL`).
+- **Web platform:** plan [superpowers/plans/2026-10-15-web-platform.md](superpowers/plans/2026-10-15-web-platform.md), spec [superpowers/specs/2026-10-15-user-onboarding-design.md](superpowers/specs/2026-10-15-user-onboarding-design.md) (D-039), design spec [design/DESIGN.md](design/DESIGN.md) (D-047). Run tests: `cd web && npx vitest run`.
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
 
 ## 2. Project summary
@@ -63,7 +69,7 @@ Unstop (robots-checked, polite), batch-upserts into `events`/`event_sources`, cl
 `data/last_run.json` → keepalive commit to `status` branch. Builds and sends the Discord digest (webhook live since 2026-10-15).
 CI (ruff, black, pytest) green on `main`.
 
-**Web platform (branch `feat/web-platform`, in `web/`; D-039):** Vite + React site on the Vercel project `hackradar` (deployment protection currently on). Events list; event page with Ask ChatGPT / Ask Claude links; email sign-in with a confirm step; Discord sign-in (disabled until `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` are set); onboarding and settings; owner-only analytics at `/admin`. CI has a second job `web` (npm ci, test, build, tsc). Env var names: `DATABASE_URL`, `SESSION_SECRET`, `ENCRYPTION_KEY`, `SMTP_USER`, `SMTP_APP_PASSWORD`, `ADMIN_EMAILS`, `SITE_URL`, `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `VITE_DISCORD_INVITE_URL` (optional). Production smoke test not yet done (plan Task 8).
+**Web platform (branch `feat/landing-flow`, in `web/`; D-039):** Vite + React site on the Vercel project `hackradar` (deployment protection currently on). Events list; event page with Ask ChatGPT / Ask Claude links; public landing page; automatic sign-up (D-044); Google sign-in and Supabase email+password sign-in (D-045, D-046; branch `feat/landing-flow`); Discord sign-in (disabled until `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` are set); onboarding and settings; owner-only analytics at `/admin`. CI has a second job `web` (npm ci, test, build, tsc). Env var names: `DATABASE_URL`, `SESSION_SECRET`, `ENCRYPTION_KEY`, `SMTP_USER`, `SMTP_APP_PASSWORD`, `ADMIN_EMAILS`, `SITE_URL`, `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `SUPABASE_URL`, `SUPABASE_ANON_KEY` (anon key only, never service_role), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `VITE_DISCORD_INVITE_URL` (optional). Full list with comments: `web/.env.example` and root `.env.example`. Production smoke test not yet done (plan Task 8).
 
 ## 4. Stack at a glance
 
@@ -169,6 +175,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 | [specs/sources.md](specs/sources.md) | Each source: endpoint, method, robots.txt, fields, quirks |
 | [superpowers/plans/2026-10-15-web-platform.md](superpowers/plans/2026-10-15-web-platform.md) | Web platform implementation plan |
 | [superpowers/specs/2026-10-15-user-onboarding-design.md](superpowers/specs/2026-10-15-user-onboarding-design.md) | Web onboarding and sign-in design |
+| [design/DESIGN.md](design/DESIGN.md) | Fun theme design specification: tokens, components, mascot, motion, routes, and backend gaps |
 | [research/README.md](research/README.md) | Index of research notes |
 | [sessions/README.md](sessions/README.md) | Index of session logs |
 
@@ -179,7 +186,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 
 **Newest research (2026-10-15):** [first live digest](research/2026-10-15-first-live-digest.md) · [Luma](research/2026-10-15-luma.md) · [Phase 2 sources](research/2026-10-15-phase2-sources.md)
 
-**Newest sessions:** [2026-10-15 Phase 1 live](sessions/2026-10-15-phase1-live.md) · [2026-10-14 Phase 0 setup](sessions/2026-10-14-phase0-setup.md) · [2026-10-14 docs bootstrap](sessions/2026-10-14-docs-bootstrap.md)
+**Newest sessions:** [2026-10-18 fun theme](sessions/2026-10-18-fun-theme.md) · [2026-10-15 Phase 1 live](sessions/2026-10-15-phase1-live.md) · [2026-10-14 Phase 0 setup](sessions/2026-10-14-phase0-setup.md) · [2026-10-14 docs bootstrap](sessions/2026-10-14-docs-bootstrap.md)
 
 **Original planning docs (repo root, kept for reference):** `HackRadar — Project Plan.md`, `HACKRADAR_MASTER_PROMPT.md`.
 

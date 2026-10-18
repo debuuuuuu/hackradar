@@ -1,8 +1,9 @@
 import { createHash, randomBytes } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { findUser, finishEmailLogin, recordLogin, safeNext, startEmailLogin } from "../server/auth.js";
+import { findUser, finishEmailLogin, MAX_TOKENS_PER_IP_PER_HOUR, recordLogin, safeNext, startEmailLogin } from "../server/auth.js";
 import { blindIndex, decrypt, keyFromEnv } from "../server/crypto.js";
 import { query } from "../server/db.js";
+import { isBadRecipient } from "../server/mail.js";
 import { route } from "../server/router.js";
 import { readSession, signSession } from "../server/session.js";
 import { dbIt, withSchema } from "./helpers.js";
@@ -68,6 +69,22 @@ describe("email sign-in", () => {
       expect(await finishEmailLogin(lastToken(), T0 + 15 * MIN)).not.toBeNull();
     }));
 
+  dbIt("limits sign-in links per IP but not for other IPs or the same IP after an hour", () =>
+    withSchema(async () => {
+      const { send } = fakeSend();
+      const sent = vi.fn(send);
+      for (let i = 0; i < MAX_TOKENS_PER_IP_PER_HOUR + 5; i++) {
+        await startEmailLogin(`u${i}@example.com`, { send: sent, origin: ORIGIN, now: T0, ip: "203.0.113.7" });
+      }
+      expect(sent).toHaveBeenCalledTimes(MAX_TOKENS_PER_IP_PER_HOUR);
+      await startEmailLogin("other@example.com", { send: sent, origin: ORIGIN, now: T0, ip: "203.0.113.8" });
+      expect(sent).toHaveBeenCalledTimes(MAX_TOKENS_PER_IP_PER_HOUR + 1);
+      await startEmailLogin("later@example.com", { send: sent, origin: ORIGIN, now: T0 + 61 * MIN, ip: "203.0.113.7" });
+      expect(sent).toHaveBeenCalledTimes(MAX_TOKENS_PER_IP_PER_HOUR + 2);
+      const [row] = await query<{ ip_hash: string }>("SELECT ip_hash FROM login_tokens ORDER BY id LIMIT 1");
+      expect(row.ip_hash).not.toContain("203.0.113"); // only a hash is stored
+    }));
+
   dbIt("rejects junk tokens", () =>
     withSchema(async () => {
       expect(await finishEmailLogin("nope", T0)).toBeNull();
@@ -103,6 +120,9 @@ describe("email sign-in", () => {
             body: JSON.stringify({ email }),
           }),
         );
+      // The earlier calls leave a token for this address; clear them so the 60 s per-address limit
+      // (which answers 200 silently) does not stand in for the account check this test is about.
+      await query("DELETE FROM login_tokens");
       const log = vi.spyOn(console, "error").mockImplementation(() => {});
       const k = await startPost("known@example.com");
       const u = await startPost("other@example.com");
@@ -162,7 +182,7 @@ describe("email sign-in", () => {
       const { send, lastToken } = fakeSend();
       await startEmailLogin("a@example.com", { send, origin: ORIGIN, now: T0 });
       const first = await finishEmailLogin(lastToken(), T0 + 1000);
-      expect(first).toEqual({ uid: expect.any(Number), isNew: true });
+      expect(first).toEqual({ uid: expect.any(Number), isNew: true, email: "a@example.com" });
       const [u] = await query<{ name: string; email_enc: string }>("SELECT name, email_enc FROM users WHERE id = $1", [
         first!.uid,
       ]);
@@ -260,12 +280,19 @@ describe("auth routes", () => {
     const big = JSON.stringify({ email: "a@example.com", pad: "x".repeat(3000) });
     expect((await post("/api/auth/email/start", big)).status).toBe(400);
   });
-  dbIt("start: always 200 {ok:true} for a valid address, even when mail cannot be sent", () =>
+  it("isBadRecipient: recipient refusals only, not our own SMTP failures", () => {
+    expect(isBadRecipient(Object.assign(new Error("x"), { code: "EENVELOPE" }))).toBe(true);
+    expect(isBadRecipient(Object.assign(new Error("x"), { responseCode: 550 }))).toBe(true);
+    expect(isBadRecipient(Object.assign(new Error("x"), { responseCode: 535 }))).toBe(false); // bad SMTP login
+    expect(isBadRecipient(new Error("connection refused"))).toBe(false);
+    expect(isBadRecipient("550")).toBe(false);
+  });
+  dbIt("start: 502 when mail cannot be sent, and the log never holds the address", () =>
     withSchema(async () => {
       const log = vi.spyOn(console, "error").mockImplementation(() => {});
       const res = await post("/api/auth/email/start", '{"email":"a@example.com","next":"/events/3"}');
-      expect(res.status).toBe(200);
-      expect(await res.json()).toEqual({ ok: true });
+      expect(res.status).toBe(502);
+      expect(await res.json()).toEqual({ error: "could not send email" });
       // SMTP is unconfigured in tests, so the failure is logged by class name only
       expect(log.mock.calls.flat().join(" ")).not.toContain("example.com");
       log.mockRestore();
@@ -380,6 +407,41 @@ describe("auth routes", () => {
       const gone = await route(new Request(`${ORIGIN}/api/me`, { headers: { cookie: cookie(u.id + 999) } }));
       expect(gone.status).toBe(401);
     }));
+
+  dbIt("logout-all: cookies issued before it stop working, new ones work", () =>
+    withSchema(async () => {
+      const [row] = await query<{ id: number }>("INSERT INTO users (name) VALUES ('Ann') RETURNING id");
+      const uid = Number(row.id);
+      const cookie = (iat: number) => `hr_session=${signSession({ uid }, process.env.SESSION_SECRET!, iat)}`;
+      const old = cookie(Date.now() - 1000);
+      const out = await route(new Request(`${ORIGIN}/api/auth/logout-all`, { method: "POST", headers: { cookie: old, "content-type": "application/json" }, body: "{}" }));
+      expect(out.status).toBe(200);
+      expect(out.headers.get("set-cookie")).toMatch(/^hr_session=;.*Max-Age=0/);
+      expect((await route(new Request(`${ORIGIN}/api/me`, { headers: { cookie: old } }))).status).toBe(401);
+      expect((await route(new Request(`${ORIGIN}/api/me`, { headers: { cookie: cookie(Date.now() + 1000) } }))).status).toBe(200);
+    }));
+
+  dbIt("delete account: needs the confirm word, removes the user and their data", () =>
+    withSchema(async () => {
+      const [row] = await query<{ id: number }>("INSERT INTO users (name) VALUES ('Ann') RETURNING id");
+      const uid = Number(row.id);
+      await query("INSERT INTO preferences (user_id) VALUES ($1)", [uid]);
+      const cookie = `hr_session=${signSession({ uid }, process.env.SESSION_SECRET!)}`;
+      const del = (body: string) =>
+        route(new Request(`${ORIGIN}/api/me`, { method: "DELETE", headers: { cookie, "content-type": "application/json" }, body }));
+      expect((await del("{}")).status).toBe(400);
+      expect((await query("SELECT 1 FROM users WHERE id = $1", [uid])).length).toBe(1);
+      expect((await del('{"confirm":"delete"}')).status).toBe(200);
+      expect((await query("SELECT 1 FROM users WHERE id = $1", [uid])).length).toBe(0);
+      expect((await query("SELECT 1 FROM preferences WHERE user_id = $1", [uid])).length).toBe(0);
+      expect((await del('{"confirm":"delete"}')).status).toBe(401);
+    }));
+
+  it("delete account and logout-all: 401 without a cookie", async () => {
+    expect((await post("/api/auth/logout-all", "{}")).status).toBe(401);
+    const res = await route(new Request(`${ORIGIN}/api/me`, { method: "DELETE", headers: { "content-type": "application/json" }, body: '{"confirm":"delete"}' }));
+    expect(res.status).toBe(401);
+  });
 
   it("logout: clears the cookie; 415 without JSON", async () => {
     const res = await post("/api/auth/logout", "{}");

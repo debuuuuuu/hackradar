@@ -41,7 +41,6 @@ def test_unknown_priority_value_is_treated_as_off() -> None:
 def _user(
     conn,
     *,
-    approved: bool = True,
     enabled: bool = True,
     onboarded: bool = True,
     channels: list[str] | None = None,
@@ -51,9 +50,9 @@ def _user(
     radius: int = 150,
 ) -> int:
     uid = conn.execute(
-        "INSERT INTO users (name, digest_enabled, approved_at, onboarded_at, discord_webhook_enc)"
-        " VALUES ('t', %s, %s, %s, 'enc-webhook') RETURNING id",
-        (enabled, NOW if approved else None, NOW if onboarded else None),
+        "INSERT INTO users (name, digest_enabled, onboarded_at, discord_webhook_enc)"
+        " VALUES ('t', %s, %s, 'enc-webhook') RETURNING id",
+        (enabled, NOW if onboarded else None),
     ).fetchone()[0]
     conn.execute(
         "INSERT INTO preferences (user_id, home_city, radius_km, format, priorities, channels)"
@@ -108,14 +107,13 @@ def _recipient(conn, uid: int) -> Recipient:
     return next(r for r in recipients(conn, NOW) if r.user_id == uid)
 
 
-def test_unapproved_user_gets_nothing(conn) -> None:
-    uid = _user(conn, approved=False)
+def test_new_signup_gets_digest_without_approval(conn) -> None:
+    uid = _user(conn)  # approved_at stays NULL: sign-up is automatic (D-044)
     _event(conn, "open-event")
-    assert uid not in [r.user_id for r in recipients(conn, NOW)]
+    assert uid in [r.user_id for r in recipients(conn, NOW)]
     rec = Recorder()
     summary = run_user_digests(conn, NOW, {"discord": rec})
-    assert rec.sent == []
-    assert summary.sent == 0
+    assert summary.sent == 1
 
 
 def test_digest_disabled_user_gets_nothing(conn) -> None:
@@ -175,6 +173,19 @@ def test_email_is_not_sent_until_confirmation_exists(conn) -> None:
     run_user_digests(conn, NOW, {"email": email, "discord": discord})
     assert email.sent == []
     assert discord.sent == [uid]
+
+
+def test_email_is_sent_only_to_a_verified_sign_in_address(conn) -> None:
+    verified = _user(conn, channels=["email"])
+    typed_in = _user(conn, channels=["email"])  # an address entered by hand has no email_hash
+    conn.execute(
+        "UPDATE users SET email_enc = 'enc-email', email_hash = 'hash' WHERE id = %s", (verified,)
+    )
+    conn.execute("UPDATE users SET email_enc = 'enc-email' WHERE id = %s", (typed_in,))
+    _event(conn, "open-event")
+    email = Recorder()
+    run_user_digests(conn, NOW, {"email": email})
+    assert email.sent == [verified]
 
 
 def test_failing_sender_logs_no_webhook_token(conn, caplog) -> None:

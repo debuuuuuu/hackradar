@@ -70,8 +70,11 @@ CREATE TABLE IF NOT EXISTS users (
     email_hash          text        UNIQUE,         -- web login lookup; email itself stays encrypted
     last_login_at       timestamptz,
     onboarded_at        timestamptz,
-    approved_at         timestamptz     -- NULL = pending owner approval (D-041)
+    approved_at         timestamptz,    -- unused since D-044 (automatic sign-up); kept so no migration is needed
+    sessions_valid_after timestamptz    -- 'sign out everywhere': session cookies issued before this are refused
 );
+-- Databases created before migration 0011 need the column added (CREATE TABLE IF NOT EXISTS skips them).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sessions_valid_after timestamptz;
 
 -- Per-user filters and profile. Offset 0 = same-day morning alert (D-019).
 CREATE TABLE IF NOT EXISTS preferences (
@@ -150,7 +153,7 @@ CREATE INDEX IF NOT EXISTS runs_started_idx ON runs (started_at DESC);
 CREATE TABLE IF NOT EXISTS logins (
     id      bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id bigint      NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    method  text        NOT NULL CHECK (method IN ('discord', 'email')),
+    method  text        NOT NULL CHECK (method IN ('discord', 'email', 'google')),
     at      timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS logins_at_idx ON logins (at);
@@ -163,8 +166,10 @@ CREATE TABLE IF NOT EXISTS login_tokens (
     token_hash text        NOT NULL UNIQUE,
     expires_at timestamptz NOT NULL,
     used_at    timestamptz,
-    created_at timestamptz NOT NULL DEFAULT now()
+    created_at timestamptz NOT NULL DEFAULT now(),
+    ip_hash    text                        -- blind index of the requester's IP, for the per-IP rate limit
 );
+CREATE INDEX IF NOT EXISTS login_tokens_ip_idx ON login_tokens (ip_hash, created_at);
 
 -- Mirror of config/places.yaml so the website can read it (place.sync_places).
 CREATE TABLE IF NOT EXISTS places (
