@@ -408,6 +408,41 @@ describe("auth routes", () => {
       expect(gone.status).toBe(401);
     }));
 
+  dbIt("logout-all: cookies issued before it stop working, new ones work", () =>
+    withSchema(async () => {
+      const [row] = await query<{ id: number }>("INSERT INTO users (name) VALUES ('Ann') RETURNING id");
+      const uid = Number(row.id);
+      const cookie = (iat: number) => `hr_session=${signSession({ uid }, process.env.SESSION_SECRET!, iat)}`;
+      const old = cookie(Date.now() - 1000);
+      const out = await route(new Request(`${ORIGIN}/api/auth/logout-all`, { method: "POST", headers: { cookie: old, "content-type": "application/json" }, body: "{}" }));
+      expect(out.status).toBe(200);
+      expect(out.headers.get("set-cookie")).toMatch(/^hr_session=;.*Max-Age=0/);
+      expect((await route(new Request(`${ORIGIN}/api/me`, { headers: { cookie: old } }))).status).toBe(401);
+      expect((await route(new Request(`${ORIGIN}/api/me`, { headers: { cookie: cookie(Date.now() + 1000) } }))).status).toBe(200);
+    }));
+
+  dbIt("delete account: needs the confirm word, removes the user and their data", () =>
+    withSchema(async () => {
+      const [row] = await query<{ id: number }>("INSERT INTO users (name) VALUES ('Ann') RETURNING id");
+      const uid = Number(row.id);
+      await query("INSERT INTO preferences (user_id) VALUES ($1)", [uid]);
+      const cookie = `hr_session=${signSession({ uid }, process.env.SESSION_SECRET!)}`;
+      const del = (body: string) =>
+        route(new Request(`${ORIGIN}/api/me`, { method: "DELETE", headers: { cookie, "content-type": "application/json" }, body }));
+      expect((await del("{}")).status).toBe(400);
+      expect((await query("SELECT 1 FROM users WHERE id = $1", [uid])).length).toBe(1);
+      expect((await del('{"confirm":"delete"}')).status).toBe(200);
+      expect((await query("SELECT 1 FROM users WHERE id = $1", [uid])).length).toBe(0);
+      expect((await query("SELECT 1 FROM preferences WHERE user_id = $1", [uid])).length).toBe(0);
+      expect((await del('{"confirm":"delete"}')).status).toBe(401);
+    }));
+
+  it("delete account and logout-all: 401 without a cookie", async () => {
+    expect((await post("/api/auth/logout-all", "{}")).status).toBe(401);
+    const res = await route(new Request(`${ORIGIN}/api/me`, { method: "DELETE", headers: { "content-type": "application/json" }, body: '{"confirm":"delete"}' }));
+    expect(res.status).toBe(401);
+  });
+
   it("logout: clears the cookie; 415 without JSON", async () => {
     const res = await post("/api/auth/logout", "{}");
     expect(res.status).toBe(200);

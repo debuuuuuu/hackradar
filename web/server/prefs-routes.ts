@@ -28,7 +28,7 @@ async function readBody(request: Request): Promise<Record<string, unknown> | Res
 /** The signed-in user's id from the session cookie only (never from the client), or null. */
 async function sessionUid(request: Request): Promise<number | null> {
   const session = sessionFromRequest(request);
-  const user = session ? await findUser(session.uid) : null;
+  const user = session ? await findUser(session.uid, session.iat) : null;
   return user ? user.uid : null;
 }
 

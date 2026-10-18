@@ -94,7 +94,7 @@ def test_one_message_per_recipient_addressed_only_to_them() -> None:
     for msg in FakeSMTP.sent:
         assert msg["Cc"] is None
         assert msg["Bcc"] is None
-        assert msg["From"] == USER
+        assert msg["From"] == f"HackRadar <{USER}>"
 
 
 def test_body_lists_the_event_with_its_source_link() -> None:
@@ -165,3 +165,60 @@ def test_sender_decrypts_the_address_and_sends_once() -> None:
     send = mail.sender_for(key, smtp_factory=FakeSMTP)
     send(recipient, _digest())
     assert [m["To"] for m in FakeSMTP.sent] == ["friend@example.com"]
+
+
+# --- HTML design and the unsubscribe link ---
+
+# Produced by web/server/unsubscribe.ts for user 42 with a 32-byte key of 0x07. If this changes, the
+# site stops accepting the links in our emails.
+TS_TOKEN_42 = "42.rnp--VrN8CrcAE2pV6FROYL9gIQ5tHYunmCNu9VXMho"
+
+
+def test_unsubscribe_token_matches_the_one_the_website_checks() -> None:
+    from pipeline.notify.unsubscribe import unsubscribe_token
+
+    assert unsubscribe_token(bytes([7]) * 32, 42) == TS_TOKEN_42
+
+
+def test_message_is_multipart_with_html_and_unsubscribe_everywhere() -> None:
+    link = "https://hackradar.example/api/auth/unsubscribe?token=42.abc"
+    mail.send_digest("a@example.com", _digest(), unsub_url=link, smtp_factory=FakeSMTP)
+    msg = FakeSMTP.sent[0]
+    assert msg["Subject"] == "Rise and build [o_o] 1 new"
+    assert msg["List-Unsubscribe"] == f"<{link}>"
+    assert link in msg.get_body(preferencelist=("plain",)).get_content()
+    html = msg.get_body(preferencelist=("html",)).get_content()
+    assert link in html and "Hack Night" in html and "https://devpost.com/hack-night" in html
+
+
+def test_html_escapes_titles_and_never_emits_a_non_http_link() -> None:
+    from dataclasses import replace
+
+    d = _digest()
+    evil = replace(d.new[0], title="<script>alert(1)</script>", url="javascript:alert(1)")
+    html = mail.render_html(replace(d, new=[evil]), None)
+    assert "<script>" not in html and "&lt;script&gt;" in html
+    assert "javascript:" not in html
+
+
+def test_sender_for_builds_a_per_user_unsubscribe_link(monkeypatch) -> None:
+    monkeypatch.setenv("SITE_URL", "https://hackradar.example")
+    key = os.urandom(32)
+    recipient = Recipient(
+        user_id=7,
+        channels=("email",),
+        discord_webhook_enc=None,
+        email_enc=_encrypt("friend@example.com", key),
+        callmebot_phone_enc=None,
+        callmebot_key_enc=None,
+        home_city="pune",
+        radius_km=150,
+        format="anything",
+        priorities={},
+    )
+    mail.sender_for(key, smtp_factory=FakeSMTP)(recipient, _digest())
+    from pipeline.notify.unsubscribe import unsubscribe_url
+
+    assert (
+        unsubscribe_url("https://hackradar.example", key, 7) in FakeSMTP.sent[0]["List-Unsubscribe"]
+    )

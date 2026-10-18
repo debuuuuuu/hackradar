@@ -1,3 +1,4 @@
+# ruff: noqa: E501  (inline-style HTML strings are long on purpose)
 """Email delivery over Gmail SMTP (D-012, task 2.7).
 
 One message per recipient, addressed only to them (never CC or BCC). Credentials come only from
@@ -14,10 +15,12 @@ import smtplib
 import ssl
 from collections.abc import Callable
 from email.message import EmailMessage
+from html import escape
 
 from pipeline.crypto import decrypt
 from pipeline.digest import Digest, DigestItem
 from pipeline.notify.discord import format_deadline
+from pipeline.notify.unsubscribe import unsubscribe_url
 
 log = logging.getLogger(__name__)
 
@@ -34,7 +37,7 @@ def _item_block(item: DigestItem) -> str:
     return f"- {item.title} ({format_deadline(item)})\n  {item.url}"
 
 
-def render_body(digest: Digest, site_url: str | None) -> str:
+def render_body(digest: Digest, site_url: str | None, unsub_url: str | None = None) -> str:
     """Plain-text body: new and closing events with their source links, then the footer."""
     lines = [
         f"HackRadar digest for {digest.day}",
@@ -51,19 +54,125 @@ def render_body(digest: Digest, site_url: str | None) -> str:
         lines.append(f"Manage settings or stop these emails: {site_url.rstrip('/')}/settings")
     else:
         lines.append("Manage settings or stop these emails from your HackRadar account page.")
+    if unsub_url:
+        lines += ["", f"Leave HackRadar (this also deletes your account): {unsub_url}"]
     return "\n".join(lines) + "\n"
 
 
-def build_message(sender: str, to: str, digest: Digest, site_url: str | None) -> EmailMessage:
+# HTML version, in the design from design/hackradar-preview/Messages.dc.html. Email clients ignore
+# most CSS, so it is inline styles only. Web fonts are not available there, so the serif and
+# handwritten fonts fall back to Georgia and a cursive font.
+_INK, _SOFT, _MUTE, _CORAL, _CREAM = "#2a1615", "#5a3532", "#7a4b47", "#e5484d", "#f3e7d7"
+_MONO = "font-family:Menlo,Consolas,monospace;"
+
+
+def _safe_url(url: str) -> str:
+    """Only http(s) links reach an href, so a stored URL can never be a javascript: link."""
+    return escape(url, quote=True) if url.startswith(("https://", "http://")) else "#"
+
+
+def _meta(item: DigestItem) -> str:
+    where = "Online" if item.mode == "online" else (item.city or (item.mode or "").title())
+    parts = [p for p in (where, item.prize_text, f"from {item.source}") if p]
+    return " · ".join(parts)
+
+
+def _row(item: DigestItem) -> str:
+    badge = ""
+    if item.deadline is not None:
+        badge = (
+            f'<span style="float:right;background:{_INK};color:{_CREAM};border-radius:6px;'
+            f'padding:1px 8px;font-size:13px;">{escape(format_deadline(item))}</span>'
+        )
+    return (
+        f'<div style="padding:10px 0;border-top:1.5px dashed #c9a79f;">{badge}'
+        f'<a href="{_safe_url(item.url)}" style="font-family:Georgia,serif;font-size:18px;'
+        f'color:{_INK};text-decoration:none;">{escape(item.title)}</a><br>'
+        f'<span style="{_MONO}font-size:12px;color:{_MUTE};">{escape(_meta(item))}</span></div>'
+    )
+
+
+def _section(title: str, items: list[DigestItem], total: int) -> str:
+    if not items:
+        return ""
+    more = f'<p style="margin:6px 0 0;font-size:13px;color:{_MUTE};">+{total - len(items)} more on the site</p>'
+    return f'<p style="margin:18px 0 0;{_MONO}font-size:11px;letter-spacing:.06em;text-transform:uppercase;' f'color:{_MUTE};">{escape(title)}</p>' + "".join(
+        _row(i) for i in items
+    ) + (
+        more if total > len(items) else ""
+    )
+
+
+def render_html(digest: Digest, site_url: str | None, unsub_url: str | None = None) -> str:
+    site = site_url.rstrip("/") if site_url else None
+    button = manage = ""
+    if site:
+        button = (
+            f'<p style="margin:22px 0 0;"><a href="{_safe_url(site + "/events")}" style="display:inline-block;'
+            f"background:{_CORAL};color:#fff;text-decoration:none;font-weight:bold;font-size:16px;"
+            f'padding:12px 26px;border-radius:999px;">Show me everything &rarr;</a></p>'
+        )
+        manage = (
+            f' <a href="{_safe_url(site + "/settings")}" style="color:#9b2b2f;">Turn me down</a>.'
+        )
+    leave = ""
+    if unsub_url:
+        leave = (
+            f' Too chatty? <a href="{_safe_url(unsub_url)}" style="color:#9b2b2f;">Unsubscribe in one click</a>'
+            " (this also deletes your account)."
+        )
+    mascot = f'<span style="{_MONO}color:{_CORAL};">[^&#8255;^]</span>'
+    if (
+        site
+    ):  # the site's own mascot, hosted at /email/mascot.png; the face text shows if images are blocked
+        mascot = (
+            f'<img src="{_safe_url(site + "/email/mascot.png")}" width="40" height="40" alt="[^&#8255;^]" '
+            f'style="vertical-align:middle;border:0;{_MONO}color:{_CORAL};">'
+        )
+    return (
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#1f1e1d;padding:28px 12px;">'
+        '<tr><td align="center"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">'
+        '<tr><td style="padding:0 4px 14px;font-family:Georgia,serif;font-size:22px;color:#ede6dc;">'
+        f"{mascot} HackRadar</td></tr>"
+        f'<tr><td style="background:{_CREAM};border-radius:14px;border-top:6px solid {_CORAL};padding:26px 26px 22px;'
+        f'font-family:Helvetica,Arial,sans-serif;color:{_SOFT};font-size:15px;line-height:1.5;">'
+        f'<h1 style="margin:0 0 6px;font-family:Georgia,serif;font-size:26px;color:{_INK};">Rise and build</h1>'
+        '<p style="margin:0 0 4px;">I woke up early so you didn\'t have to. Fresh finds, still warm:</p>'
+        f'<p style="margin:0;{_MONO}font-size:12px;color:{_MUTE};">{escape(digest.day)} · {digest.new_total} new · '
+        f"{digest.closing_total} closing within 3 days</p>"
+        + _section("New", digest.new, digest.new_total)
+        + _section("Closing soon", digest.closing, digest.closing_total)
+        + _section("Contests and other", digest.contests, digest.contests_total)
+        + button
+        + f'<p style="margin:20px 0 0;font-size:12px;color:{_MUTE};">Dates, prizes and fees are copied from each '
+        f"platform's listing. Confirm there.{manage}{leave}</p>"
+        "</td></tr></table></td></tr></table>"
+    )
+
+
+def _subject(digest: Digest) -> str:
+    if digest.new_total:
+        return f"Rise and build [o_o] {digest.new_total} new"
+    return f"Rise and build [o_o] {digest.closing_total or digest.contests_total} to look at"
+
+
+def build_message(
+    sender: str, to: str, digest: Digest, site_url: str | None, unsub_url: str | None = None
+) -> EmailMessage:
     msg = EmailMessage()
-    msg["Subject"] = f"HackRadar digest, {digest.day}"
-    msg["From"] = sender
+    msg["Subject"] = _subject(digest)
+    msg["From"] = f"HackRadar <{sender}>"
     msg["To"] = to  # one recipient per message; no Cc or Bcc header is ever set
-    msg.set_content(render_body(digest, site_url))
+    if unsub_url:  # lets Gmail and Apple Mail show their own unsubscribe link
+        msg["List-Unsubscribe"] = f"<{unsub_url}>"
+    msg.set_content(render_body(digest, site_url, unsub_url))
+    msg.add_alternative(render_html(digest, site_url, unsub_url), subtype="html")
     return msg
 
 
-def send_digest(to: str, digest: Digest, *, smtp_factory=smtplib.SMTP) -> None:
+def send_digest(
+    to: str, digest: Digest, *, unsub_url: str | None = None, smtp_factory=smtplib.SMTP
+) -> None:
     """Send one digest email to one address over STARTTLS with the Gmail app password."""
     user = os.environ.get("SMTP_USER")
     password = os.environ.get("SMTP_APP_PASSWORD")
@@ -72,7 +181,7 @@ def send_digest(to: str, digest: Digest, *, smtp_factory=smtplib.SMTP) -> None:
     site_url = os.environ.get("SITE_URL") or None
     if site_url is None:
         log.info("SITE_URL not set; email footer has no settings link")
-    msg = build_message(user, to, digest, site_url)
+    msg = build_message(user, to, digest, site_url, unsub_url)
     try:
         with smtp_factory(SMTP_HOST, SMTP_PORT, timeout=TIMEOUT_SECONDS) as smtp:
             smtp.starttls(context=ssl.create_default_context())
@@ -90,6 +199,8 @@ def sender_for(key: bytes, *, smtp_factory=smtplib.SMTP) -> Callable[[object, Di
         if not recipient.email_enc:
             raise EmailError("no email address on file")
         address = decrypt(recipient.email_enc, key)
-        send_digest(address, digest, smtp_factory=smtp_factory)
+        site_url = os.environ.get("SITE_URL")
+        unsub = unsubscribe_url(site_url, key, recipient.user_id) if site_url else None
+        send_digest(address, digest, unsub_url=unsub, smtp_factory=smtp_factory)
 
     return send

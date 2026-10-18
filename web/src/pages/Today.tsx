@@ -30,15 +30,16 @@ export default function Today({ name }: TodayProps) {
 
   useEffect(() => {
     let live = true;
+    // Same rule as before the redesign: filter by home city and distance unless the person wants online-only or all India.
     fetch("/api/me/prefs", { headers: { accept: "application/json" } })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: PrefsResponse | null) => {
-        if (!live) return;
-        if (data?.prefs) setPrefs(data.prefs);
+      .then((res) => (res.ok ? (res.json() as Promise<PrefsResponse>) : null))
+      .catch(() => null)
+      .then((data) => {
+        const p = data?.prefs ?? null;
+        if (live && p) setPrefs(p);
+        const near = p && p.format !== "online" && p.radiusKm < 3000 && p.homeCity;
+        return fetchEvents({ limit: 40, place: near ? p.homeCity : "", radius: near ? p.radiusKm : undefined });
       })
-      .catch(() => {});
-
-    fetchEvents({ limit: 40 })
       .then((res) => {
         if (!live) return;
         setEvents(res.items);

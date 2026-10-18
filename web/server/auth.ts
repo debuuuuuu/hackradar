@@ -193,14 +193,43 @@ async function signInWithVerifiedEmail(
 export const signInWithGoogle = (email: string, name: string) => signInWithVerifiedEmail(email, name, "google");
 export const signInWithSupabase = (email: string, name: string) => signInWithVerifiedEmail(email, name, "email");
 
-export async function findUser(uid: number): Promise<PublicUser | null> {
-  const rows = await query<{ id: number; name: string; onboarded_at: Date | null; is_admin: boolean }>(
-    "SELECT id, name, onboarded_at, is_admin FROM users WHERE id = $1",
+/** `iat` is when the session cookie was issued; a cookie older than "sign out everywhere" is refused. */
+export async function findUser(uid: number, iat = Date.now()): Promise<PublicUser | null> {
+  const rows = await query<{ id: number; name: string; onboarded_at: Date | null; is_admin: boolean; valid_after: Date | null }>(
+    "SELECT id, name, onboarded_at, is_admin, sessions_valid_after AS valid_after FROM users WHERE id = $1",
     [uid],
   );
   if (rows.length === 0) return null;
   const r = rows[0];
+  if (r.valid_after && iat < r.valid_after.getTime()) return null;
   return { uid: Number(r.id), name: r.name, onboarded: r.onboarded_at !== null, isAdmin: r.is_admin };
+}
+
+const MAX_NAME_LEN = 40;
+
+/** Trims, strips control characters and caps the length. Returns null when nothing usable is left. */
+export function cleanDisplayName(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const name = Array.from(raw.replace(/[\u0000-\u001f\u007f-\u009f]/g, "").trim())
+    .slice(0, MAX_NAME_LEN)
+    .join("")
+    .trim();
+  return name === "" ? null : name;
+}
+
+/** Sets the name shown in the app and in messages. */
+export async function setDisplayName(uid: number, name: string): Promise<void> {
+  await query("UPDATE users SET name = $2 WHERE id = $1", [uid, name]);
+}
+
+/** Ends every session of this user, on all devices, by moving the cut-off to now. */
+export async function revokeSessions(uid: number): Promise<void> {
+  await query("UPDATE users SET sessions_valid_after = now() WHERE id = $1", [uid]);
+}
+
+/** Deletes the account and, through ON DELETE CASCADE, preferences, logins, saves and send history. */
+export async function deleteAccount(uid: number): Promise<void> {
+  await query("DELETE FROM users WHERE id = $1", [uid]);
 }
 
 export function sessionSecret(): string {
@@ -210,6 +239,6 @@ export function sessionSecret(): string {
 }
 
 /** The signed-in user's id from the request cookie, or null. */
-export function sessionFromRequest(request: Request): { uid: number } | null {
+export function sessionFromRequest(request: Request): { uid: number; iat: number } | null {
   return readSession(request.headers.get("cookie"), sessionSecret());
 }

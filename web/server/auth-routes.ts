@@ -1,11 +1,12 @@
 import { authorizeUrl, clearOauthCookie, discordConfigured, exchangeCode, newState, oauthCookie, readOauthCookie, sameState, upsertUserByDiscord } from "./discord.js";
-import { finishEmailLogin, findUser, normaliseEmail, peekEmailToken, recordLogin, safeNext, sessionFromRequest, sessionSecret, signInWithGoogle, signInWithSupabase, startEmailLogin } from "./auth.js";
+import { cleanDisplayName, deleteAccount, finishEmailLogin, findUser, revokeSessions, normaliseEmail, peekEmailToken, recordLogin, safeNext, sessionFromRequest, sessionSecret, setDisplayName, signInWithGoogle, signInWithSupabase, startEmailLogin } from "./auth.js";
 import * as google from "./google.js";
 import { supabaseConfig, verifySupabaseToken } from "./supabase.js";
 import { keyFromEnv } from "./crypto.js";
 import { addRoute, error, json } from "./http.js";
 import { isBadRecipient, sendLoginEmail, sendWelcomeEmail } from "./mail.js";
 import { clearSessionCookie, sessionCookie, signSession } from "./session.js";
+import { readUnsubscribeToken, unsubscribeToken } from "./unsubscribe.js";
 
 const MAX_BODY_BYTES = 2048;
 
@@ -52,9 +53,11 @@ function errTag(e: unknown): string {
  * Welcome mail for a brand-new account. Awaited because a serverless function can be frozen once the
  * response is sent. A failure must never block the sign-in itself, so it is only logged.
  */
-async function welcomeNewUser(result: { isNew: boolean; email?: string }, url: URL): Promise<void> {
+async function welcomeNewUser(result: { uid: number; isNew: boolean; email?: string }, url: URL): Promise<void> {
   if (!result.isNew || !result.email) return;
-  await sendWelcomeEmail(result.email, new URL("/welcome", originFor(url)).toString()).catch((e) =>
+  const origin = originFor(url);
+  const unsubscribe = new URL(`/api/auth/unsubscribe?token=${unsubscribeToken(result.uid)}`, origin).toString();
+  await sendWelcomeEmail(result.email, new URL("/welcome", origin).toString(), unsubscribe).catch((e) =>
     console.error("welcome email failed:", errTag(e)),
   );
 }
@@ -215,9 +218,64 @@ export function registerAuthRoutes(): void {
     return json({ ok: true }, { headers: { "set-cookie": clearSessionCookie() } });
   });
 
+  // "Sign out everywhere": every cookie issued before now stops working, including this one.
+  addRoute("POST", "/api/auth/logout-all", async (request) => {
+    if (!isJson(request)) return error(415, "content-type must be application/json");
+    const session = sessionFromRequest(request);
+    const user = session ? await findUser(session.uid, session.iat) : null;
+    if (!user) return error(401, "not signed in");
+    await revokeSessions(user.uid);
+    return json({ ok: true }, { headers: { "set-cookie": clearSessionCookie() } });
+  });
+
+  // Account deletion. The body must say {"confirm":"delete"} so a stray request cannot do it.
+  addRoute("DELETE", "/api/me", async (request) => {
+    const body = await readBody(request);
+    if (body instanceof Response) return body;
+    if (body.confirm !== "delete") return error(400, "confirm with {\"confirm\":\"delete\"}");
+    const session = sessionFromRequest(request);
+    const user = session ? await findUser(session.uid, session.iat) : null;
+    if (!user) return error(401, "not signed in");
+    await deleteAccount(user.uid);
+    return json({ ok: true }, { headers: { "set-cookie": clearSessionCookie() } });
+  });
+
+  // Unsubscribe link in our emails. GET only forwards to the confirm page (mail scanners prefetch links);
+  // POST deletes the account, because unsubscribing from HackRadar means leaving it.
+  addRoute("GET", "/api/auth/unsubscribe", (_request, _params, url) =>
+    redirect(`/unsubscribe?token=${encodeURIComponent(url.searchParams.get("token") ?? "")}`),
+  );
+
+  addRoute("POST", "/api/auth/unsubscribe", async (request) => {
+    const body = await readBody(request);
+    if (body instanceof Response) return body;
+    try {
+      const uid = readUnsubscribeToken(body.token);
+      if (uid === null) return error(400, "this link is not valid");
+      await deleteAccount(uid);
+    } catch (e) {
+      console.error("unsubscribe failed:", errTag(e));
+      return error(500, "could not unsubscribe");
+    }
+    return json({ ok: true }, { headers: { "set-cookie": clearSessionCookie() } });
+  });
+
+  // The name shown in the app and in messages. The email link has no name to start with, so we ask for one.
+  addRoute("PUT", "/api/me/name", async (request) => {
+    const body = await readBody(request);
+    if (body instanceof Response) return body;
+    const session = sessionFromRequest(request);
+    const user = session ? await findUser(session.uid, session.iat) : null;
+    if (!user) return error(401, "not signed in");
+    const name = cleanDisplayName(body.name);
+    if (!name) return error(400, "enter your name");
+    await setDisplayName(user.uid, name);
+    return json({ ok: true, name });
+  });
+
   addRoute("GET", "/api/me", async (request) => {
     const session = sessionFromRequest(request);
-    const user = session ? await findUser(session.uid) : null;
+    const user = session ? await findUser(session.uid, session.iat) : null;
     if (!user) return error(401, "not signed in");
     return json(user);
   });

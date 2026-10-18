@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 from pipeline import config, crypto, db, dedupe, digest, enrich, place, user_digest
 from pipeline.normalize import IST, ist_day_start
 from pipeline.notify import discord
+from pipeline.notify import email as email_notify
 from pipeline.notify.webhook_url import guard_http_logs
 from pipeline.notify.whatsapp import WhatsAppSender, short_text
 from pipeline.sources.base import PoliteClient, Source
@@ -109,7 +110,7 @@ def send_digest(conn, run_id: int, errors: list[str]) -> int:
 
 
 def send_user_digests(conn, errors: list[str]) -> int:
-    """Per-user digests (Discord webhook, WhatsApp). Skipped without ENCRYPTION_KEY; never fatal."""
+    """Per-user digests (Discord, WhatsApp, email). Skipped without ENCRYPTION_KEY; never fatal."""
     if not os.environ.get("ENCRYPTION_KEY"):
         log.warning("ENCRYPTION_KEY not set; per-user digests skipped")
         return 0
@@ -129,7 +130,13 @@ def send_user_digests(conn, errors: list[str]) -> int:
 
     try:
         s = user_digest.run_user_digests(
-            conn, datetime.now(UTC), {"discord": to_discord, "whatsapp": to_whatsapp}
+            conn,
+            datetime.now(UTC),
+            {
+                "discord": to_discord,
+                "whatsapp": to_whatsapp,
+                "email": email_notify.sender_for(key),
+            },
         )
     except Exception as e:
         log.exception("user digests failed")

@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { clearSessionCookie, readSession, sessionCookie, signSession } from "../server/session.js";
 
@@ -8,10 +9,15 @@ const cookie = (t: string) => `a=b; hr_session=${t}; c=d`;
 describe("session", () => {
   it("round trips", () => {
     const t = signSession({ uid: 7 }, secret, 1000);
-    expect(readSession(cookie(t), secret, 2000)).toEqual({ uid: 7 });
+    expect(readSession(cookie(t), secret, 2000)).toEqual({ uid: 7, iat: 1000 });
   });
   it("token is base64url only", () => {
     expect(signSession({ uid: 7 }, secret, 1000)).toMatch(/^[A-Za-z0-9_.-]+$/);
+  });
+  it("a token without iat (issued before it existed) reads as iat 0", () => {
+    const body = Buffer.from(JSON.stringify({ uid: 7, exp: 9e15 })).toString("base64url");
+    const sig = createHmac("sha256", secret).update(body).digest("base64url");
+    expect(readSession(cookie(`${body}.${sig}`), secret, 2000)).toEqual({ uid: 7, iat: 0 });
   });
   it("rejects a tampered signature or payload", () => {
     const t = signSession({ uid: 7 }, secret, 1000);
@@ -27,7 +33,7 @@ describe("session", () => {
   });
   it("expires after 30 days + 1 ms", () => {
     const t = signSession({ uid: 7 }, secret, 0);
-    expect(readSession(cookie(t), secret, 30 * DAY)).toEqual({ uid: 7 });
+    expect(readSession(cookie(t), secret, 30 * DAY)).toEqual({ uid: 7, iat: 0 });
     expect(readSession(cookie(t), secret, 30 * DAY + 1)).toBeNull();
   });
   it("returns null for missing or malformed input without throwing", () => {

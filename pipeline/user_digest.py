@@ -71,7 +71,7 @@ def recipients(conn: psycopg.Connection, now: datetime) -> list[Recipient]:
     del now  # reserved for time-based gating; the query needs no clock today
     rows = conn.execute("""
         SELECT u.id, COALESCE(p.channels -> 'digest', '[]'::jsonb), u.discord_webhook_enc,
-               u.email_enc, u.callmebot_phone_enc, u.callmebot_key_enc,
+               u.email_enc, u.email_hash, u.callmebot_phone_enc, u.callmebot_key_enc,
                p.home_city, p.radius_km, p.format, p.priorities
           FROM users u
           JOIN preferences p ON p.user_id = u.id
@@ -79,12 +79,15 @@ def recipients(conn: psycopg.Connection, now: datetime) -> list[Recipient]:
          ORDER BY u.id
         """).fetchall()
     out = []
-    for uid, chans, hook, email, phone, key, home, radius, fmt, prio in rows:
+    for uid, chans, hook, email, email_hash, phone, key, home, radius, fmt, prio in rows:
         usable = []
         for chan in chans:
             if chan == "discord" and hook:
                 usable.append(chan)
-            # Email stays off until a confirmed-address check exists (D-042, web task 3.1).
+            # email_hash is set only by a verified web sign-in, which also fixes email_enc to that
+            # address, so it is confirmed (D-042). A typed-in, unconfirmed address never has one.
+            elif chan == "email" and email and email_hash:
+                usable.append(chan)
             elif chan == "whatsapp" and phone and key:
                 usable.append(chan)
         out.append(

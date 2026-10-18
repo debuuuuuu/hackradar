@@ -88,6 +88,29 @@ describe("supabase password sign-in", () => {
     expect(log.mock.calls.flat().join(" ")).not.toContain("bad jwt");
   });
 
+  it("session route: an unconfirmed email gives 401 and no cookie, so a wrong address cannot sign in", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    for (const user of [
+      { email: "nobody@example.com", email_confirmed_at: null },
+      { email: "nobody@example.com" },
+      { email: "nobody@example.com", email_confirmed_at: "" },
+    ]) {
+      vi.stubGlobal("fetch", fakeSupabase(user));
+      const res = await post({ accessToken: "unconfirmed" });
+      expect(res.status).toBe(401);
+      expect(res.headers.get("set-cookie")).toBeNull();
+    }
+  });
+
+  dbIt("session route: an unconfirmed email creates no account", () =>
+    withSchema(async () => {
+      vi.stubGlobal("fetch", fakeSupabase({ email: "nobody@example.com", email_confirmed_at: null }));
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      expect((await post({ accessToken: "unconfirmed" })).status).toBe(401);
+      const [n] = await query<{ n: string }>("SELECT count(*) AS n FROM users");
+      expect(Number(n.n)).toBe(0);
+    }));
+
   dbIt("session route: a valid confirmed token signs in, sets our session, and shares the account with the email link", () =>
     withSchema(async () => {
       vi.stubGlobal("fetch", fakeSupabase({ email: "Ann@Example.com", email_confirmed_at: "2026-10-16T00:00:00Z", user_metadata: { name: "Ann" } }));

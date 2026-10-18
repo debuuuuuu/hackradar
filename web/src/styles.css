@@ -2679,8 +2679,14 @@ html {
 .shot.movable {
   cursor: grab;
   user-select: none;
-  touch-action: none;
   will-change: transform;
+}
+
+/* Touch screens keep normal page scrolling over the board; only mouse and pen drag. */
+@media (pointer: fine) {
+  .shot.movable {
+    touch-action: none;
+  }
 }
 
 .shot.movable:not(.is-dragging) {

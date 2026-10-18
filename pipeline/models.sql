@@ -70,8 +70,11 @@ CREATE TABLE IF NOT EXISTS users (
     email_hash          text        UNIQUE,         -- web login lookup; email itself stays encrypted
     last_login_at       timestamptz,
     onboarded_at        timestamptz,
-    approved_at         timestamptz     -- unused since D-044 (automatic sign-up); kept so no migration is needed
+    approved_at         timestamptz,    -- unused since D-044 (automatic sign-up); kept so no migration is needed
+    sessions_valid_after timestamptz    -- 'sign out everywhere': session cookies issued before this are refused
 );
+-- Databases created before migration 0011 need the column added (CREATE TABLE IF NOT EXISTS skips them).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sessions_valid_after timestamptz;
 
 -- Per-user filters and profile. Offset 0 = same-day morning alert (D-019).
 CREATE TABLE IF NOT EXISTS preferences (

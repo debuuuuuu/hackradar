@@ -7,6 +7,7 @@ import Nav from "./components/Nav.js";
 import { useMe } from "./lib/me.js";
 import Admin from "./pages/Admin.js";
 import ConfirmSignIn from "./pages/ConfirmSignIn.js";
+import Unsubscribe from "./pages/Unsubscribe.js";
 import EventDetail from "./pages/EventDetail.js";
 import Events from "./pages/Events.js";
 import Home from "./pages/Home.js";
@@ -61,6 +62,7 @@ export default function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signin/confirm" element={<ConfirmSignIn />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route
               path="*"
               element={

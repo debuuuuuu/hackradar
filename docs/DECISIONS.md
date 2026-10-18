@@ -367,3 +367,17 @@ Format: date · decision · why · alternatives rejected · status.
 - **Alternatives:** Generic clean SaaS dashboard (boring, low retention); keep original minimal theme; keep side film strips (rejected: cluttered viewport on medium/mobile widths).
 - **Status:** active.
 
+
+### D-048 · Sessions can be ended server-side; users can delete their account
+- **Date:** 2026-10-18
+- **Decision:** Session cookies now carry `iat`. `users.sessions_valid_after` (migration 0011) lets "Sign out everywhere" refuse every older cookie. `DELETE /api/me` with an explicit confirm deletes the user and cascades their data. Spec: `specs/auth.md`.
+- **Why:** Debjit (2026-10-18) asked for a complete login plan before launch to about 100 users. A stolen cookie was valid for 30 days with no way to end it, and users had no way to remove their data.
+- **Alternatives:** a `sessions` table (per-device list, more writes on every request) — not needed yet; deleting only on request by email — does not scale.
+- **Status:** active. Open: removing the Supabase Auth record on deletion.
+
+### D-049 · One-click unsubscribe in every daily email deletes the account; branded HTML emails
+- **Date:** 2026-10-18
+- **Decision:** Welcome and digest emails carry a signed link (`<uid>.<HMAC>`, key derived from `ENCRYPTION_KEY`, no expiry). `GET /api/auth/unsubscribe` only forwards to `/unsubscribe`; the button there sends `POST`, which deletes the account (same cascade as D-048). Emails are HTML in the `design/hackradar-preview/Messages.dc.html` look, with a plain-text part and a `List-Unsubscribe` header. Users are asked for a name after first sign-in (`PUT /api/me/name`).
+- **Why:** Debjit (2026-10-18) wanted unsubscribe to also delete the account, and the designed emails. A confirm step keeps link scanners from deleting accounts.
+- **Alternatives:** pause the digest only (`digest_enabled = false`) — rejected by Debjit; a new signing secret — not needed.
+- **Status:** active. Known: the link has no expiry, so anyone holding a user's email can delete that account. Digest has no "joke of the day" or top-pick stamp yet (no AI ranking in the digest).

@@ -16,6 +16,7 @@ interface CardTransform {
 export default function Landing() {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
 
   // Interactive "Tell us what you like" checklist state
   const [checklist, setChecklist] = useState<[boolean, boolean, boolean]>([false, false, false]);
@@ -48,6 +49,7 @@ export default function Landing() {
             spread: 70,
             origin: { y: 0.7 },
             colors: ["#e5484d", "#f3e7d7", "#9b2b2f", "#ede6dc"],
+            disableForReducedMotion: true,
           });
         } catch {}
       }
@@ -61,6 +63,7 @@ export default function Landing() {
       .then((res) => {
         if (!live) return;
         setEvents(res.items);
+        setTotal(res.total);
         setLoading(false);
 
         // Generate natural playful initial scatter offsets
@@ -114,6 +117,7 @@ export default function Landing() {
         spread: 60,
         origin: { y: 0.6 },
         colors: ["#e5484d", "#f3e7d7", "#34312e"],
+        disableForReducedMotion: true,
       });
     } catch {}
   }
@@ -133,7 +137,7 @@ export default function Landing() {
   }
 
   function handlePointerDown(e: React.PointerEvent<HTMLElement>, id: number | string) {
-    if (e.button !== 0) return;
+    if (e.button !== 0 || e.pointerType === "touch") return;
     const current = cardTransforms[id] || { x: 0, y: 0, r: 0, z: 1 };
     topZRef.current += 1;
     const newZ = topZRef.current;
@@ -153,7 +157,6 @@ export default function Landing() {
     };
 
     setDraggingId(id);
-    e.currentTarget.setPointerCapture(e.pointerId);
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLElement>) {
@@ -162,8 +165,10 @@ export default function Landing() {
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
 
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+    if (!dragStartRef.current.moved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
       dragStartRef.current.moved = true;
+      // Capture only once it is a real drag, so a plain click still reaches the card link.
+      e.currentTarget.setPointerCapture(e.pointerId);
     }
 
     setCardTransforms((prev) => {
@@ -262,7 +267,7 @@ export default function Landing() {
               <div className="mascot-operator">
                 <div className="mascot-speech">
                   <span className="dot-live" />
-                  <span>Tracking hackathons in real-time...</span>
+                  <span>Checking the listings every morning...</span>
                 </div>
                 <div className="mascot-avatar" title="HackRadar Mascot">
                   <Monitor size={58} mood="wake" className="hero-mascot-pc" />
@@ -291,11 +296,11 @@ export default function Landing() {
                   <circle cx="54" cy="29" r="6" className="dot-btn win-yellow" />
                   <circle cx="74" cy="29" r="6" className="dot-btn win-green" />
                   <text className="scope-title" x="205" y="34">
-                    radar.digest · Pune Live
+                    radar.digest · Pune
                   </text>
                   <circle cx="420" cy="29" r="4.5" className="live-beacon" />
-                  <text className="live-tag" x="408" y="33">
-                    LIVE
+                  <text className="live-tag" x="400" y="33">
+                    DAILY
                   </text>
 
                   {/* Radar Scope Interior */}
@@ -444,14 +449,14 @@ export default function Landing() {
                 Open right now
               </h2>
               <p className="lead dark" style={{ margin: "6px 0 0" }}>
-                Real hackathons detected from live sources, fresh every morning.
+                Real hackathons from public listings, refreshed every morning.
               </p>
             </div>
             <span className="note-hand">
               <svg viewBox="0 0 40 20" aria-hidden="true" style={{ width: 40, height: 20 }}>
                 <path className="ln" d="M38 4C26 2 12 6 4 16m0 0 1-8m-1 8 8-1" />
               </svg>
-              live public listings
+              public listings
             </span>
           </div>
 
@@ -554,7 +559,7 @@ export default function Landing() {
 
           <div className="board-cta">
             <Link className="btn chalk" to="/events">
-              See all {events.length > 0 ? "300+ " : ""}open hackathons
+              See all {total > 0 ? `${total} ` : ""}open hackathons
             </Link>
           </div>
         </div>

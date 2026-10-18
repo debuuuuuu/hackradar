@@ -175,6 +175,19 @@ def test_email_is_not_sent_until_confirmation_exists(conn) -> None:
     assert discord.sent == [uid]
 
 
+def test_email_is_sent_only_to_a_verified_sign_in_address(conn) -> None:
+    verified = _user(conn, channels=["email"])
+    typed_in = _user(conn, channels=["email"])  # an address entered by hand has no email_hash
+    conn.execute(
+        "UPDATE users SET email_enc = 'enc-email', email_hash = 'hash' WHERE id = %s", (verified,)
+    )
+    conn.execute("UPDATE users SET email_enc = 'enc-email' WHERE id = %s", (typed_in,))
+    _event(conn, "open-event")
+    email = Recorder()
+    run_user_digests(conn, NOW, {"email": email})
+    assert email.sent == [verified]
+
+
 def test_failing_sender_logs_no_webhook_token(conn, caplog) -> None:
     _user(conn)
     _event(conn, "open-event")

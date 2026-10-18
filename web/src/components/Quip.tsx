@@ -118,9 +118,7 @@ export default function Quip({
   return (
     <div
       className={`quip show ${className}`}
-      role="status"
-      aria-label={text}
-      aria-live="polite"
+      aria-hidden="true"
     >
       {text}
     </div>
