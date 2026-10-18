@@ -32,9 +32,14 @@ A hand-drawn, builder-centric web theme pairing charcoal frames, warm cream pape
 - **Monospace (`--mono`):** `"DM Mono", ui-monospace, monospace` — Used for dates, metadata tags, source tickers, and code snippets.
 
 ### Spacing & Layout
-- **Content Max Width:** `1120px` centered with auto margins.
+- **Content Max Width:** `min(1340px, 92vw)` centered with auto margins (adapted for ultra-wide and high-DPI displays up to 4K / 2808px, maintaining balanced margins while avoiding empty canvas dead zones).
 - **Frame Padding:** `clamp(16px, 4vw, 32px)` horizontal padding.
+- **Section Snapping & Layout:** Each landing section operates as a dedicated full-viewport storytelling page (`min-height: calc(100vh - 64px)`) with `scroll-snap-align: start`.
 - **Touch Targets:** Minimum 44px height on all interactive elements (buttons, inputs, links, chips, cells).
+
+### Smooth Scrolling & Motion Libraries
+- **Lenis Smooth Scroll:** Global inertia-based momentum scrolling initialized in `web/src/App.tsx`, providing luxurious, physics-based viewport transitions. Fully respects `prefers-reduced-motion: reduce` by bypassing inertia.
+- **Canvas-Confetti:** Dynamic celebratory particle burst triggered upon completing the interactive onboarding checklist on the landing page, offering tactile feedback for users exploring the product.
 
 ### Radii
 - Pill badges & chips: `999px`

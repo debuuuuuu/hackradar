@@ -1,4 +1,7 @@
+import { useEffect } from "react";
 import { Link, Route, Routes } from "react-router";
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
 import Footer from "./components/Footer.js";
 import Nav from "./components/Nav.js";
 import { useMe } from "./lib/me.js";
@@ -14,6 +17,32 @@ import SignIn from "./pages/SignIn.js";
 
 export default function App() {
   const { state, signOut } = useMe();
+
+  useEffect(() => {
+    // Respect prefers-reduced-motion
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    const lenis = new Lenis({
+      duration: 1.1,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      smoothWheel: true,
+    });
+
+    let rafId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, []);
 
   return (
     <div className="hr motion">

@@ -1974,8 +1974,9 @@ a {
 }
 
 /* ==========================================================================
-   PAGE-BY-PAGE / SECTION SNAP PRESENTATION
-   "Make everything feel like a single page, scroll next should be next page"
+   PAGE-BY-PAGE / SECTION SNAP PRESENTATION & LARGE SCREEN SCALING
+   "make this bigger and fix it and also fix things in the second photo too
+    fix the third one too use a smooth scroll and add some more libraries"
    ========================================================================== */
 
 html {
@@ -1988,9 +1989,10 @@ html {
   }
 }
 
+/* Generous frame & section sizing for all monitors up to 2800px+ */
 .landing-section {
   position: relative;
-  max-width: 1120px;
+  max-width: min(1340px, 92vw);
   margin-inline: auto;
   min-height: calc(100vh - 84px);
   display: flex;
@@ -2000,7 +2002,7 @@ html {
   scroll-snap-align: start;
   scroll-snap-stop: normal;
   scroll-margin-top: 84px;
-  padding-block: 36px;
+  padding-block: clamp(24px, 4vh, 48px);
 }
 
 @media (max-width: 900px) {
@@ -2021,59 +2023,92 @@ html {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Page 1: Hero Section */
+/* -------------------------------------------------------------------------
+   PAGE 1: HERO SECTION (Photo 1 Fix: BIGGER, PROMINENT, CRISP)
+   ------------------------------------------------------------------------- */
 .hero-section {
   justify-content: center;
-  padding-top: 12px;
-  padding-bottom: 36px;
+  padding-top: 10px;
+  padding-bottom: 24px;
 }
 
 .hero-section .tablet {
   width: 100%;
-  max-height: min(780px, calc(100vh - 130px));
+  max-height: min(840px, calc(100vh - 120px));
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(20px, 3.5vw, 44px);
+  padding: clamp(28px, 4vw, 56px);
+  border-radius: 32px;
+  border-width: clamp(10px, 1.2vw, 15px);
+  box-shadow: 0 35px 80px -20px rgba(0, 0, 0, 0.85);
 }
 
 .hero-grid {
   display: grid;
   grid-template-columns: 1.15fr 1fr;
-  gap: clamp(24px, 3.5vw, 40px);
+  gap: clamp(28px, 4vw, 56px);
   align-items: center;
 }
 
 .brandline {
-  font: 38px/1 var(--hand);
-  margin: 0 0 6px;
+  font: clamp(38px, 3.4vw, 54px)/1 var(--hand);
+  margin: 0 0 8px;
   transform: rotate(-3deg);
   transform-origin: left;
   display: inline-block;
 }
 
 .brandline span {
-  text-decoration: underline wavy var(--coral) 2px;
-  text-underline-offset: 7px;
+  text-decoration: underline wavy var(--coral) 3px;
+  text-underline-offset: 8px;
+}
+
+.eyebrow {
+  font: 500 clamp(12px, 1.1vw, 15px) var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+  color: var(--ink-soft);
+}
+
+.hero-grid .h1 {
+  font-size: clamp(48px, 4.4vw, 76px);
+  line-height: 1.08;
+  margin: 0 0 18px;
+}
+
+.hero-grid .lead {
+  font-size: clamp(17px, 1.35vw, 22px);
+  line-height: 1.6;
+  max-width: 620px;
+  margin-bottom: 28px;
 }
 
 .cta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
   align-items: center;
+}
+
+.cta-row .btn {
+  font-size: clamp(15px, 1.1vw, 18px);
+  padding: 14px 28px;
+  min-height: 50px;
 }
 
 .meta-line {
   margin: 20px 0 0;
-  font: 400 13px var(--mono);
+  font: 400 clamp(13px, 1vw, 15px) var(--mono);
   color: #7a4b47;
 }
 
+/* Radar Scope: bold, responsive, large */
 .scope {
   width: 100%;
-  max-width: min(440px, 45vh);
-  max-height: min(440px, 45vh);
+  max-width: min(520px, 50vh);
+  max-height: min(520px, 50vh);
   justify-self: center;
   overflow: visible;
   color: var(--ink-red);
@@ -2089,7 +2124,7 @@ html {
 }
 
 .scope .label {
-  font: 15px var(--hand);
+  font: clamp(14px, 1.2vw, 17px) var(--hand);
   fill: var(--ink-red);
 }
 
@@ -2097,40 +2132,60 @@ html {
   text-anchor: middle;
 }
 
-/* Page 2: How It Works */
+/* -------------------------------------------------------------------------
+   PAGE 2: HOW IT WORKS (Photo 2 Fix: CONTRAST, READABILITY, SCALE)
+   ------------------------------------------------------------------------- */
 .how-section {
   justify-content: center;
 }
 
 .how {
-  max-width: 1120px;
+  max-width: min(1340px, 92vw);
+  width: 100%;
   margin-inline: auto;
   position: relative;
   background: var(--charcoal);
-  border-radius: 28px;
-  padding: 40px clamp(16px, 3.5vw, 36px);
+  border-radius: 32px;
+  padding: clamp(36px, 4vw, 54px) clamp(20px, 4vw, 48px);
+  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* Fix for Photo 2: High contrast chalk headline on dark charcoal background */
+.how .h2 {
+  color: var(--chalk) !important;
+  font-size: clamp(36px, 3.8vw, 58px) !important;
+  line-height: 1.15;
+  margin: 0 0 16px;
+}
+
+.how .note-hand {
+  color: var(--coral-text) !important;
+  font-size: clamp(22px, 2.2vw, 32px) !important;
+  margin: 0 0 10px;
+  display: block;
 }
 
 .ribbon {
   position: absolute;
-  left: -30px;
-  right: -30px;
-  top: -32px;
+  left: -20px;
+  right: -20px;
+  top: -36px;
   height: 90px;
-  width: calc(100% + 60px);
+  width: calc(100% + 40px);
   color: var(--coral);
   overflow: visible;
   pointer-events: none;
 }
 
 .ribbon path {
-  stroke-width: 5;
+  stroke-width: 6;
+  stroke: var(--coral);
 }
 
 .collage {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 24px;
+  gap: clamp(20px, 2.5vw, 36px);
   margin-top: 36px;
   align-items: start;
 }
@@ -2140,21 +2195,21 @@ html {
   --r: -3deg;
   transform: rotate(var(--r));
   background: #fbf5ec;
-  padding: 30px 22px 24px;
-  font: 26px/32px var(--hand);
+  padding: clamp(32px, 3vw, 44px) clamp(24px, 2vw, 32px);
+  font: clamp(26px, 2.3vw, 34px) / 1.3 var(--hand);
   color: var(--ink);
-  box-shadow: 0 14px 30px -14px rgb(0 0 0 / 0.45);
+  box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.55);
 }
 
 .n2 {
   grid-column: 5 / span 4;
-  margin-top: 32px;
+  margin-top: 28px;
   transform: rotate(2.5deg);
   background: #cfc9c0;
-  padding: 24px 22px;
-  font: 500 17px/1.45 var(--mono);
+  padding: clamp(26px, 2.5vw, 36px) clamp(22px, 2vw, 30px);
+  font: 500 clamp(16px, 1.3vw, 20px) / 1.55 var(--mono);
   color: #26201e;
-  box-shadow: 0 14px 30px -14px rgb(0 0 0 / 0.45);
+  box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.55);
   position: relative;
 }
 
@@ -2162,32 +2217,37 @@ html {
   grid-column: 9 / span 4;
   transform: rotate(-1.5deg);
   background: var(--cream-2);
-  padding: 24px 22px;
-  border-radius: 6px;
-  box-shadow: 0 14px 30px -14px rgb(0 0 0 / 0.45);
+  padding: clamp(26px, 2.5vw, 36px) clamp(22px, 2vw, 30px);
+  border-radius: 8px;
+  box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.55);
   position: relative;
 }
 
 .n3 p {
-  font: 400 24px/1.15 var(--serif);
-  margin: 0 0 8px;
+  font: 400 clamp(24px, 2.2vw, 32px) / 1.15 var(--serif);
+  margin: 0 0 10px;
 }
 
 .n3 small {
-  font: 14px var(--sans);
+  font: clamp(14px, 1.1vw, 17px) var(--sans);
   color: #7a4b47;
 }
 
 .n4 {
-  grid-column: 3 / span 5;
-  margin-top: 14px;
+  grid-column: 2 / span 6;
+  margin-top: 24px;
+}
+
+.n4.polaroid {
+  font-size: clamp(14px, 1.1vw, 17px);
+  box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.7);
 }
 
 .n5 {
   grid-column: 8 / span 5;
   margin-top: 36px;
-  font: 22px/1.3 var(--hand);
-  color: var(--ink-red);
+  font: clamp(22px, 2vw, 30px) / 1.35 var(--hand);
+  color: var(--coral-text);
   transform: rotate(-2deg);
 }
 
@@ -2195,10 +2255,12 @@ html {
   width: 70px;
   height: 40px;
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
-/* Page 3: Open Right Now (Blueprint) */
+/* -------------------------------------------------------------------------
+   PAGE 3: OPEN RIGHT NOW (Blueprint)
+   ------------------------------------------------------------------------- */
 .board-section {
   justify-content: center;
 }
@@ -2214,113 +2276,192 @@ html {
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px 24px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
+}
+
+.board-head .h2 {
+  font-size: clamp(36px, 3.6vw, 56px);
+  margin: 0;
 }
 
 .board-cta {
   display: flex;
   justify-content: center;
-  margin-top: 32px;
+  margin-top: 28px;
 }
 
-/* Page 4: Tell us what you like (Checklist) */
+.board-cta .btn {
+  font-size: 17px;
+  padding: 14px 32px;
+}
+
+/* -------------------------------------------------------------------------
+   PAGE 4: TELL US WHAT YOU LIKE (Checklist & Scene)
+   ------------------------------------------------------------------------- */
 .picks-section {
   justify-content: center;
 }
 
 .picks {
   width: 100%;
+  max-width: min(1340px, 92vw);
+  margin-inline: auto;
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 36px;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(32px, 4vw, 56px);
   align-items: center;
-  transform: rotate(-1deg);
+  transform: rotate(-0.5deg);
+  padding: clamp(32px, 4vw, 54px);
+  border-radius: 28px;
 }
 
 .picks .h2 {
   color: var(--ink-red);
-  margin-bottom: 16px;
+  font-size: clamp(36px, 3.6vw, 54px);
+  margin-bottom: 12px;
+}
+
+.checks li {
+  margin-bottom: 14px;
+}
+
+.chk {
+  font-size: clamp(18px, 1.6vw, 24px);
+  min-height: 52px;
+}
+
+.picks .btn.solid {
+  font-size: 17px;
+  padding: 14px 32px;
+  margin-top: 14px;
+}
+
+.scene-box {
+  display: flex;
+  justify-content: center;
+}
+
+.scene-box .scene {
+  width: 100%;
+  max-width: min(420px, 45vh);
+  height: auto;
 }
 
 .after-note {
-  margin: 16px auto 0;
+  margin: 14px auto 0;
   text-align: right;
-  font: 20px var(--hand);
+  font: clamp(18px, 1.5vw, 22px) var(--hand);
   color: var(--mute);
 }
 
-/* Page 5: What lands each morning */
+/* -------------------------------------------------------------------------
+   PAGE 5: WHAT LANDS EACH MORNING (Photo 3 Fix: SCALE, IMPACT, POLISH)
+   ------------------------------------------------------------------------- */
 .morning-section {
   justify-content: center;
 }
 
 .morning {
   width: 100%;
+  max-width: min(1340px, 92vw);
+  margin-inline: auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(32px, 5vw, 64px);
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(36px, 6vw, 84px);
   align-items: center;
+}
+
+.morning .note-hand {
+  font-size: clamp(22px, 2.2vw, 32px);
+  color: var(--coral-text);
+  margin: 0 0 12px;
+  display: block;
+}
+
+.morning .h2 {
+  font-size: clamp(40px, 4.2vw, 64px);
+  line-height: 1.12;
+  color: var(--chalk);
+  margin: 0 0 24px;
 }
 
 .chan {
   list-style: none;
-  margin: 20px 0 28px;
+  margin: 24px 0 32px;
   padding: 0;
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .chan li {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: center;
-  font-size: 16px;
+  font-size: clamp(17px, 1.4vw, 21px);
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: var(--chalk);
 }
 
 .chan svg {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   color: var(--coral-text);
   flex: none;
 }
 
+.morning .btn.chalk {
+  font-size: 18px;
+  padding: 16px 36px;
+  font-weight: 600;
+}
+
+/* Realistic, commanding dark phone card */
 .msg {
   background: var(--coal);
-  border: 1.5px solid var(--line-dark);
-  border-radius: 26px;
-  padding: 22px;
-  max-width: 420px;
+  border: 2px solid var(--line-dark);
+  border-radius: 32px;
+  padding: clamp(24px, 2.8vw, 34px);
+  max-width: 500px;
   width: 100%;
   justify-self: center;
-  box-shadow: 0 30px 60px -24px rgb(0 0 0 / 0.8);
+  box-shadow: 0 35px 80px -20px rgba(0, 0, 0, 0.9);
   transform: rotate(2deg);
+  transition: transform 0.3s ease;
+}
+
+.msg:hover {
+  transform: rotate(0deg) scale(1.02);
 }
 
 .msg-top {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font: 500 13px var(--mono);
+  gap: 12px;
+  font: 500 clamp(13px, 1vw, 15px) var(--mono);
   color: var(--mute);
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line-dark);
-  margin-bottom: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1.5px solid var(--line-dark);
+  margin-bottom: 16px;
 }
 
 .msg-top svg {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   color: var(--coral-text);
 }
 
 .bubble {
   background: #2a2826;
-  border-radius: 4px 16px 16px 16px;
-  padding: 12px 16px;
-  font-size: 15px;
-  line-height: 1.5;
+  border-radius: 6px 18px 18px 18px;
+  padding: 16px 20px;
+  font-size: clamp(15px, 1.1vw, 17px);
+  line-height: 1.55;
   color: var(--chalk);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .bubble b {
@@ -2330,24 +2471,24 @@ html {
 
 .bubble .src {
   display: block;
-  font: 500 12px var(--mono);
+  font: 500 clamp(12px, 0.9vw, 13px) var(--mono);
   color: var(--mute);
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .bubble.hand {
-  font: 20px/1.3 var(--hand);
+  font: clamp(22px, 1.8vw, 28px) / 1.3 var(--hand);
+  padding: 16px 20px;
 }
 
-/* Page navigation cue link */
+/* Page navigation cue links */
 .page-cue {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font: 20px var(--hand);
+  font: clamp(19px, 1.6vw, 24px) var(--hand);
   color: var(--coral-text);
   text-decoration: none;
-  margin-top: 18px;
   opacity: 0.85;
   transition: opacity 0.2s, transform 0.2s;
 }
@@ -2357,14 +2498,16 @@ html {
   transform: translateY(3px);
 }
 
-/* Sign In page layout */
+/* -------------------------------------------------------------------------
+   SIGN IN PAGE LAYOUT
+   ------------------------------------------------------------------------- */
 .signin-page.wrap {
   position: relative;
-  max-width: 1120px;
-  margin: 24px auto 96px;
+  max-width: min(1200px, 92vw);
+  margin: 32px auto 80px;
   display: grid;
-  grid-template-columns: minmax(0, 560px) minmax(0, 1fr);
-  gap: 56px;
+  grid-template-columns: minmax(0, 580px) minmax(0, 1fr);
+  gap: clamp(36px, 5vw, 64px);
   align-items: center;
   min-height: calc(100vh - 160px);
 }
@@ -2387,5 +2530,9 @@ html {
     grid-column: 1 / -1;
     margin-top: 0;
   }
+  .n4.polaroid {
+    min-width: auto;
+  }
 }
+
 

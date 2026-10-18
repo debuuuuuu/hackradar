@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import confetti from "canvas-confetti";
 import Icon from "../components/Icon.js";
 import { fetchEvents, type EventRow } from "../lib/api.js";
 import { formatIstDate, sourceLabel } from "../lib/format.js";
@@ -10,6 +11,27 @@ export default function Landing() {
 
   // Interactive "Tell us what you like" checklist state
   const [checklist, setChecklist] = useState<[boolean, boolean, boolean]>([false, false, false]);
+
+  function toggleItem(i: number) {
+    setChecklist((prev) => {
+      const next: [boolean, boolean, boolean] = [
+        i === 0 ? !prev[0] : prev[0],
+        i === 1 ? !prev[1] : prev[1],
+        i === 2 ? !prev[2] : prev[2],
+      ];
+      if (next.filter(Boolean).length === 3 && !prev.every(Boolean)) {
+        try {
+          confetti({
+            particleCount: 60,
+            spread: 70,
+            origin: { y: 0.7 },
+            colors: ["#e5484d", "#f3e7d7", "#9b2b2f", "#ede6dc"],
+          });
+        } catch {}
+      }
+      return next;
+    });
+  }
 
   useEffect(() => {
     let live = true;
@@ -293,13 +315,7 @@ export default function Landing() {
                       type="button"
                       className={`chk ${on ? "on" : ""}`}
                       aria-pressed={on}
-                      onClick={() =>
-                        setChecklist((prev) => [
-                          i === 0 ? !prev[0] : prev[0],
-                          i === 1 ? !prev[1] : prev[1],
-                          i === 2 ? !prev[2] : prev[2],
-                        ])
-                      }
+                      onClick={() => toggleItem(i)}
                     >
                       <span className="box">
                         <svg viewBox="0 0 16 16" aria-hidden="true">
