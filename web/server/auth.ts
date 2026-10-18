@@ -43,7 +43,7 @@ const sha256 = (s: string): string => createHash("sha256").update(s).digest("hex
  */
 export async function startEmailLogin(
   email: string,
-  deps: { send: (to: string, link: string) => Promise<void>; now?: number; origin: string; next?: string | null; ip?: string | null },
+  deps: { send: (to: string, link: string) => Promise<void>; now?: number; origin: string; next?: string | null; ip?: string | null; name?: unknown },
 ): Promise<void> {
   const normalised = normaliseEmail(email);
   if (!normalised) return;
@@ -58,8 +58,8 @@ export async function startEmailLogin(
   const inserted = await transaction(async (q) => {
     await q("SELECT pg_advisory_xact_lock(hashtext('login_tokens_start'))");
     const rows = await q(
-      `INSERT INTO login_tokens (email_hash, email_enc, token_hash, expires_at, created_at, ip_hash)
-       SELECT $1::text, $2::text, $3::text, $4::timestamptz, $5::timestamptz, $9::text
+      `INSERT INTO login_tokens (email_hash, email_enc, token_hash, expires_at, created_at, ip_hash, name)
+       SELECT $1::text, $2::text, $3::text, $4::timestamptz, $5::timestamptz, $9::text, $11::text
        WHERE NOT EXISTS (SELECT 1 FROM login_tokens WHERE email_hash = $1 AND created_at > $6::timestamptz)
          AND (SELECT count(*) FROM login_tokens WHERE created_at > $7::timestamptz) < $8
          AND ($9::text IS NULL OR (SELECT count(*) FROM login_tokens WHERE ip_hash = $9::text AND created_at > $7::timestamptz) < $10)
@@ -75,6 +75,7 @@ export async function startEmailLogin(
         MAX_TOKENS_PER_HOUR,
         ipHash,
         MAX_TOKENS_PER_IP_PER_HOUR,
+        cleanDisplayName(deps.name),
       ],
     );
     return rows.length > 0;
@@ -126,17 +127,17 @@ export async function recordLogin(uid: number, method: "discord" | "email" | "go
 export async function finishEmailLogin(
   token: string,
   now: number = Date.now(),
-): Promise<{ uid: number; isNew: boolean; email?: string } | null> {
+): Promise<{ uid: number; isNew: boolean; email?: string; name?: string } | null> {
   if (typeof token !== "string" || token.length === 0 || token.length > 200) return null;
-  const used = await query<{ email_hash: string; email_enc: string | null }>(
+  const used = await query<{ email_hash: string; email_enc: string | null; name: string | null }>(
     `UPDATE login_tokens SET used_at = $2::timestamptz
      WHERE token_hash = $1 AND used_at IS NULL AND expires_at >= $2::timestamptz
-     RETURNING email_hash, email_enc`,
+     RETURNING email_hash, email_enc, name`,
     [sha256(token), new Date(now)],
   );
   if (used.length === 0) return null;
-  const { email_hash: emailHash, email_enc: emailEnc } = used[0];
-  const user = await userForEmail(emailHash, emailEnc, "Member");
+  const { email_hash: emailHash, email_enc: emailEnc, name } = used[0];
+  const user = await userForEmail(emailHash, emailEnc, name ?? "Member");
   if (!user) return null;
   await grantAdminIfListed(user.uid, emailHash);
   await recordLogin(user.uid, "email");
@@ -151,7 +152,7 @@ async function userForEmail(
   emailHash: string,
   emailEnc: string | null,
   name: string,
-): Promise<{ uid: number; isNew: boolean; email?: string } | null> {
+): Promise<{ uid: number; isNew: boolean; email?: string; name?: string } | null> {
   const existing = await query<{ id: number }>("SELECT id FROM users WHERE email_hash = $1", [emailHash]);
   if (existing.length > 0) return { uid: Number(existing[0].id), isNew: false };
   if (!emailEnc) return null;
@@ -164,7 +165,7 @@ async function userForEmail(
      SELECT id FROM u`,
     [emailHash, emailEnc, name],
   );
-  if (created.length > 0) return { uid: Number(created[0].id), isNew: true, email: decrypt(emailEnc, keyFromEnv()) };
+  if (created.length > 0) return { uid: Number(created[0].id), isNew: true, email: decrypt(emailEnc, keyFromEnv()), name };
   const raced = await query<{ id: number }>("SELECT id FROM users WHERE email_hash = $1", [emailHash]);
   return raced.length === 0 ? null : { uid: Number(raced[0].id), isNew: false };
 }

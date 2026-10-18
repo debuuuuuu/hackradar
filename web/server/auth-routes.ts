@@ -53,11 +53,11 @@ function errTag(e: unknown): string {
  * Welcome mail for a brand-new account. Awaited because a serverless function can be frozen once the
  * response is sent. A failure must never block the sign-in itself, so it is only logged.
  */
-async function welcomeNewUser(result: { uid: number; isNew: boolean; email?: string }, url: URL): Promise<void> {
+async function welcomeNewUser(result: { uid: number; isNew: boolean; email?: string; name?: string }, url: URL): Promise<void> {
   if (!result.isNew || !result.email) return;
   const origin = originFor(url);
   const unsubscribe = new URL(`/api/auth/unsubscribe?token=${unsubscribeToken(result.uid)}`, origin).toString();
-  await sendWelcomeEmail(result.email, new URL("/welcome", origin).toString(), unsubscribe).catch((e) =>
+  await sendWelcomeEmail(result.email, new URL("/welcome", origin).toString(), unsubscribe, result.name).catch((e) =>
     console.error("welcome email failed:", errTag(e)),
   );
 }
@@ -78,7 +78,7 @@ export function registerAuthRoutes(): void {
     try {
       // Vercel overwrites x-forwarded-for with the real client address, so its first entry can't be spoofed.
       const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
-      await startEmailLogin(email, { send: sendLoginEmail, origin: originFor(url), next, ip });
+      await startEmailLogin(email, { send: sendLoginEmail, origin: originFor(url), next, ip, name: body.name });
     } catch (e) {
       // Log the class only (messages can carry addresses). Tell the person when the mail did not go out:
       // 422 = the server refused this address (check for typos), 502 = we could not send right now.

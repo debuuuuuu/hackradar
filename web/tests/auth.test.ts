@@ -182,7 +182,7 @@ describe("email sign-in", () => {
       const { send, lastToken } = fakeSend();
       await startEmailLogin("a@example.com", { send, origin: ORIGIN, now: T0 });
       const first = await finishEmailLogin(lastToken(), T0 + 1000);
-      expect(first).toEqual({ uid: expect.any(Number), isNew: true, email: "a@example.com" });
+      expect(first).toEqual({ uid: expect.any(Number), isNew: true, email: "a@example.com", name: "Member" });
       const [u] = await query<{ name: string; email_enc: string }>("SELECT name, email_enc FROM users WHERE id = $1", [
         first!.uid,
       ]);

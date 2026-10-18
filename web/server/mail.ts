@@ -71,7 +71,7 @@ export async function sendLoginEmail(to: string, link: string): Promise<void> {
 }
 
 /** The welcome mail sent once, when an account is first created. `setupUrl` opens the setup page. */
-export async function sendWelcomeEmail(to: string, setupUrl: string, unsubscribeUrl: string): Promise<void> {
+export async function sendWelcomeEmail(to: string, setupUrl: string, unsubscribeUrl: string, name?: string): Promise<void> {
   const { user, mailer } = transport();
   const text = [
     "Welcome aboard, builder! [^‿^]",
@@ -99,5 +99,5 @@ export async function sendWelcomeEmail(to: string, setupUrl: string, unsubscribe
     unsub: unsubscribeUrl,
     fine: "Dates come straight from the organisers' own listings. Reply to this email if something looks wrong.",
   });
-  await mailer.sendMail({ from: from(user), to, subject: "You're on the radar [^‿^]", text, html });
+  await mailer.sendMail({ from: from(user), to, subject: `You're on the radar${name && name !== "Member" ? `, ${name}` : ""} [^‿^]`, text, html });
 }
