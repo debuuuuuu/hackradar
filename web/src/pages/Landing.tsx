@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import confetti from "canvas-confetti";
 import Icon from "../components/Icon.js";
@@ -6,12 +6,33 @@ import Monitor from "../components/Monitor.js";
 import { fetchEvents, type EventRow } from "../lib/api.js";
 import { formatIstDate, sourceLabel } from "../lib/format.js";
 
+interface CardTransform {
+  x: number;
+  y: number;
+  r: number;
+  z: number;
+}
+
 export default function Landing() {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Interactive "Tell us what you like" checklist state
   const [checklist, setChecklist] = useState<[boolean, boolean, boolean]>([false, false, false]);
+
+  // Movable and randomized cards state
+  const [cardTransforms, setCardTransforms] = useState<{ [id: string | number]: CardTransform }>({});
+  const [draggingId, setDraggingId] = useState<number | string | null>(null);
+  const [isScattered, setIsScattered] = useState(true);
+  const dragStartRef = useRef<{
+    id: number | string;
+    startX: number;
+    startY: number;
+    origX: number;
+    origY: number;
+    moved: boolean;
+  } | null>(null);
+  const topZRef = useRef<number>(10);
 
   function toggleItem(i: number) {
     setChecklist((prev) => {
@@ -41,6 +62,27 @@ export default function Landing() {
         if (!live) return;
         setEvents(res.items);
         setLoading(false);
+
+        // Generate natural playful initial scatter offsets
+        const initial: { [id: string]: CardTransform } = {};
+        const seeds = [
+          { x: -12, y: 10, r: -3.2 },
+          { x: 16, y: -10, r: 2.6 },
+          { x: -10, y: 14, r: -1.8 },
+          { x: 16, y: -8, r: 3.2 },
+          { x: 12, y: 12, r: -2.5 },
+          { x: -14, y: -10, r: 2.0 },
+        ];
+        res.items.forEach((item, idx) => {
+          const s = seeds[idx % seeds.length];
+          initial[item.id] = {
+            x: s.x,
+            y: s.y,
+            r: s.r,
+            z: idx + 1,
+          };
+        });
+        setCardTransforms(initial);
       })
       .catch(() => {
         if (live) setLoading(false);
@@ -49,6 +91,105 @@ export default function Landing() {
       live = false;
     };
   }, []);
+
+  function scatterCards() {
+    const next: { [id: string]: CardTransform } = {};
+    topZRef.current += 1;
+    events.forEach((e, i) => {
+      const rx = (Math.random() - 0.5) * 54;
+      const ry = (Math.random() - 0.5) * 40;
+      const rr = (Math.random() - 0.5) * 9;
+      next[e.id] = {
+        x: Math.round(rx),
+        y: Math.round(ry),
+        r: Number(rr.toFixed(1)),
+        z: 1 + i,
+      };
+    });
+    setCardTransforms(next);
+    setIsScattered(true);
+    try {
+      confetti({
+        particleCount: 25,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: ["#e5484d", "#f3e7d7", "#34312e"],
+      });
+    } catch {}
+  }
+
+  function tidyCards() {
+    const next: { [id: string]: CardTransform } = {};
+    events.forEach((e) => {
+      next[e.id] = {
+        x: 0,
+        y: 0,
+        r: 0,
+        z: 1,
+      };
+    });
+    setCardTransforms(next);
+    setIsScattered(false);
+  }
+
+  function handlePointerDown(e: React.PointerEvent<HTMLElement>, id: number | string) {
+    if (e.button !== 0) return;
+    const current = cardTransforms[id] || { x: 0, y: 0, r: 0, z: 1 };
+    topZRef.current += 1;
+    const newZ = topZRef.current;
+
+    setCardTransforms((prev) => ({
+      ...prev,
+      [id]: { ...current, z: newZ },
+    }));
+
+    dragStartRef.current = {
+      id,
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: current.x,
+      origY: current.y,
+      moved: false,
+    };
+
+    setDraggingId(id);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
+
+  function handlePointerMove(e: React.PointerEvent<HTMLElement>) {
+    if (!dragStartRef.current) return;
+    const { id, startX, startY, origX, origY } = dragStartRef.current;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      dragStartRef.current.moved = true;
+    }
+
+    setCardTransforms((prev) => {
+      const cur = prev[id] || { x: 0, y: 0, r: 0, z: topZRef.current };
+      return {
+        ...prev,
+        [id]: {
+          ...cur,
+          x: origX + dx,
+          y: origY + dy,
+          r: Math.max(-10, Math.min(10, (cur.r || 0) + dx * 0.04)),
+        },
+      };
+    });
+  }
+
+  function handlePointerUp(e: React.PointerEvent<HTMLElement>) {
+    if (!dragStartRef.current) return;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {}
+    setDraggingId(null);
+    setTimeout(() => {
+      dragStartRef.current = null;
+    }, 60);
+  }
 
   const checkedCount = checklist.filter(Boolean).length;
   const sceneLabels = [
@@ -317,6 +458,31 @@ export default function Landing() {
           <div style={{ position: "relative" }}>
             <div className="blueprint-back" aria-hidden="true" />
             <div className="blueprint">
+              <div className="blueprint-topbar">
+                <div className="board-hint-badge">
+                  <span className="hint-hand">🖐️</span>
+                  <span>Movable cards — drag anywhere on board</span>
+                </div>
+                <div className="board-actions">
+                  <button
+                    type="button"
+                    className={`board-tool-btn ${isScattered ? "active" : ""}`}
+                    onClick={scatterCards}
+                    title="Scatter cards randomly"
+                  >
+                    <span>🎲</span> Scatter
+                  </button>
+                  <button
+                    type="button"
+                    className={`board-tool-btn ${!isScattered ? "active" : ""}`}
+                    onClick={tidyCards}
+                    title="Align cards into grid"
+                  >
+                    <span>📐</span> Tidy
+                  </button>
+                </div>
+              </div>
+
               <div className="rows" aria-hidden="true">
                 <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
               </div>
@@ -326,16 +492,28 @@ export default function Landing() {
               ) : events.length === 0 ? (
                 <p className="lead dark" style={{ textAlign: "center", padding: "60px 0" }}>No open hackathons at this moment. Check back around 5 AM IST!</p>
               ) : (
-                <div className="shots">
+                <div className="shots movable-board">
                   {events.map((e, idx) => {
-                    const rotations = ["-2.5deg", "1.8deg", "-1.2deg", "2.4deg", "-2deg", "1.4deg"];
-                    const r = rotations[idx % rotations.length];
                     const primarySource = e.sources[0] ? sourceLabel(e.sources[0]) : "Listing";
                     const posters = ["poster", "poster dark", "poster paper"];
                     const posterCls = posters[idx % posters.length];
+                    const t = cardTransforms[e.id] || { x: 0, y: 0, r: 0, z: 1 };
+                    const isDragging = draggingId === e.id;
 
                     return (
-                      <article className="shot" key={e.id} style={{ "--r": r } as React.CSSProperties}>
+                      <article
+                        className={`shot movable ${isDragging ? "is-dragging" : ""}`}
+                        key={e.id}
+                        style={{
+                          transform: `translate3d(${t.x}px, ${t.y}px, 0) rotate(${t.r}deg)`,
+                          zIndex: t.z,
+                        }}
+                        onPointerDown={(ev) => handlePointerDown(ev, e.id)}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
+                        onPointerCancel={handlePointerUp}
+                      >
+                        <span className="card-tape" aria-hidden="true" />
                         <div className={posterCls}>
                           <span className="platform">{primarySource}</span>
                           <Icon name="code" size={32} />
@@ -352,7 +530,18 @@ export default function Landing() {
                           </dl>
                         </div>
                         {e.sources.length > 1 && <span className="stamp">on {e.sources.length} sites</span>}
-                        <Link className="over" to={`/events/${e.id}`} aria-label={`Open ${e.title}`} />
+                        <Link
+                          className="over"
+                          to={`/events/${e.id}`}
+                          aria-label={`Open ${e.title}`}
+                          onClick={(ev) => {
+                            if (dragStartRef.current?.moved) {
+                              ev.preventDefault();
+                              ev.stopPropagation();
+                            }
+                          }}
+                          onDragStart={(ev) => ev.preventDefault()}
+                        />
                       </article>
                     );
                   })}
