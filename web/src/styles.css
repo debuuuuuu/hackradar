@@ -1979,14 +1979,9 @@ a {
     fix the third one too use a smooth scroll and add some more libraries"
    ========================================================================== */
 
+/* Lenis handles smooth scrolling — no CSS scroll-snap (causes choppiness) */
 html {
-  scroll-behavior: smooth;
-}
-
-@media (min-width: 901px) {
-  html {
-    scroll-snap-type: y proximity;
-  }
+  scroll-padding-top: 84px;
 }
 
 /* Generous frame & section sizing for all monitors up to 2800px+ */
@@ -1999,16 +1994,13 @@ html {
   flex-direction: column;
   justify-content: center;
   box-sizing: border-box;
-  scroll-snap-align: start;
-  scroll-snap-stop: normal;
   scroll-margin-top: 84px;
-  padding-block: clamp(24px, 4vh, 48px);
+  padding-block: clamp(32px, 6vh, 72px);
 }
 
 @media (max-width: 900px) {
   .landing-section {
     min-height: auto;
-    scroll-snap-align: none;
     padding-block: 40px;
   }
 }
@@ -2144,10 +2136,11 @@ html {
   width: 100%;
   margin-inline: auto;
   position: relative;
-  background: var(--charcoal);
+  background: color-mix(in srgb, var(--charcoal) 92%, #2a2725);
   border-radius: 32px;
-  padding: clamp(36px, 4vw, 54px) clamp(20px, 4vw, 48px);
-  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+  padding: clamp(48px, 6vw, 80px) clamp(28px, 5vw, 64px);
+  box-shadow: 0 24px 70px -20px rgba(0, 0, 0, 0.65);
+  border: 1.5px solid var(--line-dark);
 }
 
 /* Fix for Photo 2: High contrast chalk headline on dark charcoal background */
@@ -2185,8 +2178,8 @@ html {
 .collage {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: clamp(20px, 2.5vw, 36px);
-  margin-top: 36px;
+  gap: clamp(24px, 3vw, 44px);
+  margin-top: clamp(36px, 4vw, 56px);
   align-items: start;
 }
 
@@ -2195,10 +2188,10 @@ html {
   --r: -3deg;
   transform: rotate(var(--r));
   background: #fbf5ec;
-  padding: clamp(32px, 3vw, 44px) clamp(24px, 2vw, 32px);
-  font: clamp(26px, 2.3vw, 34px) / 1.3 var(--hand);
+  padding: clamp(36px, 3.5vw, 52px) clamp(26px, 2.5vw, 36px);
+  font: clamp(28px, 2.6vw, 38px) / 1.28 var(--hand);
   color: var(--ink);
-  box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.55);
 }
 
 .n2 {
@@ -2206,10 +2199,10 @@ html {
   margin-top: 28px;
   transform: rotate(2.5deg);
   background: #cfc9c0;
-  padding: clamp(26px, 2.5vw, 36px) clamp(22px, 2vw, 30px);
-  font: 500 clamp(16px, 1.3vw, 20px) / 1.55 var(--mono);
+  padding: clamp(30px, 3vw, 42px) clamp(24px, 2.5vw, 34px);
+  font: 500 clamp(17px, 1.5vw, 22px) / 1.55 var(--mono);
   color: #26201e;
-  box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.55);
   position: relative;
 }
 
@@ -2217,15 +2210,15 @@ html {
   grid-column: 9 / span 4;
   transform: rotate(-1.5deg);
   background: var(--cream-2);
-  padding: clamp(26px, 2.5vw, 36px) clamp(22px, 2vw, 30px);
+  padding: clamp(30px, 3vw, 42px) clamp(24px, 2.5vw, 34px);
   border-radius: 8px;
-  box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.55);
   position: relative;
 }
 
 .n3 p {
-  font: 400 clamp(24px, 2.2vw, 32px) / 1.15 var(--serif);
-  margin: 0 0 10px;
+  font: 400 clamp(26px, 2.5vw, 36px) / 1.15 var(--serif);
+  margin: 0 0 12px;
 }
 
 .n3 small {
@@ -2235,18 +2228,18 @@ html {
 
 .n4 {
   grid-column: 2 / span 6;
-  margin-top: 24px;
+  margin-top: clamp(24px, 3vw, 40px);
 }
 
 .n4.polaroid {
-  font-size: clamp(14px, 1.1vw, 17px);
-  box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.7);
+  font-size: clamp(15px, 1.3vw, 19px);
+  box-shadow: 0 22px 50px -15px rgba(0, 0, 0, 0.7);
 }
 
 .n5 {
   grid-column: 8 / span 5;
-  margin-top: 36px;
-  font: clamp(22px, 2vw, 30px) / 1.35 var(--hand);
+  margin-top: clamp(36px, 4vw, 56px);
+  font: clamp(24px, 2.3vw, 34px) / 1.35 var(--hand);
   color: var(--coral-text);
   transform: rotate(-2deg);
 }

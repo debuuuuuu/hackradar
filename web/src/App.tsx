@@ -25,10 +25,11 @@ export default function App() {
     }
 
     const lenis = new Lenis({
-      duration: 1.1,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      duration: 1.4,
+      easing: (t) => 1 - Math.pow(1 - t, 3),
       orientation: "vertical",
       smoothWheel: true,
+      lerp: 0.08,
     });
 
     let rafId: number;
