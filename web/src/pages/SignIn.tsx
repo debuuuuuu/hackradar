@@ -63,7 +63,7 @@ export default function SignIn() {
   const currentSpeech = lines[mood] ?? lines.idle;
 
   return (
-    <div className="signin-page wrap" style={{ position: "relative", margin: "24px auto 96px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 480px), 1fr))", gap: "56px", alignItems: "center" }}>
+    <div className="signin-page wrap">
       {/* Decorative doodle */}
       <div className="doodle o1" style={{ width: 64, height: 64, left: -90, top: "20%" }} aria-hidden="true">
         <svg viewBox="0 0 40 40">
