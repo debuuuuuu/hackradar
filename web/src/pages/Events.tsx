@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
+import Icon from "../components/Icon.js";
 import { fetchEvents, fetchPlaces, type EventRow, type Place } from "../lib/api.js";
-import { formatIst, sourceLabel } from "../lib/format.js";
+import { formatIstDate, sourceLabel } from "../lib/format.js";
 
-const PAGE = 20;
+const PAGE = 18;
 const RADII = [50, 100, 150, 300, 500];
 
 export default function Events({
-  heading = "Hackathons, found for you",
+  heading = "Open hackathons right now",
   defaults = { place: "", radius: 150 },
 }: {
   heading?: string;
@@ -17,7 +18,7 @@ export default function Events({
   const q = sp.get("q") ?? "";
   const kind = sp.get("kind") ?? "";
   const rawPlace = sp.get("place") ?? defaults.place;
-  const place = rawPlace === "none" ? "" : rawPlace; // "none" = the person turned Near me off
+  const place = rawPlace === "none" ? "" : rawPlace;
   const radius = Number(sp.get("radius")) || defaults.radius;
   const offset = Math.max(0, Number(sp.get("offset")) || 0);
 
@@ -43,7 +44,6 @@ export default function Events({
     };
   }, [q, kind, place, radius, offset]);
 
-  /** Change filters; any change except paging goes back to page one. */
   function update(next: Record<string, string>) {
     const out = new URLSearchParams(sp);
     for (const [k, v] of Object.entries(next)) {
@@ -58,24 +58,51 @@ export default function Events({
   const from = total === 0 ? 0 : offset + 1;
   const to = Math.min(offset + PAGE, total);
 
-  return (
-    <>
-      <h1>{heading}</h1>
-      <p className="lead">Open hackathons and contests from public listings. Dates come from the source.</p>
+  const rotations = ["-2deg", "1.5deg", "-1.2deg", "2deg", "-1.8deg", "1.4deg"];
+  const posterStyles = ["poster", "poster dark", "poster paper"];
 
+  return (
+    <div style={{ maxWidth: 1120, margin: "0 auto 96px" }}>
+      <header style={{ marginBottom: 32 }}>
+        <h1 className="h1" style={{ color: "var(--chalk)", marginBottom: 8 }}>
+          {heading}
+        </h1>
+        <p className="lead dark" style={{ margin: 0 }}>
+          Open hackathons and contests from public listings. Dates come straight from the source.
+        </p>
+      </header>
+
+      {/* Filter bar */}
       <form
-        className="filters"
         role="search"
         onSubmit={(e) => {
           e.preventDefault();
           update({ q: draft.trim() });
         }}
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 14,
+          alignItems: "flex-end",
+          background: "var(--cream)",
+          padding: "16px 20px",
+          borderRadius: 20,
+          marginBottom: 32,
+          color: "var(--ink)",
+        }}
       >
-        <label className="field grow">
+        <label className="field" style={{ flex: "1 1 240px", margin: 0 }}>
           <span>Search</span>
-          <input type="search" value={draft} maxLength={100} onChange={(e) => setDraft(e.target.value)} />
+          <input
+            type="search"
+            value={draft}
+            maxLength={100}
+            placeholder="Search by name, topic..."
+            onChange={(e) => setDraft(e.target.value)}
+          />
         </label>
-        <label className="field">
+
+        <label className="field" style={{ flex: "0 1 160px", margin: 0 }}>
           <span>Type</span>
           <select value={kind} onChange={(e) => update({ kind: e.target.value })}>
             <option value="">All types</option>
@@ -84,10 +111,11 @@ export default function Events({
             <option value="other">Other</option>
           </select>
         </label>
-        <label className="field">
+
+        <label className="field" style={{ flex: "0 1 160px", margin: 0 }}>
           <span>Near me</span>
           <select value={place || "none"} onChange={(e) => update({ place: e.target.value })}>
-            <option value="none">Off</option>
+            <option value="none">Anywhere</option>
             {places.map((p) => (
               <option key={p.key} value={p.key}>
                 {p.name}
@@ -95,8 +123,9 @@ export default function Events({
             ))}
           </select>
         </label>
+
         {place && (
-          <label className="field">
+          <label className="field" style={{ flex: "0 1 130px", margin: 0 }}>
             <span>Within</span>
             <select value={radius} onChange={(e) => update({ radius: e.target.value })}>
               {RADII.map((r) => (
@@ -107,45 +136,79 @@ export default function Events({
             </select>
           </label>
         )}
-        <button type="submit" className="btn primary">
+
+        <button type="submit" className="btn solid" style={{ alignSelf: "flex-end", height: 48 }}>
+          <Icon name="search" size={16} variant="ink" />
           Search
         </button>
       </form>
 
-      <p className="count" aria-live="polite">
-        {failed ? "" : data ? (total === 0 ? "No events match." : `Showing ${from} to ${to} of ${total}`) : "Loading"}
+      {/* Status counts */}
+      <p style={{ font: "500 13px var(--mono)", color: "var(--mute)", margin: "0 0 24px" }} aria-live="polite">
+        {failed
+          ? ""
+          : data
+          ? total === 0
+            ? "No events match."
+            : `Showing ${from} to ${to} of ${total} hackathons`
+          : "Loading events..."}
       </p>
-      {failed && <p role="alert">Could not load events. Please try again.</p>}
 
-      {data && data.items.length > 0 && (
-        <ul className="events">
-          {data.items.map((e) => (
-            <li key={e.id}>
-              <h2>
-                <Link to={`/events/${e.id}`}>{e.title}</Link>
-              </h2>
-              <p className="meta">
-                {e.kind && <span className="tag">{e.kind}</span>}
-                {e.regDeadline && <span>Registration closes {formatIst(e.regDeadline)}</span>}
-                {(e.city || e.mode) && (
-                  <span>{[e.city, e.mode === "offline" ? "in person" : e.mode].filter(Boolean).join(", ")}</span>
-                )}
-                {e.sources.map((s) => (
-                  <span className="tag" key={s}>
-                    {sourceLabel(s)}
-                  </span>
-                ))}
-              </p>
-            </li>
-          ))}
-        </ul>
+      {failed && (
+        <p className="notice" role="alert">
+          Could not load events. Please try again.
+        </p>
       )}
 
+      {/* Events Grid */}
+      {data && data.items.length > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "40px 32px" }}>
+          {data.items.map((e, idx) => {
+            const r = rotations[idx % rotations.length];
+            const posterCls = posterStyles[idx % posterStyles.length];
+            const primarySource = e.sources[0] ? sourceLabel(e.sources[0]) : "Listing";
+
+            return (
+              <article className="shot" key={e.id} style={{ "--r": r } as React.CSSProperties}>
+                <div className={posterCls}>
+                  <span className="platform">{primarySource}</span>
+                  <Icon name="code" size={32} />
+                </div>
+
+                <div className="shot-body">
+                  <h3 className="shot-title">{e.title}</h3>
+                  <dl className="facts">
+                    <dt>When</dt>
+                    <dd>{e.regDeadline ? `reg by ${formatIstDate(e.regDeadline)}` : "Open"}</dd>
+                    <dt>Where</dt>
+                    <dd>{[e.city, e.mode === "offline" ? "in person" : e.mode].filter(Boolean).join(" · ") || "Online"}</dd>
+                    <dt>Prize</dt>
+                    <dd>{e.prizeText || "Not listed"}</dd>
+                  </dl>
+                </div>
+
+                {e.sources.length > 1 && (
+                  <span className="stamp">
+                    on {e.sources.length} sites
+                  </span>
+                )}
+
+                <Link className="over" to={`/events/${e.id}`} aria-label={`Open ${e.title}`} />
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
       {data && total > PAGE && (
-        <nav className="pager" aria-label="Pages">
+        <nav
+          aria-label="Pages"
+          style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 48 }}
+        >
           <button
             type="button"
-            className="btn"
+            className="btn chalk"
             disabled={offset === 0}
             onClick={() => update({ offset: String(Math.max(0, offset - PAGE)) })}
           >
@@ -153,7 +216,7 @@ export default function Events({
           </button>
           <button
             type="button"
-            className="btn"
+            className="btn chalk"
             disabled={offset + PAGE >= total}
             onClick={() => update({ offset: String(offset + PAGE) })}
           >
@@ -161,6 +224,6 @@ export default function Events({
           </button>
         </nav>
       )}
-    </>
+    </div>
   );
 }

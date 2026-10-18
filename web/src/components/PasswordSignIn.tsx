@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import Icon from "./Icon.js";
 
 export interface SupabaseCfg {
   url: string;
@@ -8,7 +9,11 @@ export interface SupabaseCfg {
 type Mode = "signin" | "signup" | "forgot" | "newpassword";
 const MIN_PASSWORD = 8;
 
-async function gotrue(cfg: SupabaseCfg, path: string, init: { method: string; body: unknown; token?: string }): Promise<Response> {
+async function gotrue(
+  cfg: SupabaseCfg,
+  path: string,
+  init: { method: string; body: unknown; token?: string },
+): Promise<Response> {
   return fetch(`${cfg.url}/auth/v1${path}`, {
     method: init.method,
     headers: {
@@ -40,7 +45,21 @@ function readHash(): URLSearchParams | null {
   return h.includes("access_token=") || h.includes("error=") ? new URLSearchParams(h) : null;
 }
 
-export default function PasswordSignIn({ cfg, next }: { cfg: SupabaseCfg; next: string | undefined }) {
+interface PasswordSignInProps {
+  cfg: SupabaseCfg;
+  next: string | undefined;
+  onFocusEmail?: () => void;
+  onFocusPassword?: () => void;
+  onBlur?: () => void;
+}
+
+export default function PasswordSignIn({
+  cfg,
+  next,
+  onFocusEmail,
+  onFocusPassword,
+  onBlur,
+}: PasswordSignInProps) {
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,7 +67,8 @@ export default function PasswordSignIn({ cfg, next }: { cfg: SupabaseCfg; next: 
   const [note, setNote] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [recoveryToken, setRecoveryToken] = useState<string | null>(null);
 
-  const land = () => window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
+  const land = () =>
+    window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
   const failed = (text: string) => setNote({ kind: "err", text });
 
   async function finish(token: string) {
@@ -60,7 +80,7 @@ export default function PasswordSignIn({ cfg, next }: { cfg: SupabaseCfg; next: 
   useEffect(() => {
     const p = readHash();
     if (!p) return;
-    window.history.replaceState(null, "", window.location.pathname + window.location.search); // keep the token out of the address bar
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
     const token = p.get("access_token");
     if (p.get("error") || !token) {
       failed("That link has expired or was already used. Sign in, or ask for a new one.");
@@ -72,7 +92,6 @@ export default function PasswordSignIn({ cfg, next }: { cfg: SupabaseCfg; next: 
       setNote({ kind: "ok", text: "Email confirmed. Signing you in." });
       void finish(token);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function submit(e: FormEvent) {
@@ -85,24 +104,38 @@ export default function PasswordSignIn({ cfg, next }: { cfg: SupabaseCfg; next: 
     try {
       const redirect = encodeURIComponent(`${window.location.origin}/signin`);
       if (mode === "signin") {
-        const res = await gotrue(cfg, "/token?grant_type=password", { method: "POST", body: { email: email.trim(), password } });
+        const res = await gotrue(cfg, "/token?grant_type=password", {
+          method: "POST",
+          body: { email: email.trim(), password },
+        });
         if (res.status === 429) return failed("Too many tries. Wait a minute and try again.");
         const body = (await res.json().catch(() => ({}))) as { access_token?: string };
-        if (!res.ok || !body.access_token) return failed("That email and password do not match, or the email is not confirmed yet.");
+        if (!res.ok || !body.access_token)
+          return failed("That email and password do not match, or the email is not confirmed yet.");
         await finish(body.access_token);
       } else if (mode === "signup") {
-        const res = await gotrue(cfg, `/signup?redirect_to=${redirect}`, { method: "POST", body: { email: email.trim(), password } });
+        const res = await gotrue(cfg, `/signup?redirect_to=${redirect}`, {
+          method: "POST",
+          body: { email: email.trim(), password },
+        });
         if (res.status === 429) return failed("Too many tries. Wait a minute and try again.");
         if (!res.ok) return failed("We could not create that account. Check the email address and try again.");
         const body = (await res.json().catch(() => ({}))) as { access_token?: string };
         if (body.access_token) await finish(body.access_token);
         else setNote({ kind: "ok", text: "Check your inbox and press the confirm link. Then come back and sign in." });
       } else if (mode === "forgot") {
-        const res = await gotrue(cfg, `/recover?redirect_to=${redirect}`, { method: "POST", body: { email: email.trim() } });
+        const res = await gotrue(cfg, `/recover?redirect_to=${redirect}`, {
+          method: "POST",
+          body: { email: email.trim() },
+        });
         if (res.status === 429) return failed("Too many tries. Wait a minute and try again.");
         setNote({ kind: "ok", text: "If that address has an account, a reset link is on its way." });
       } else if (mode === "newpassword" && recoveryToken) {
-        const res = await gotrue(cfg, "/user", { method: "PUT", body: { password }, token: recoveryToken });
+        const res = await gotrue(cfg, "/user", {
+          method: "PUT",
+          body: { password },
+          token: recoveryToken,
+        });
         if (!res.ok) return failed("We could not save the new password. Ask for a new reset link.");
         await finish(recoveryToken);
       }
@@ -113,58 +146,104 @@ export default function PasswordSignIn({ cfg, next }: { cfg: SupabaseCfg; next: 
     }
   }
 
-  const title = { signin: "Sign in with a password", signup: "Create an account", forgot: "Reset your password", newpassword: "Choose a new password" }[mode];
-  const action = { signin: "Sign in", signup: "Create account", forgot: "Send reset link", newpassword: "Save password" }[mode];
+  const action = {
+    signin: "Let me in",
+    signup: "Create account",
+    forgot: "Send reset link",
+    newpassword: "Save password",
+  }[mode];
 
   return (
-    <form onSubmit={submit} className="signin-form" aria-labelledby="pw-title">
-      <h2 id="pw-title">{title}</h2>
+    <form onSubmit={submit} className="stack" aria-label="Password sign-in">
       {mode !== "newpassword" && (
-        <label className="field grow">
-          Email address
-          <input type="email" name="email" autoComplete="email" inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <label className="field">
+          Email
+          <input
+            type="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+            placeholder="you@college.edu"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onFocus={onFocusEmail}
+            onBlur={onBlur}
+          />
         </label>
       )}
+
       {mode !== "forgot" && (
-        <label className="field grow">
+        <label className="field">
           {mode === "newpassword" ? "New password" : "Password"}
           <input
             type="password"
             name="password"
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
+            placeholder={mode === "signin" ? "Your password" : `At least ${MIN_PASSWORD} characters`}
             required
             minLength={mode === "signin" ? undefined : MIN_PASSWORD}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onFocus={onFocusPassword}
+            onBlur={onBlur}
           />
         </label>
       )}
-      <button type="submit" className="btn primary" disabled={busy}>
+
+      <button type="submit" className="btn solid wide" disabled={busy}>
         {action}
+        <Icon name="plane" className="plane" />
       </button>
+
       {note && (
         <p className="notice" role={note.kind === "err" ? "alert" : "status"}>
           {note.text}
         </p>
       )}
+
       {mode !== "newpassword" && (
-        <p className="signin-links">
+        <div className="links">
           {mode !== "signin" && (
-            <button type="button" className="linklike" onClick={() => { setMode("signin"); setNote(null); }}>
+            <button
+              type="button"
+              className="btn ghost"
+              style={{ paddingInline: 8, minHeight: 36, border: "none", color: "var(--ink-red)" }}
+              onClick={() => {
+                setMode("signin");
+                setNote(null);
+              }}
+            >
               Back to sign in
             </button>
           )}
           {mode === "signin" && (
             <>
-              <button type="button" className="linklike" onClick={() => { setMode("signup"); setNote(null); }}>
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ paddingInline: 8, minHeight: 36, border: "none", color: "var(--ink-red)", cursor: "pointer" }}
+                onClick={() => {
+                  setMode("signup");
+                  setNote(null);
+                }}
+              >
                 Create an account
               </button>
-              <button type="button" className="linklike" onClick={() => { setMode("forgot"); setNote(null); }}>
-                Forgot your password?
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ paddingInline: 8, minHeight: 36, border: "none", color: "var(--ink-red)", cursor: "pointer" }}
+                onClick={() => {
+                  setMode("forgot");
+                  setNote(null);
+                }}
+              >
+                Forgot password?
               </button>
             </>
           )}
-        </p>
+        </div>
       )}
     </form>
   );

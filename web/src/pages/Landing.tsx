@@ -1,0 +1,398 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
+import Icon from "../components/Icon.js";
+import { fetchEvents, type EventRow } from "../lib/api.js";
+import { formatIstDate, sourceLabel } from "../lib/format.js";
+
+export default function Landing() {
+  const [events, setEvents] = useState<EventRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Interactive "Tell us what you like" checklist state
+  const [checklist, setChecklist] = useState<[boolean, boolean, boolean]>([false, false, false]);
+
+  useEffect(() => {
+    let live = true;
+    fetchEvents({ limit: 6 })
+      .then((res) => {
+        if (!live) return;
+        setEvents(res.items);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (live) setLoading(false);
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  const checkedCount = checklist.filter(Boolean).length;
+  const sceneLabels = [
+    "Empty frame waiting for your picks",
+    "A radar drawn in",
+    "Radar with two flags and a builder",
+    "Radar fully lit up: your picks are ready",
+  ];
+
+  const checklistItems = [
+    "Hackathons near Pune",
+    "AI and Web3 topics",
+    "A WhatsApp message every morning",
+  ];
+
+  return (
+    <div className="landing-content">
+      {/* HERO SECTION */}
+      <div className="hero-wrap stick" style={{ position: "relative", maxWidth: 1120, marginInline: "auto", paddingBottom: 96 }}>
+        {/* Floating background doodles */}
+        <div className="doodle o1" style={{ width: 70, height: 70, left: -84, top: "42%" }} aria-hidden="true">
+          <svg viewBox="0 0 40 40">
+            <path className="ln" d="M9 14h18v9a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8zM27 17h3a3 3 0 0 1 0 6h-3M14 5c-1.5 2 1.5 3 0 6M20 5c-1.5 2 1.5 3 0 6" />
+          </svg>
+        </div>
+        <div className="doodle o2" style={{ width: 78, height: 78, right: -88, top: "4%" }} aria-hidden="true">
+          <svg viewBox="0 0 40 40">
+            <path className="ln" d="M7 10q13-7 26 0L20 35zM15.2 15a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0M21.2 19a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0M17.5 25a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0" />
+          </svg>
+        </div>
+        <div className="doodle o3" style={{ width: 70, height: 70, right: -84, bottom: 140 }} aria-hidden="true">
+          <svg viewBox="0 0 40 40">
+            <path className="ln" d="M13 7h14v8a7 7 0 0 1-14 0zM13 10H8a4 4 0 0 0 5 6M27 10h5a4 4 0 0 1-5 6M20 22v6M14 33h12M16 28h8" />
+          </svg>
+        </div>
+
+        <div className="tablet grid-paper enter">
+          <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 460px), 1fr))", gap: 32, alignItems: "center" }}>
+            <div className="in">
+              <p className="brandline" style={{ font: "38px/1 var(--hand)", margin: "0 0 6px", transform: "rotate(-3deg)", transformOrigin: "left", display: "inline-block" }}>
+                <span style={{ textDecoration: "underline wavy var(--coral) 2px", textUnderlineOffset: 7 }}>HackRadar</span>
+              </p>
+              <p className="eyebrow">Daily hackathon digest · made in Pune</p>
+              <h1 className="h1">
+                Never miss a hackathon{" "}
+                <span className="rot">
+                  <span>near you.</span>
+                  <span>worth your weekend.</span>
+                  <span>you'd actually want.</span>
+                </span>
+              </h1>
+              <p className="lead">
+                We check Devpost, Unstop, Devfolio and MLH every morning, keep what's near you and fits what you like, and send it to Discord, WhatsApp or email.
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+                <Link className="btn solid" to="/signin">
+                  Sign in for personal picks
+                </Link>
+                <a className="btn ghost" href="#board">
+                  Browse what's open
+                </a>
+              </div>
+              <p style={{ margin: "24px 0 0", font: "400 13px var(--mono)", color: "#7a4b47" }}>
+                Browsing is free and needs no account.
+              </p>
+            </div>
+
+            {/* Radar Scope */}
+            <svg
+              className="scope in late"
+              viewBox="0 0 400 400"
+              role="img"
+              aria-label="Radar screen picking up three hackathons"
+              style={{ width: "100%", maxWidth: 460, justifySelf: "center", overflow: "visible", color: "var(--ink-red)" }}
+            >
+              <path className="ln draw" d="M48 20h304a18 18 0 0 1 18 18v324a18 18 0 0 1-18 18H48a18 18 0 0 1-18-18V38a18 18 0 0 1 18-18zM30 58h340" />
+              <path className="ln" d="M52 39a6 6 0 1 0 12 0a6 6 0 1 0-12 0M72 39a6 6 0 1 0 12 0a6 6 0 1 0-12 0" />
+              <text className="label mid" x="200" y="45" style={{ font: "15px var(--hand)", fill: "var(--ink-red)", textAnchor: "middle" }}>
+                today.digest
+              </text>
+              <g className="sweep">
+                <path className="wedge" d="M200 200 L200 70 A130 130 0 0 1 312 135 Z" style={{ fill: "var(--coral)", opacity: 0.28 }} />
+              </g>
+              <path className="ln draw" d="M70 200a130 130 0 1 0 260 0a130 130 0 1 0-260 0" />
+              <path className="ln draw late" d="M114 200a86 86 0 1 0 172 0a86 86 0 1 0-172 0M158 200a42 42 0 1 0 84 0a42 42 0 1 0-84 0M70 200h260M200 70v260" />
+              <circle className="blip" cx="268" cy="136" r="9" style={{ fill: "var(--coral)" }} />
+              <text className="label" x="282" y="124" style={{ font: "15px var(--hand)", fill: "var(--ink-red)" }}>
+                AI · Pune
+              </text>
+              <circle className="blip b2" cx="140" cy="250" r="9" style={{ fill: "var(--coral)" }} />
+              <text className="label" x="58" y="284" style={{ font: "15px var(--hand)", fill: "var(--ink-red)" }}>
+                Web3 · online
+              </text>
+              <circle className="blip b3" cx="236" cy="290" r="9" style={{ fill: "var(--coral)" }} />
+              <text className="label" x="180" y="324" style={{ font: "15px var(--hand)", fill: "var(--ink-red)" }}>
+                Hardware · 120 km
+              </text>
+              <path className="ln draw late" d="M300 348c18-6 30-2 40 10m-6-14 6 14-14 2" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* HOW IT WORKS SECTION */}
+      <section className="sheet over-hero how" id="how" aria-labelledby="how-h" style={{ position: "relative", maxWidth: 1120, marginInline: "auto" }}>
+        <svg className="ribbon" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true" style={{ position: "absolute", left: -40, right: -40, top: -36, height: 90, width: "calc(100% + 80px)", color: "var(--coral)", overflow: "visible", pointerEvents: "none" }}>
+          <path className="ln" d="M0 60C120 20 220 80 340 46s200-30 300 6 220 34 330-6 170-20 230 10" style={{ strokeWidth: 5 }} />
+        </svg>
+        <p className="note-hand" style={{ color: "var(--coral-deep)", margin: "0 0 10px" }}>
+          how it works, in four notes
+        </p>
+        <h2 className="h2" id="how-h">
+          We do the scrolling. You do the building.
+        </h2>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: 28, marginTop: 44, alignItems: "start" }}>
+          <p className="ruled torn note-fly" style={{ margin: 0, position: "relative", transform: "rotate(-3deg)", background: "#fbf5ec", padding: "34px 24px 26px", font: "28px/34px var(--hand)", color: "var(--ink)", boxShadow: "0 14px 30px -14px rgb(0 0 0 / 0.45)" }}>
+            <span className="tape" />
+            We check Devpost, Unstop, Devfolio and MLH every morning.
+          </p>
+
+          <p className="note-fly" style={{ margin: 0, position: "relative", transform: "rotate(2.5deg)", background: "#cfc9c0", padding: "26px 24px", font: "500 18px/1.5 var(--mono)", color: "#26201e", boxShadow: "0 14px 30px -14px rgb(0 0 0 / 0.45)" }}>
+            <span className="tape r" />
+            Only what's near you, in the kinds and topics you follow.
+          </p>
+
+          <div className="note-fly" style={{ position: "relative", transform: "rotate(-1.5deg)", background: "var(--cream-2)", padding: "26px 24px", borderRadius: 6, boxShadow: "0 14px 30px -14px rgb(0 0 0 / 0.45)" }}>
+            <span className="tape" />
+            <p style={{ font: "400 26px/1.15 var(--serif)", margin: "0 0 10px" }}>
+              Sent to Discord, WhatsApp or email around 5 AM IST.
+            </p>
+            <small style={{ font: "15px var(--sans)", color: "#7a4b47" }}>
+              Top picks get a message of their own.
+            </small>
+          </div>
+
+          <figure className="polaroid note-fly" style={{ margin: 0 }} tabIndex={0} aria-label="Example: a hackathon found in a public post on X">
+            <div className="pic">
+              <p className="who">@pune_builders · public post on X</p>
+              <p>Registrations open for our 24-hour build night on 22 Nov. Teams of 2–4, beginners welcome. Link in thread.</p>
+              <svg className="scribble" viewBox="0 0 300 170" preserveAspectRatio="none" aria-hidden="true">
+                <path className="ln" d="M20 60C10 20 140 6 250 22c40 6 44 52 4 70-50 22-200 22-226-6C8 66 50 40 120 36M210 130l40 26M250 156l-4-18M250 156l-18 0" />
+              </svg>
+            </div>
+            <figcaption className="sig">found on X · unverified</figcaption>
+          </figure>
+        </div>
+
+        <p className="note-fly" style={{ margin: "32px 0 0", font: "24px/1.3 var(--hand)", color: "var(--ink-red)", transform: "rotate(-2deg)", display: "flex", alignItems: "center", gap: 12 }}>
+          <svg viewBox="0 0 70 40" aria-hidden="true" style={{ width: 70, height: 40, flex: "none" }}>
+            <path className="ln" d="M66 30C46 34 20 26 8 8m0 0 2 12M8 8l12 2" />
+          </svg>
+          Posts from LinkedIn and X that no listing site has. Always marked unverified, always with the source link.
+        </p>
+      </section>
+
+      {/* OPEN RIGHT NOW SECTION - REAL API DATA */}
+      <section className="board-wrap" id="board" aria-labelledby="board-h" style={{ position: "relative", maxWidth: 1120, marginInline: "auto", paddingBlock: "96px 40px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "16px 24px", marginBottom: 48 }}>
+          <h2 className="h2" id="board-h">
+            Open right now
+          </h2>
+          <span className="note-hand">
+            <svg viewBox="0 0 40 20" aria-hidden="true" style={{ width: 40, height: 20 }}>
+              <path className="ln" d="M38 4C26 2 12 6 4 16m0 0 1-8m-1 8 8-1" />
+            </svg>
+            real public listings, updated every morning
+          </span>
+        </div>
+
+        <div style={{ position: "relative" }}>
+          <div className="blueprint-back" aria-hidden="true" />
+          <div className="blueprint">
+            <div className="rows" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+            </div>
+
+            {loading ? (
+              <p className="lead dark" style={{ textAlign: "center", padding: "60px 0" }}>Loading open events...</p>
+            ) : events.length === 0 ? (
+              <p className="lead dark" style={{ textAlign: "center", padding: "60px 0" }}>No open hackathons at this moment. Check back around 5 AM IST!</p>
+            ) : (
+              <div className="shots">
+                {events.map((e, idx) => {
+                  const rotations = ["-2.5deg", "1.8deg", "-1.2deg", "2.4deg", "-2deg", "1.4deg"];
+                  const r = rotations[idx % rotations.length];
+                  const primarySource = e.sources[0] ? sourceLabel(e.sources[0]) : "Listing";
+                  const posters = ["poster", "poster dark", "poster paper"];
+                  const posterCls = posters[idx % posters.length];
+
+                  return (
+                    <article className="shot" key={e.id} style={{ "--r": r } as React.CSSProperties}>
+                      <div className={posterCls}>
+                        <span className="platform">{primarySource}</span>
+                        <Icon name="code" size={32} />
+                      </div>
+                      <div className="shot-body">
+                        <h3 className="shot-title">{e.title}</h3>
+                        <dl className="facts">
+                          <dt>When</dt>
+                          <dd>{e.regDeadline ? `reg by ${formatIstDate(e.regDeadline)}` : "Open"}</dd>
+                          <dt>Where</dt>
+                          <dd>{[e.city, e.mode === "offline" ? "in person" : e.mode].filter(Boolean).join(" · ") || "Online"}</dd>
+                          <dt>Prize</dt>
+                          <dd>{e.prizeText || "Not listed"}</dd>
+                        </dl>
+                      </div>
+                      {e.sources.length > 1 && <span className="stamp">on {e.sources.length} sites</span>}
+                      <Link className="over" to={`/events/${e.id}`} aria-label={`Open ${e.title}`} />
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+
+            <p className="blueprint-cap">everything here is public. dates come from the source.</p>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "center", marginTop: 44 }}>
+          <Link className="btn chalk" to="/events">
+            See everything open
+          </Link>
+        </div>
+      </section>
+
+      {/* TELL US WHAT YOU LIKE CHECKLIST */}
+      <section id="picks" aria-labelledby="picks-h" style={{ maxWidth: 1120, margin: "72px auto 0" }}>
+        <div className="picks card-paper" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 460px), 1fr))", gap: 36, transform: "rotate(-1deg)" }}>
+          <div>
+            <h2 className="h2" id="picks-h" style={{ color: "var(--ink-red)", marginBottom: 18 }}>
+              Tell us what you like
+            </h2>
+            <ul className="checks">
+              {checklistItems.map((label, i) => {
+                const on = checklist[i];
+                return (
+                  <li key={label}>
+                    <button
+                      type="button"
+                      className={`chk ${on ? "on" : ""}`}
+                      aria-pressed={on}
+                      onClick={() =>
+                        setChecklist((prev) => [
+                          i === 0 ? !prev[0] : prev[0],
+                          i === 1 ? !prev[1] : prev[1],
+                          i === 2 ? !prev[2] : prev[2],
+                        ])
+                      }
+                    >
+                      <span className="box">
+                        <svg viewBox="0 0 16 16" aria-hidden="true">
+                          <path className="tick" d="M3 8.5l3 3 7-7" />
+                        </svg>
+                      </span>
+                      <span className="txt">{label}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <Link className={checkedCount === 3 ? "btn solid ready" : "btn solid"} to="/signin">
+              Set up my picks
+            </Link>
+          </div>
+
+          {/* Dynamic SVG scene filling with checked boxes */}
+          <div className="scene-box">
+            <svg className={`scene s${checkedCount}`} viewBox="0 0 320 300" role="img" aria-label={sceneLabels[checkedCount]}>
+              <path className="ln frame-line" d="M26 18h268a18 18 0 0 1 18 18v228a18 18 0 0 1-18 18H26a18 18 0 0 1-18-18V36a18 18 0 0 1 18-18z" />
+              <text className="hint-text" x="160" y="156">
+                tick a box to start
+              </text>
+              <path className="fill" d="M160 170 L160 80 A90 90 0 0 1 238 125 Z" />
+              <g className="st st1">
+                <path className="ln" d="M70 170a90 90 0 1 0 180 0a90 90 0 1 0-180 0M105 170a55 55 0 1 0 110 0a55 55 0 1 0-110 0M138 170a22 22 0 1 0 44 0a22 22 0 1 0-44 0M70 170h180M160 80v180" />
+              </g>
+              <g className="st st2">
+                <path className="ln" d="M206 126v-30l20 9-20 9M118 214v-24l16 7-16 7M66 214a12 12 0 1 0 24 0a12 12 0 1 0-24 0M78 226v26M78 236l-14 10M78 236l16-6M66 280l12-16 12 16M94 228h30l-4 12H98z" />
+              </g>
+              <g className="st st3">
+                <path className="ln" d="M262 54l4 10 10 4-10 4-4 10-4-10-10-4 10-4zM40 60l3 7 7 3-7 3-3 7-3-7-7-3 7-3zM250 236c10-6 22-4 28 6m-4-12 4 12-12 2" />
+              </g>
+            </svg>
+          </div>
+        </div>
+        <p className="after-note" style={{ maxWidth: 1120, margin: "18px auto 0", textAlign: "right", font: "20px var(--hand)", color: "var(--mute)" }}>
+          change any of it later in Settings
+        </p>
+      </section>
+
+      {/* WHAT LANDS EACH MORNING SECTION */}
+      <section className="morning" id="morning" aria-labelledby="morning-h" style={{ maxWidth: 1120, margin: "96px auto 72px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 460px), 1fr))", gap: 56, alignItems: "center" }}>
+        <div>
+          <p className="note-hand" style={{ margin: "0 0 12px" }}>
+            what lands each morning
+          </p>
+          <h2 className="h2" id="morning-h">
+            One message a morning. Only your picks.
+          </h2>
+          <ul className="chan" style={{ listStyle: "none", margin: "24px 0 32px", padding: 0, display: "grid", gap: 14 }}>
+            <li style={{ display: "flex", gap: 14, alignItems: "center", fontSize: 17 }}>
+              <Icon name="email" size={28} />
+              Email, with one-click unsubscribe
+            </li>
+            <li style={{ display: "flex", gap: 14, alignItems: "center", fontSize: 17 }}>
+              <Icon name="whatsapp" size={28} />
+              WhatsApp, if you add your number
+            </li>
+            <li style={{ display: "flex", gap: 14, alignItems: "center", fontSize: 17 }}>
+              <Icon name="discord" size={28} />
+              Discord, in your DMs or a server
+            </li>
+          </ul>
+          <Link className="btn chalk" to="/signin">
+            Get your morning digest
+          </Link>
+        </div>
+
+        {/* Sample phone card */}
+        <div
+          className="msg"
+          aria-label="Sample morning message"
+          style={{
+            background: "var(--coal)",
+            border: "1.5px solid var(--line-dark)",
+            borderRadius: 26,
+            padding: 22,
+            maxWidth: 420,
+            justifySelf: "center",
+            boxShadow: "0 30px 60px -24px rgb(0 0 0 / 0.8)",
+            transform: "rotate(2deg)",
+          }}
+        >
+          <div
+            className="msg-top"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              font: "500 13px var(--mono)",
+              color: "var(--mute)",
+              paddingBottom: 14,
+              borderBottom: "1px solid var(--line-dark)",
+              marginBottom: 14,
+            }}
+          >
+            <Icon name="code" size={24} />
+            HackRadar · 4:52 AM
+          </div>
+          <p style={{ background: "#2a2826", borderRadius: "4px 16px 16px 16px", padding: "14px 16px", fontSize: 15, lineHeight: 1.5, color: "var(--chalk)", marginBottom: 10, font: "20px/1.3 var(--hand)" }}>
+            Morning! 3 new near Pune since yesterday.
+          </p>
+          <div style={{ background: "#2a2826", borderRadius: "4px 16px 16px 16px", padding: "14px 16px", fontSize: 15, lineHeight: 1.5, color: "var(--chalk)", marginBottom: 10 }}>
+            <b style={{ color: "var(--coral-text)", fontWeight: 600 }}>Top pick</b> · AI Build Challenge
+            <br />
+            Weekend · in person · ₹1,00,000
+            <span style={{ display: "block", font: "500 12px var(--mono)", color: "var(--mute)", marginTop: 2 }}>dates from Devfolio</span>
+          </div>
+          <div style={{ background: "#2a2826", borderRadius: "4px 16px 16px 16px", padding: "14px 16px", fontSize: 15, lineHeight: 1.5, color: "var(--chalk)", marginBottom: 10 }}>
+            Web3 Builders Sprint
+            <br />
+            Online · registration closes Friday
+            <span style={{ display: "block", font: "500 12px var(--mono)", color: "var(--mute)", marginTop: 2 }}>dates from Unstop</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
