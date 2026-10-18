@@ -39,3 +39,7 @@ Within 30 days the cookie signs them in. After that, or on a new device, any met
 - Welcome and digest emails link to `/api/auth/unsubscribe?token=<uid>.<HMAC>`. The pipeline signs it (`pipeline/notify/unsubscribe.py`), the web checks it (`web/server/unsubscribe.ts`); a test pins both to the same value.
 - GET only forwards to `/unsubscribe` (scanners prefetch links). The button there sends POST, which deletes the account like `DELETE /api/me`.
 - The name comes from `PUT /api/me/name`, asked on `/welcome` while the name is still the placeholder "Member".
+
+## Name and landing (changed 2026-10-18)
+- The sign-in form has an optional "What should we call you?" box. For the email link it travels on the one-time token (`login_tokens.name`, migration 0012) and names the account only when it is new; an existing account is never renamed. Google and password sign-in take the name from the provider.
+- Opening the link lands on the main page (or `next`). Setup is not forced: an account without `onboarded_at` sees a "Finish setup" banner linking to `/welcome`, and gets no digest until setup is saved.

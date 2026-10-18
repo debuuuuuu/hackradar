@@ -2,16 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import Monitor from "../components/Monitor.js";
 
-/** True unless /api/me says the new user has not finished setup (any failure keeps the normal landing). */
-async function isOnboarded(): Promise<boolean> {
-  try {
-    const res = await fetch("/api/me", { headers: { accept: "application/json" } });
-    return res.ok ? ((await res.json()) as { onboarded?: boolean }).onboarded !== false : true;
-  } catch {
-    return true;
-  }
-}
-
 export default function ConfirmSignIn() {
   const [sp] = useSearchParams();
   const params = useRef({ token: sp.get("token") ?? "", next: sp.get("next") ?? "/" });
@@ -34,7 +24,7 @@ export default function ConfirmSignIn() {
         window.location.assign("/signin?error=expired");
         return;
       }
-      window.location.assign(data.next === "/" && !(await isOnboarded()) ? "/welcome" : data.next);
+      window.location.assign(data.next);
     } catch {
       window.location.assign("/signin?error=expired");
     }

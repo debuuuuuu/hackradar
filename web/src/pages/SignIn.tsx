@@ -16,6 +16,7 @@ export default function SignIn() {
 
   const [tab, setTab] = useState<"link" | "pw">("link");
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "invalid" | "undeliverable" | "failed">("idle");
   const [mood, setMood] = useState<MonitorMood>("idle");
 
@@ -45,7 +46,7 @@ export default function SignIn() {
       const res = await fetch("/api/auth/email/start", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, next }),
+        body: JSON.stringify({ email, name, next }),
       });
       setState(res.ok ? "sent" : res.status === 400 ? "invalid" : res.status === 422 ? "undeliverable" : "failed");
     } catch {
@@ -195,6 +196,17 @@ export default function SignIn() {
                 </div>
               ) : (
                 <form onSubmit={submit} className="stack" style={{ display: "grid", gap: 14 }}>
+                  <label className="field">
+                    What should we call you?
+                    <input
+                      type="text"
+                      placeholder="Your name (new here? we'll use it)"
+                      autoComplete="given-name"
+                      maxLength={40}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </label>
                   <label className="field">
                     Email
                     <input
