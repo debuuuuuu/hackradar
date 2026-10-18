@@ -136,13 +136,15 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
         setStatus({ kind: "saved" });
         return;
       }
-      const body = (await res.json().catch(() => null)) as { field?: string } | null;
+      const body = (await res.json().catch(() => null)) as { field?: string; error?: string } | null;
       const label = body?.field ? FIELD_LABEL[body.field] : undefined;
       setStatus({
         kind: "error",
         message:
           res.status === 401
             ? "You are signed out. Sign in again."
+            : body?.error?.endsWith(".")
+            ? body.error // a sentence from the server, e.g. "That is not a Discord webhook URL."
             : label
             ? `Please check the ${label} field.`
             : "Could not save. Please check your choices.",
@@ -265,6 +267,7 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
       <form
         className="card-paper grid-paper fade-in"
         style={{ border: "10px solid var(--coral)", borderRadius: 28 }}
+        noValidate // the browser's own bubble can hide on a far field; our message below the form always shows
         onSubmit={(e) => void save(e)}
       >
         {/* PART 1: Where should we ping you? */}

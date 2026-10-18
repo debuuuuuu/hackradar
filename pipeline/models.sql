@@ -171,6 +171,8 @@ CREATE TABLE IF NOT EXISTS login_tokens (
     name       text                        -- display name typed on the sign-in form, used if the account is new
 );
 ALTER TABLE login_tokens ADD COLUMN IF NOT EXISTS name text;
+-- Databases created before migration 0009 lack the column (CREATE TABLE IF NOT EXISTS skips them).
+ALTER TABLE login_tokens ADD COLUMN IF NOT EXISTS ip_hash text;
 CREATE INDEX IF NOT EXISTS login_tokens_ip_idx ON login_tokens (ip_hash, created_at);
 
 -- Mirror of config/places.yaml so the website can read it (place.sync_places).
