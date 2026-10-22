@@ -395,3 +395,10 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Debjit asked for a recommendation (2026-10-23). Tags describe likes, not identity, so this keeps the "no personal data to AI" rule; grouping keeps cost flat as users grow (D-044).
 - **Alternatives:** no tags to AI (no personal "why" line, plain tag matching only); per-user calls (cost grows with every user).
 - **Status:** active.
+
+### D-052 · Public leaderboard of people, ranked on points that need a project link
+- **Date:** 2026-10-23
+- **Decision:** `/leaderboard` ranks users with public profiles: registered 1 point, submitted 3, won 10; submitted and won only count with a project link. Boards: this month and all time, filterable by interest and city. Private profiles are never listed. Spec §6.6.
+- **Why:** Debjit (2026-10-23) asked for a leaderboard of people. Self-reported counts are easy to fake, so the higher points need proof.
+- **Alternatives:** rank on registrations alone (easy to inflate); all-time only (newcomers never catch up).
+- **Status:** active. Open: point values are a first guess; review once real data exists.

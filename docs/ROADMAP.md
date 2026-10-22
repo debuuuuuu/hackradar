@@ -5,6 +5,19 @@ _Last updated: 2026-10-22_ · ~8 weeks part-time (evenings and weekends; estimat
 Each phase ends at a **gate**. Don't start the next phase until the gate passes, so there is always a
 working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 
+## Product plan (2026-10-23, draft awaiting approval)
+
+The [product design](superpowers/specs/2026-10-23-hackradar-product-design.md) sets the build order from here.
+It overlaps the phases below; each step gets its own plan before building.
+
+- [ ] Step 1 · "For you" picks: busy dates in Settings, rule filters, AI score + "why" line (D-051) — Phase 2
+- [ ] Step 2 · Save / Register / Add to Google Calendar + reminders — Phase 3
+- [ ] Step 3 · Public profile `/u/<handle>`: ○ ● ★ grid, counts, Terms + 18+ checkbox (D-050), Terms page
+- [ ] Step 3b · Leaderboard `/leaderboard` (D-052)
+- [ ] Step 4 · Interest map for recruiters
+- [ ] Step 5 · LinkedIn / X discovery — Phase 4
+- [ ] Later · Teammate finder, recruiter search, Google Calendar free/busy
+
 ## Phase 0 · Setup (week 1) — ✅ gate passed 2026-10-14
 
 **Gate:** a manual run of `daily.yml` passes green.

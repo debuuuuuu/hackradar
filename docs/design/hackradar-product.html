@@ -1,0 +1,403 @@
+<title>How HackRadar Works</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Gochi+Hand&family=Instrument+Sans:wght@400;600&family=Young+Serif&display=swap">
+<style>
+/* Layout: one narrow column of cream "paper" cards on the charcoal desk, same as the HackRadar site (D-047). Single dark look by choice. */
+:root {
+  --charcoal: #1f1e1d;
+  --cream: #f3e7d7;
+  --cream-2: #e9dccb;
+  --coral: #e5484d;
+  --coral-text: #f07a7e;
+  --ink: #2a1615;
+  --ink-soft: #5a3532;
+  --ink-red: #9b2b2f;
+  --paper-text: #ede6dc;
+  --muted: #a59d93;
+  --grid: #e6d6c4;
+  --ok: #2f7a4f;
+  --serif: "Young Serif", Georgia, serif;
+  --hand: "Gochi Hand", "Comic Sans MS", cursive;
+  --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "DM Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--charcoal);
+  color: var(--paper-text);
+  font: 400 16px/1.6 var(--sans);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 64px;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; text-wrap: balance; margin: 0; line-height: 1.2; }
+p { margin: 0; }
+a { color: var(--coral-text); }
+.hand { font-family: var(--hand); }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center; }
+.hero svg { width: 92px; height: 92px; }
+.hero h1 { font-size: clamp(30px, 6vw, 44px); color: var(--paper-text); }
+.hero .lede { margin-top: 10px; font-size: 18px; color: var(--paper-text); max-width: 34em; }
+.hero .lede b { color: var(--coral-text); font-weight: 600; }
+.bubble {
+  grid-column: 1 / -1; justify-self: start;
+  background: var(--cream); color: var(--ink); font: 21px/1.3 var(--hand);
+  padding: 10px 16px; border-radius: 14px; position: relative; margin-left: 18px;
+}
+.bubble::before { content: ""; position: absolute; top: -9px; left: 22px; border: 9px solid transparent; border-top: 0; border-bottom-color: var(--cream); }
+
+/* Paper cards */
+.paper {
+  background-color: var(--cream);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 26px 26px;
+  color: var(--ink);
+  border-radius: 14px;
+  border-top: 6px solid var(--coral);
+  padding: 26px 24px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.paper h2 { font-size: 26px; color: var(--ink); }
+.paper p, .paper li { color: var(--ink-soft); }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-red); }
+.note { font: 19px/1.3 var(--hand); color: var(--ink-red); }
+
+/* Before / after */
+.vs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.vs > div { background: var(--cream); border: 2px solid var(--ink-red); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.vs h3 { font-size: 18px; color: var(--ink); }
+.vs ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.vs .after { border-color: var(--coral); background: #fbefe2; }
+
+/* Steps */
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.steps li { display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start; background: var(--cream); border-radius: 12px; padding: 14px; border: 1px solid var(--cream-2); }
+.steps .n { width: 40px; height: 40px; border-radius: 50%; background: var(--coral); color: #fff; font: 600 18px/40px var(--mono); text-align: center; }
+.steps b { color: var(--ink); display: block; font-size: 17px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip { font: 500 12px/1 var(--mono); padding: 6px 9px; border-radius: 999px; background: var(--cream-2); color: var(--ink); }
+.chip.hot { background: var(--coral); color: #fff; }
+
+/* Sample digest */
+.mail { background: var(--charcoal); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.mail .top { font: 500 12px/1 var(--mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.pick { background: var(--cream); color: var(--ink); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.pick .t { font: 18px/1.25 var(--serif); }
+.pick .meta { font: 13px/1.4 var(--mono); color: var(--ink-soft); }
+.pick .why { font: 18px/1.3 var(--hand); color: var(--ink-red); }
+.pick .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.btn { font: 600 14px/1 var(--sans); padding: 9px 14px; border-radius: 999px; border: 2px solid var(--ink); background: transparent; color: var(--ink); }
+.btn.primary { background: var(--coral); border-color: var(--coral); color: #fff; }
+.pick.grey { opacity: .55; }
+.more { font: 14px/1.4 var(--sans); color: var(--muted); text-align: center; }
+
+/* Profile grid */
+.toggle { display: inline-flex; background: var(--cream-2); border-radius: 999px; padding: 4px; gap: 4px; align-self: flex-start; }
+.toggle button { font: 600 14px/1 var(--sans); border: 0; border-radius: 999px; padding: 9px 14px; background: transparent; color: var(--ink); cursor: pointer; }
+.toggle button[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
+.toggle button:focus-visible, .btn:focus-visible { outline: 3px solid var(--coral); outline-offset: 2px; }
+.gridbox { overflow-x: auto; background: var(--cream); border: 2px solid var(--ink-red); border-radius: 12px; padding: 14px; }
+.weeks { display: grid; grid-template-columns: repeat(26, 20px); gap: 4px; width: max-content; }
+.wk { width: 20px; height: 20px; border-radius: 5px; background: var(--cream-2); display: grid; place-items: center; font: 13px/1 var(--sans); color: var(--ink); }
+.wk.skip { color: var(--ink-red); }
+.wk.went { background: var(--ink); color: var(--cream); }
+.wk.won { background: var(--coral); color: #fff; }
+.wk.hidden-mark { color: transparent; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 14px; color: var(--ink-soft); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .wk { display: inline-grid; }
+.counts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.counts div { background: var(--cream); border: 1px solid var(--cream-2); border-radius: 12px; padding: 12px; text-align: center; }
+.counts b { display: block; font: 28px/1.1 var(--serif); color: var(--ink); font-variant-numeric: tabular-nums; }
+.counts span { font-size: 13px; color: var(--ink-soft); }
+
+/* Interest graph */
+.graph { background: var(--cream); border: 2px solid var(--ink-red); border-radius: 12px; padding: 8px; }
+.graph svg { width: 100%; height: auto; display: block; }
+
+/* Roadmap */
+.road { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.road li { display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: baseline; background: var(--cream); border-radius: 12px; padding: 12px 14px; border: 1px solid var(--cream-2); }
+.road .s { font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 6px 8px; border-radius: 6px; text-align: center; }
+.s.done { background: var(--ok); color: #fff; }
+.s.now { background: var(--coral); color: #fff; }
+.s.next { background: var(--ink); color: var(--cream); }
+.s.later { background: var(--cream-2); color: var(--ink); }
+.road b { color: var(--ink); }
+
+/* Rules */
+.rules { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rules div { background: var(--cream); border-radius: 12px; padding: 14px; border-left: 4px solid var(--coral); min-width: 0; }
+.rules b { color: var(--ink); display: block; margin-bottom: 4px; }
+.rules p { font-size: 15px; }
+
+footer { text-align: center; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 560px) {
+  .vs, .rules { grid-template-columns: 1fr; }
+  .hero { grid-template-columns: 1fr; }
+  .road li { grid-template-columns: 1fr; }
+  .road .s { justify-self: start; }
+  .paper { padding: 22px 16px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero svg .eyes { animation: blink 4s infinite; transform-origin: center; }
+  @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+}
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <svg viewBox="-2 -1 52 52" role="img" aria-label="HackRadar mascot, a little smiling monitor">
+      <rect x="-2" y="-1" width="52" height="52" rx="11" fill="#2a2827"/>
+      <path d="M9.6 12.2h28.8l1.3 18.6H10.4z" fill="#e5484d" fill-opacity=".8"/>
+      <g fill="none" stroke="#ede6dc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 9.5c9.5-1.6 22.5-1.4 32.5-.2l1.6 21.6c.1 1.7-.9 2.7-2.6 2.7H8.8c-1.6 0-2.6-1-2.6-2.6L6.6 11.2c0-.9.5-1.5 1.4-1.7zM22 33.6l-1.2 6M26.6 33.6l1.2 6M15.5 42.2c5.6-1.8 12.2-1.8 17.6 0"/>
+        <path class="eyes" d="M17.5 16.5v4M30.5 16.5v4"/>
+        <path d="M16.5 23.5c3.6 4.6 11.4 4.6 15 0"/>
+      </g>
+    </svg>
+    <div>
+      <h1>How HackRadar works</h1>
+      <p class="lede">Stop checking five websites. Every morning HackRadar sends you <b>the 3 to 5 hackathons you would actually enter</b>, and builds a profile of everything you've done.</p>
+    </div>
+    <p class="bubble">I read all the sites so you don't have to [^‿^]</p>
+  </header>
+
+  <section class="paper" aria-labelledby="problem">
+    <span class="eyebrow">The problem</span>
+    <h2 id="problem">Too many sites, too many events</h2>
+    <div class="vs">
+      <div>
+        <h3>Today, without HackRadar</h3>
+        <ul>
+          <li>Open Devpost, Unstop, Devfolio, MLH, LinkedIn…</li>
+          <li>Scroll past 100+ events that don't fit you</li>
+          <li>Find a great one, then realise it's in exam week</li>
+          <li>Forget the deadline</li>
+        </ul>
+      </div>
+      <div class="after">
+        <h3>With HackRadar</h3>
+        <ul>
+          <li>One message every morning</li>
+          <li>Only 3 to 5 picks, each with a reason</li>
+          <li>Events during your busy dates are greyed out</li>
+          <li>Reminders before every deadline</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="paper" aria-labelledby="morning">
+    <span class="eyebrow">Every morning, about 5 AM IST</span>
+    <h2 id="morning">What happens while you sleep</h2>
+    <ol class="steps">
+      <li><span class="n">1</span><div><b>Collect</b><p>HackRadar reads every hackathon from Devpost, Unstop, Devfolio and MLH. Same event on two sites? It shows once.</p></div></li>
+      <li><span class="n">2</span><div><b>Filter by your rules</b><p>Remove what can't work for you. No AI here, just your settings.</p>
+        <div class="chips"><span class="chip">city &amp; distance</span><span class="chip">online / offline</span><span class="chip">student only?</span><span class="chip">registration open</span><span class="chip hot">am I free?</span></div></div></li>
+      <li><span class="n">3</span><div><b>Pick and explain</b><p>AI scores what's left against your interests (AI, web3, prize, team or solo) and writes one line on why each pick fits.</p></div></li>
+      <li><span class="n">4</span><div><b>Send to you</b><p>Your picks arrive by email, Discord or WhatsApp. You decide what to do with them.</p></div></li>
+    </ol>
+  </section>
+
+  <section class="paper" aria-labelledby="board">
+    <span class="eyebrow">Leaderboard</span>
+    <h2 id="board">See who is building the most</h2>
+    <p>A public ranking of people. Points come from what you actually did, and the big ones need a project link as proof.</p>
+    <div class="legend">
+      <span><i class="wk went">●</i> Registered = 1 point</span>
+      <span><i class="wk won">★</i> Submitted = 3 points</span>
+      <span><i class="wk won">★</i> Won = 10 points</span>
+    </div>
+    <div class="toggle" role="group" aria-label="Leaderboard period">
+      <button type="button" id="b-month" aria-pressed="true">This month</button>
+      <button type="button" id="b-all" aria-pressed="false">All time</button>
+    </div>
+    <ol class="steps" id="board-list" aria-label="Example leaderboard"></ol>
+    <p class="note">Example names and numbers. Filter by interest (top AI builders) or by city. Private profiles are never listed.</p>
+  </section>
+
+  <section class="paper" aria-labelledby="social">
+    <span class="eyebrow">LinkedIn and X</span>
+    <h2 id="social">Hackathons that are only announced in posts</h2>
+    <p>Many college and company hackathons are only posted on LinkedIn or X. HackRadar finds them without logging in anywhere.</p>
+    <ol class="steps">
+      <li><span class="n">1</span><div><b>Search for public posts</b><p>Search services (Tavily, then Exa or Serper as backup) look for public posts like "hackathon registrations open".</p></div></li>
+      <li><span class="n">2</span><div><b>Read the post</b><p>A reader tool opens the public page, the same way a logged-out visitor would see it.</p></div></li>
+      <li><span class="n">3</span><div><b>Pull out the details</b><p>AI finds the name, dates and registration link in the post text.</p></div></li>
+      <li><span class="n">4</span><div><b>Throw out the junk</b><p>No registration link, already over, or older than about 90 days? Dropped. Everything else joins the normal filter and ranking.</p></div></li>
+    </ol>
+    <p class="note">No logins, no cookies, no fake accounts. Every pick from a post links back to that post.</p>
+  </section>
+
+  <section class="paper" aria-labelledby="digest">
+    <span class="eyebrow">What you get</span>
+    <h2 id="digest">Your morning message</h2>
+    <p class="note">Example only. These events are made up to show the layout.</p>
+    <div class="mail">
+      <span class="top">HackRadar · Your picks for Thursday</span>
+      <article class="pick">
+        <span class="t">Example: Build-with-AI Weekend</span>
+        <span class="meta">Online · 8–9 Nov · Prize ₹1,00,000 · Teams of 2–4 · Closes in 6 days</span>
+        <span class="why">Matches your AI interest, online, and you're free that weekend.</span>
+        <div class="acts"><span class="btn primary">Register</span><span class="btn">Save</span><span class="btn">Add to Google Calendar</span></div>
+      </article>
+      <article class="pick">
+        <span class="t">Example: Pune Web3 Builders Day</span>
+        <span class="meta">In person · Pune · 15 Nov · Prize ₹50,000 · Solo or team</span>
+        <span class="why">Web3 is your second interest, and it's 12 km away.</span>
+        <div class="acts"><span class="btn primary">Register</span><span class="btn">Save</span><span class="btn">Add to Google Calendar</span></div>
+      </article>
+      <article class="pick grey">
+        <span class="t">Example: Campus Code Sprint</span>
+        <span class="meta">In person · 2 Dec</span>
+        <span class="why">Clashes with your exams (1–10 Dec).</span>
+      </article>
+      <p class="more">+ 37 more events → see everything on the website</p>
+    </div>
+    <p>Save it and HackRadar reminds you 7, 3 and 1 day before, and on the day. Register opens the organiser's own page.</p>
+  </section>
+
+  <section class="paper" aria-labelledby="profile">
+    <span class="eyebrow">Your profile · hackradar/u/your-name</span>
+    <h2 id="profile">Your hackathon record, in one page</h2>
+    <p>Like a GitHub streak, but for hackathons. Each square is one week of hackathons in your interests.</p>
+    <div class="toggle" role="group" aria-label="Who is looking">
+      <button type="button" id="view-me" aria-pressed="true">What you see</button>
+      <button type="button" id="view-rec" aria-pressed="false">What a recruiter sees</button>
+    </div>
+    <div class="gridbox"><div class="weeks" id="weeks" aria-label="26 weeks of example activity"></div></div>
+    <div class="legend">
+      <span id="leg-skip"><i class="wk skip">○</i> Happened in your interests, you skipped</span>
+      <span><i class="wk went">●</i> You registered or attended</span>
+      <span><i class="wk won">★</i> You submitted or won</span>
+    </div>
+    <p class="note" id="view-note">You see everything, so you can spot what you missed.</p>
+    <div class="counts">
+      <div><b>9</b><span>registered</span></div>
+      <div><b>5</b><span>submitted</span></div>
+      <div><b>1</b><span>won</span></div>
+    </div>
+    <p>Counts are self-reported. A ✓ appears when you add a project link (Devpost or GitHub). Your email is never shown. Profiles are public, and you can make yours private anytime.</p>
+  </section>
+
+  <section class="paper" aria-labelledby="graph">
+    <span class="eyebrow">For recruiters</span>
+    <h2 id="graph">Your interest map</h2>
+    <p>A picture of what you build. Bigger circle = more hackathons in that area. A recruiter sees in a minute that you're mostly an AI person who also does web.</p>
+    <div class="graph">
+      <svg viewBox="0 0 640 300" role="img" aria-label="Example interest map: You in the centre, linked to AI (largest), Web, Web3 and Design, with hackathons around each">
+        <g stroke="#9b2b2f" stroke-width="2" fill="none" opacity=".6">
+          <path d="M320 150 L170 90"/><path d="M320 150 L480 95"/><path d="M320 150 L190 230"/><path d="M320 150 L470 225"/>
+          <path d="M170 90 L80 50"/><path d="M170 90 L70 120"/><path d="M170 90 L150 25"/><path d="M170 90 L250 30"/>
+          <path d="M480 95 L570 55"/><path d="M480 95 L585 125"/>
+          <path d="M190 230 L95 260"/><path d="M470 225 L560 265"/>
+        </g>
+        <g fill="#e9dccb" stroke="#9b2b2f" stroke-width="2">
+          <circle cx="80" cy="50" r="9"/><circle cx="70" cy="120" r="9"/><circle cx="150" cy="25" r="9"/><circle cx="250" cy="30" r="9"/>
+          <circle cx="570" cy="55" r="9"/><circle cx="585" cy="125" r="9"/><circle cx="95" cy="260" r="9"/><circle cx="560" cy="265" r="9"/>
+        </g>
+        <circle cx="170" cy="90" r="46" fill="#e5484d"/>
+        <circle cx="480" cy="95" r="34" fill="#2a1615"/>
+        <circle cx="190" cy="230" r="26" fill="#5a3532"/>
+        <circle cx="470" cy="225" r="22" fill="#9b2b2f"/>
+        <circle cx="320" cy="150" r="32" fill="#f3e7d7" stroke="#2a1615" stroke-width="3"/>
+        <g font-family="Instrument Sans, system-ui, sans-serif" font-weight="600" text-anchor="middle">
+          <text x="320" y="156" font-size="17" fill="#2a1615">You</text>
+          <text x="170" y="96" font-size="18" fill="#ffffff">AI</text>
+          <text x="480" y="101" font-size="16" fill="#f3e7d7">Web</text>
+          <text x="190" y="235" font-size="14" fill="#f3e7d7">Web3</text>
+          <text x="470" y="230" font-size="12" fill="#f3e7d7">Design</text>
+        </g>
+        <text x="620" y="292" font-family="Gochi Hand, cursive" font-size="17" fill="#9b2b2f" text-anchor="end">small dots = hackathons you did</text>
+      </svg>
+    </div>
+  </section>
+
+  <section class="paper" aria-labelledby="plan">
+    <span class="eyebrow">The plan</span>
+    <h2 id="plan">What's built and what comes next</h2>
+    <ul class="road">
+      <li><span class="s done">Done</span><div><b>Daily collection + digest</b><p>Devpost, Unstop and Devfolio every morning. Email, Discord and WhatsApp. Website with sign-in and settings.</p></div></li>
+      <li><span class="s now">Step 1</span><div><b>"For you" picks</b><p>Busy dates in Settings, AI ranking, and a "why" line on every pick.</p></div></li>
+      <li><span class="s next">Step 2</span><div><b>Save, Register, Calendar</b><p>One tap each, plus reminders before deadlines.</p></div></li>
+      <li><span class="s next">Step 3</span><div><b>Public profile</b><p>Your handle, the ○ ● ★ grid and your counts. Terms checkbox at setup.</p></div></li>
+      <li><span class="s next">Step 3b</span><div><b>Leaderboard</b><p>Public ranking of people, built on the profiles.</p></div></li>
+      <li><span class="s next">Step 4</span><div><b>Interest map</b><p>The picture recruiters look at.</p></div></li>
+      <li><span class="s next">Step 5</span><div><b>LinkedIn and X posts</b><p>Find hackathons announced only in public posts, without logging in.</p></div></li>
+      <li><span class="s later">Later</span><div><b>Teammate finder, recruiter search</b><p>Once enough people have profiles.</p></div></li>
+    </ul>
+  </section>
+
+  <section class="paper" aria-labelledby="rules">
+    <span class="eyebrow">Promises</span>
+    <h2 id="rules">Rules HackRadar never breaks</h2>
+    <div class="rules">
+      <div><b>Real dates and prizes</b><p>They always come from the organiser's page, never from AI. The link is always shown.</p></div>
+      <div><b>Your data stays yours</b><p>The AI only sees interest tags like "AI, online". Never your name, email or history.</p></div>
+      <div><b>No sneaky scraping</b><p>Only public pages and official APIs. No logging into anyone's account.</p></div>
+      <div><b>Leave anytime</b><p>One click in any email unsubscribes you and deletes your account.</p></div>
+    </div>
+  </section>
+
+  <footer>HackRadar product design · 23 October 2026 · Full write-up: docs/superpowers/specs/2026-10-23-hackradar-product-design.md</footer>
+</div>
+
+<script>
+(function () {
+  // Example activity for 26 weeks: 0 empty, 1 skipped, 2 attended, 3 submitted/won.
+  var pattern = [0,1,2,0,1,1,3,0,2,1,0,0,2,1,3,1,0,2,2,1,0,1,3,2,1,3];
+  var marks = { 1: ["skip", "○", "Hackathon in your interests (skipped)"], 2: ["went", "●", "Registered or attended"], 3: ["won", "★", "Submitted or won"] };
+  var weeks = document.getElementById("weeks");
+  pattern.forEach(function (v, i) {
+    var cell = document.createElement("span");
+    cell.className = "wk" + (marks[v] ? " " + marks[v][0] : "");
+    cell.textContent = marks[v] ? marks[v][1] : "";
+    cell.title = "Week " + (i + 1) + (marks[v] ? ": " + marks[v][2] : "");
+    weeks.appendChild(cell);
+  });
+  var boards = {
+    month: [["example_asha", 24, "2 won, 3 submitted"], ["example_ravi", 17, "1 won, 2 submitted"], ["example_meera", 9, "3 submitted"], ["example_you", 6, "2 submitted"]],
+    all: [["example_ravi", 88, "6 won, 9 submitted"], ["example_asha", 71, "5 won, 6 submitted"], ["example_you", 33, "2 won, 4 submitted"], ["example_meera", 30, "1 won, 6 submitted"]]
+  };
+  var list = document.getElementById("board-list"), bm = document.getElementById("b-month"), ba = document.getElementById("b-all");
+  function board(key) {
+    bm.setAttribute("aria-pressed", String(key === "month"));
+    ba.setAttribute("aria-pressed", String(key === "all"));
+    list.textContent = "";
+    boards[key].forEach(function (r, i) {
+      var li = document.createElement("li");
+      var n = document.createElement("span"); n.className = "n"; n.textContent = i + 1;
+      var d = document.createElement("div");
+      var b = document.createElement("b"); b.textContent = r[0] + (r[0] === "example_you" ? "  (you)" : "");
+      var p = document.createElement("p"); p.textContent = r[1] + " points · " + r[2];
+      d.appendChild(b); d.appendChild(p); li.appendChild(n); li.appendChild(d); list.appendChild(li);
+    });
+  }
+  bm.addEventListener("click", function () { board("month"); });
+  ba.addEventListener("click", function () { board("all"); });
+  board("month");
+  var me = document.getElementById("view-me"), rec = document.getElementById("view-rec");
+  var note = document.getElementById("view-note"), legSkip = document.getElementById("leg-skip");
+  function show(recruiter) {
+    me.setAttribute("aria-pressed", String(!recruiter));
+    rec.setAttribute("aria-pressed", String(recruiter));
+    weeks.querySelectorAll(".skip").forEach(function (c) { c.classList.toggle("hidden-mark", recruiter); });
+    legSkip.hidden = recruiter;
+    note.textContent = recruiter
+      ? "Recruiters only see what you actually did. Skipped events stay private."
+      : "You see everything, so you can spot what you missed.";
+  }
+  me.addEventListener("click", function () { show(false); });
+  rec.addEventListener("click", function () { show(true); });
+})();
+</script>

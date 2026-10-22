@@ -61,7 +61,7 @@ flowchart LR
 ## Data model (Postgres)
 
 One canonical `events` row per hackathon; every place it was seen is tracked in `event_sources`, so
-deduplication never loses a link. Schema file: `pipeline/models.sql` (not yet written).
+deduplication never loses a link. Schema file: `pipeline/models.sql` (idempotent; changes for old databases in `pipeline/migrations/`, 0002 to 0012).
 
 | Table | Purpose | Key fields |
 |---|---|---|
@@ -111,30 +111,35 @@ One job, ~5–10 min. A failing source or AI call is logged and skipped, never f
 11. **Health.** Write `runs` row; Discord alert if a source returns 0 two days running or the run fails;
     commit `data/last_run.json` to the `status` branch.
 
-## Repo layout (planned)
+## Repo layout (as of 2026-10-23)
+
+`(planned)` marks files that do not exist yet.
 
 ```
 hackradar/
 ├── pipeline/
-│   ├── sources/        base.py devpost.py unstop.py devfolio.py mlh.py discovery.py
-│   ├── normalize.py  dedupe.py
-│   ├── ai/             gemini.py groq.py claude.py  prompts/
-│   ├── ranking.py  reminders.py  digest.py
-│   ├── notify/         discord.py email.py whatsapp.py
-│   ├── db.py  models.sql  migrations/
+│   ├── sources/        base.py devpost.py unstop.py devfolio.py  (planned: mlh.py luma.py discovery.py)
+│   ├── normalize.py  dedupe.py  place.py  enrich.py  config.py  crypto.py
+│   ├── ai/             base.py groq.py summarize.py  (planned: gemini.py claude.py, ranking)
+│   ├── digest.py  user_digest.py  sends.py  (planned: ranking.py reminders.py)
+│   ├── notify/         discord.py email.py whatsapp.py unsubscribe.py webhook_url.py
+│   ├── db.py  models.sql  migrations/ (0002–0012 + README)
 │   └── run.py          # python -m pipeline.run
-├── bot/                # Vercel Python function: /api/interactions
-├── web/                # React + Vite dashboard (fun theme SPA)
-│   ├── src/
-│   │   ├── components/ # Nav, Footer, Monitor, Quip, Icon, PrefsForm, PasswordSignIn
-│   │   ├── pages/      # Home (Landing/Today), Events, EventDetail, MyEvents, SignIn, Setup, Admin
-│   │   ├── lib/        # api.ts, auth.ts, time.ts
-│   │   └── styles.css  # Hand-drawn fun theme design tokens and component styles
+├── web/                # React + Vite site + one Vercel function (D-039)
+│   ├── api/index.ts    # the single Vercel function; routes live in server/
+│   ├── server/         # auth, sessions, Supabase, Google, Discord, mail, prefs, events, admin stats, unsubscribe
+│   └── src/
+│       ├── components/ # Nav, Footer, Monitor, Quip, Icon, PrefsForm, NameForm, PasswordSignIn
+│       ├── pages/      # Home, Landing, Today, Events, EventDetail, MyEvents, Onboarding, Settings,
+│       │               # SignIn, ConfirmSignIn, Unsubscribe, Admin
+│       ├── favicon.ts  # animated mascot favicon
+│       └── styles.css  # fun theme tokens and component styles
 ├── tests/              # fixtures/ (saved real responses) + unit tests
-├── config/             sources.yaml settings.yaml
+├── config/             sources.yaml settings.yaml places.yaml
 ├── data/last_run.json  # lives on the status branch (D-023)
-├── docs/               # ARCHITECTURE, CONTEXT, DECISIONS, ROADMAP, design/DESIGN.md
+├── docs/
 └── .github/workflows/  daily.yml ci.yml
+(planned: bot/ — Discord interactions function, Phase 3)
 ```
 
 ## Web frontend (`web/`)
@@ -149,11 +154,23 @@ Built with React 18, Vite, and TypeScript. Styled with vanilla CSS design tokens
 | `/events` | `Events` | Public | Public searchable directory with query filter, closing-soon / nearest tabs, pagination |
 | `/events/:id` | `EventDetail` | Public | Event tablet card, real-date countdown sticker, notched ticket stub, AI summary label, Ask an AI card |
 | `/my-events` | `MyEvents` | Signed-in | Saved events timeline & scrapbook shell (empty state with `TODO(backend)`) |
-| `/welcome` | `Welcome` | Signed-in | Onboarding questionnaire (4 playful steps: notification channels, home base, themes, volume) |
+| `/welcome` | `Onboarding` | Signed-in | Onboarding: name step if missing, then 4 playful steps (notification channels, home base, themes, volume) |
 | `/settings` | `Settings` | Signed-in | Preferences editor (same 4-step form with live Discord webhook test & CallMeBot key) |
 | `/signin` | `SignIn` | Signed-out | Google OAuth, email magic link, and Supabase password authentication |
 | `/signin/confirm` | `ConfirmSignIn` | Public | OTP / magic-link token verification handler |
-| `/admin` | `Admin` | Signed-in (Owner) | System status, run logs, trigger pipeline run |
+| `/unsubscribe` | `Unsubscribe` | Public (signed link) | Confirm page for the email unsubscribe link; the button deletes the account (D-049) |
+| `/admin` | `Admin` | Signed-in (Owner) | Usage stats from `GET /api/admin/stats` (no pipeline trigger yet) |
+
+Planned (product design 2026-10-23): `/for-you`, `/u/<handle>` (public profile), `/leaderboard`, `/terms`.
+
+### API routes (`web/server/*-routes.ts`)
+
+Auth: `POST /api/auth/email/start`, `GET|POST /api/auth/email/verify`, `GET /api/auth/providers`,
+`POST /api/auth/supabase/session`, `GET /api/auth/google/start|callback`, `GET /api/auth/discord/start|callback`,
+`POST /api/auth/logout`, `POST /api/auth/logout-all`, `GET|POST /api/auth/unsubscribe`.
+Account: `GET /api/me`, `PUT /api/me/name`, `DELETE /api/me`, `GET|PUT /api/me/prefs`, `POST /api/me/prefs/test-discord`.
+Public: `GET /api/events`, `GET /api/events/:id`, `GET /api/places`, `GET /api/health`. Owner: `GET /api/admin/stats`.
+No saves API yet: `/my-events` is a shell until Phase 3.
 
 ### Key Components
 

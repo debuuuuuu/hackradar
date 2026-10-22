@@ -28,6 +28,7 @@ Part 1 makes people open it daily. Part 2 is the reason to keep using it and to 
 - G3. From any pick: **Save**, **Register** (opens the organiser's page), **Add to Google Calendar**.
 - G4. Saved events get reminders before key dates (7/3/1 days + same day; already decided, D-019).
 - G5. Public profile at `/u/<handle>`: activity grid (○ ● ★), counts (registered, submitted, won), interest graph.
+- G6. Public leaderboard of people at `/leaderboard`, ranked on verified activity.
 
 ## 4. Non-goals (not in this design)
 
@@ -100,6 +101,31 @@ and Google app verification; it would need its own research note and decision.
 - **My call:** drawn in the browser from Postgres data with a JS graph library. A Neo4j database is not
   needed at this size; "like Neo4j" is taken to mean the look, not the database.
 
+### 6.6 Leaderboard (`/leaderboard`)
+
+Requested by Debjit, 2026-10-23: a leaderboard of people. The rest is **my call**:
+
+- **Points:** registered 1, submitted 3, won 10. Submitted and won count only with a project link (the ✓ from
+  §6.4), so a ranking cannot be climbed by typing numbers. Skipped events (○) never count.
+- **Boards:** This month (resets, so newcomers can climb) and All time. Filters: by interest (e.g. top AI
+  builders) and by city.
+- **Who appears:** only users with a public profile and a handle. Private profiles are never listed.
+  Each row shows handle, points and counts; clicking opens the public profile (§6.4).
+- **Ties:** broken by who reached the score first.
+- **Fun theme (D-047):** top 3 get coral/ink/cream "medal" cards; the signed-in user sees "You are #14" pinned.
+- **Anti-goal:** a ranking that rewards spam. If many users report the same project link, flag for review.
+
+### 6.7 LinkedIn and X posts (discovery)
+
+Many hackathons are only announced in posts. Already decided (D-002, D-008, D-009); restated here:
+
+- No logins, cookies or direct scraping of LinkedIn or X.
+- Search APIs find public posts (Tavily first, then Exa, then Serper). Jina Reader fetches the public page.
+- AI extracts name, dates and registration link from the post text. Dropped: no registration link, already
+  over, or older than ~90 days (Debjit, 2026-10-15).
+- Discovered events join the same dedupe, filters and ranking. The post link is always shown.
+- Free limits (Tavily ~1,000 credits/month etc.) need re-checking before building (**unverified** as of 2026-10-23).
+
 ## 7. Order of work
 
 | Step | What | Unlocks |
@@ -108,6 +134,8 @@ and Google app verification; it would need its own research note and decision.
 | 2 | Save / Register / Calendar actions + reminders (Phase 3) | Daily habit |
 | 3 | Handle + public profile with streak and counts | Shareable page |
 | 4 | Interest graph + recruiter-friendly view | Portfolio value |
+| 3b | Leaderboard (§6.6), needs step 3 | Reason to come back and share |
+| 5 | LinkedIn / X discovery (§6.5) | Events no other site lists |
 | Later | Teammate finder; recruiter search; Google free/busy | Growth |
 
 Each step gets its own short spec and plan before building.
