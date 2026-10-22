@@ -1,28 +1,19 @@
 # HackRadar — CONTEXT (single source of truth)
 
-_Last updated: 2026-10-16_
+_Last updated: 2026-10-22_
 
 ## 1. Resume here
 
 **Where docs live:** all in `docs/`. At session start read this file, then the **newest file in
 [`sessions/`](sessions/README.md)** (last session's done/problems/next steps), then only the sub-docs the task needs (index in §7).
 
-- **Phase:** 1 · MVP digest, in progress. Phase 0 gate passed 2026-10-14.
-- **Just finished (2026-10-18, merged to `main`, live):** accounts and email launch ([session](sessions/2026-10-18-accounts-email-launch.md), D-049). Email digests now go out daily to users with a verified sign-in address; first send 2026-10-18 (2 sent, 0 failed). Name is asked on the sign-in form; unsubscribe deletes the account. **Resume here:** read the 19 Oct 5 AM IST run (`sends` table, channel `email`) and collect friends' feedback.
-- **Just finished (2026-10-18, branch `feat/fun-theme`, ready for review):** rebuilt the entire web frontend in the new "fun theme" (D-047, [design/DESIGN.md](design/DESIGN.md)) matching `design/hackradar-preview/`. All existing features preserved (Google, Magic Link, Supabase password auth, onboarding redirect, Settings with Discord webhook test & CallMeBot key, public events directory with search/filters/paging, Event Detail with Ask an AI prompts and live countdown sticker, and Admin dashboard). Added new routes `/events`, `/my-events`. Monitor mascot with cycling moods, interactive speech bubble ("quips"), mini icon set, full accessibility (reduced-motion safe, 44px targets, 4.5:1 contrast). Verified clean build (`tsc --noEmit && vite build`), vitest 116 passed (66 DB skipped), zero hardcoded sample data.
-- **Earlier (2026-10-16, branch `feat/landing-flow`, not merged to `main`):** public landing page; automatic sign-up
-  (D-044); abuse limits and welcome email (D-045); Google sign-in, Supabase email+password sign-in, daily Supabase
-  keep-alive (D-045, D-046). Cron runs 15 and 16 Oct green. Local checks: ruff/black clean, pytest 130 passed (24 DB tests skipped,
-  no `TEST_DATABASE_URL`), web vitest 116 passed (66 DB tests skipped), `tsc` and web build clean.
-- **Earlier (2026-10-15):** Devfolio source; place filter (Pune ± 150 km, contests hidden; D-038); dedupe + "listed on 2+ platforms" badge (D-037, 61 tests); digest now shows AI summaries and a separate "Contests & other" section (kind filter, 52 tests); first live Discord digest; "new" cutoff fix; trust signals (D-031); batched
-  upserts (run 155 s → 15 s); calendar plan (D-032); Luma via ICS (D-033); place filter (D-034); dashboard design
-  direction D (canvas https://claude.ai/artifact/SDLHqTM56wgrjpXHTgdbAx, private); Phase 2 source research.
-  34 tests green.
-- **Next task:** code review of `feat/fun-theme` frontend rebuild; check the 04:47 IST cron digest on 17/18 Oct (Phase 1 gate, third day): `gh run list --workflow
-  daily.yml`, the Discord channel, the `runs` table. Fix anything flaky. Then Phase 2 (ROADMAP).
-- **Open for web:** review and merge `feat/fun-theme`; run DB tests with a throwaway `TEST_DATABASE_URL`; production smoke test (plan Task 8).
-- **Blockers for Phase 2 (Debjit):** Groq API key (console.groq.com; if it asks for a card, stop) and Gmail app password → `.env`; Claude
-  copies them to GitHub Secrets with `gh secret set` (never pasted in chat).
+- **Phase:** Phase 1 gate met (2026-10-22). Phase 2 (per-user AI scoring) not yet started. Phase 0 gate passed 2026-10-14.
+- **State (2026-10-22):** Live and running. Site at https://hackradar-two.vercel.app. Daily cron green every day since 2026-10-16. Email digests go to every onboarded user (5 of ~8 on 2026-10-22, 0 failed sends since 2026-10-19). Animated mascot favicon, save-button feedback, HTML emails with one-click unsubscribe, name asked on sign-in form — all on `main` and live.
+- **Finished (2026-10-18, merged to `main`):** Accounts and email launch ([session](sessions/2026-10-18-accounts-email-launch.md), D-049). Migrations 0009–0012 applied on Neon. Animated mascot favicon (PR #5). Save-button now shows an error when rejected (PR #6). Supabase env vars added to Vercel production.
+- **Finished earlier (2026-10-18, PR #4):** Full web frontend "fun theme" (D-047, [design/DESIGN.md](design/DESIGN.md)); Google, Magic Link and Supabase password auth; onboarding flow; Settings with Discord webhook test and CallMeBot key; public events directory; Event Detail; Admin dashboard; animated mascot with quips; full accessibility.
+- **Finished (2026-10-15–16):** Devfolio source; place filter (Pune ± 150 km; D-038); dedupe + "listed on 2+ platforms" badge (D-037); AI summaries and Contests section; first live Discord digest (2026-10-15); trust signals (D-031); batched upserts; public landing page; Google sign-in; Supabase email+password sign-in (D-045, D-046).
+- **Resume here:** (1) decide the product plan and scale — friends-only vs open, email sender, DB limits; (2) Phase 2 per-user AI ranking; (3) Phase 3 saves and reminders. Collect friends' feedback on the emails first.
+- **Open items:** Google sign-in keys not on Vercel (disabled); Discord sign-in disabled (no client id/secret); Supabase auth record not deleted on account deletion; unsubscribe links never expire; web DB tests time out from a laptop against Neon (CI is the real check); Discord webhook leaked in an earlier session — rotate it.
 - **Web platform:** plan [superpowers/plans/2026-10-15-web-platform.md](superpowers/plans/2026-10-15-web-platform.md), spec [superpowers/specs/2026-10-15-user-onboarding-design.md](superpowers/specs/2026-10-15-user-onboarding-design.md) (D-039), design spec [design/DESIGN.md](design/DESIGN.md) (D-047). Run tests: `cd web && npx vitest run`.
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
 
@@ -58,19 +49,16 @@ Friends and college peers can join with their own filters, saves and reminders. 
 | Phase | Name | Gate | Status |
 |---|---|---|---|
 | 0 | Setup | Manual run of `daily.yml` passes green | ✅ passed 2026-10-14 |
-| 1 | MVP digest | Real digest on Discord 3 days in a row | 🟨 in progress |
+| 1 | MVP digest | Real digest on Discord 3 days in a row | ✅ met (runs green 2026-10-16 to 22; channel contents not re-verified) |
 | 2 | AI + more sources | Digest ranked, no event listed twice | ⬜ |
 | 3 | Saves + reminders | Saved event gets its 7/3/1-day reminders | ⬜ |
 | 4 | Discovery + smarts | `/ask` answers reliably (see D-020) | ⬜ |
 | 5 | Dashboard + friends | 3 friends get their own digests and reminders | ⬜ |
 | 6 | Portfolio polish | Repo public-ready, demo ready | ⬜ |
 
-**Working end to end right now:** `daily.yml` (manual or cron) → `python -m pipeline.run` fetches Devpost and
-Unstop (robots-checked, polite), batch-upserts into `events`/`event_sources`, closes past events, writes a `runs` row and
-`data/last_run.json` → keepalive commit to `status` branch. Builds and sends the Discord digest (webhook live since 2026-10-15).
-CI (ruff, black, pytest) green on `main`.
+**Working end to end right now:** `daily.yml` (manual or cron) → `python -m pipeline.run` fetches Devpost, Unstop and Devfolio (robots-checked, polite), batch-upserts into `events`/`event_sources`, closes past events, writes a `runs` row and `data/last_run.json` → keepalive commit to `status` branch. Builds and sends per-user digests by email (Gmail SMTP, HTML), Discord webhook and WhatsApp (CallMeBot) to every onboarded user. CI (ruff, black, pytest, web vitest) green on `main`.
 
-**Web platform (branch `feat/landing-flow`, in `web/`; D-039):** Vite + React site on the Vercel project `hackradar` (deployment protection currently on). Events list; event page with Ask ChatGPT / Ask Claude links; public landing page; automatic sign-up (D-044); Google sign-in and Supabase email+password sign-in (D-045, D-046; branch `feat/landing-flow`); Discord sign-in (disabled until `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` are set); onboarding and settings; owner-only analytics at `/admin`. CI has a second job `web` (npm ci, test, build, tsc). Env var names: `DATABASE_URL`, `SESSION_SECRET`, `ENCRYPTION_KEY`, `SMTP_USER`, `SMTP_APP_PASSWORD`, `ADMIN_EMAILS`, `SITE_URL`, `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `SUPABASE_URL`, `SUPABASE_ANON_KEY` (anon key only, never service_role), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `VITE_DISCORD_INVITE_URL` (optional). Full list with comments: `web/.env.example` and root `.env.example`. Production smoke test not yet done (plan Task 8).
+**Web platform (merged to `main`, in `web/`, live; D-039):** Vite + React site on the Vercel project `hackradar` (Root Directory `web`; GitHub pushes to `main` deploy it automatically). Events list; event detail; public landing page; email magic-link sign-in with name capture; Supabase email+password sign-in (D-046); onboarding and settings; owner-only analytics at `/admin`; animated mascot favicon. Discord sign-in built but disabled (needs `DISCORD_CLIENT_ID`/`DISCORD_CLIENT_SECRET` on Vercel). CI second job `web` (npm ci, vitest, build, tsc). Production smoke-tested 2026-10-18 (sign-in, setup, email digest, unsubscribe). Env vars: `DATABASE_URL`, `SESSION_SECRET`, `ENCRYPTION_KEY`, `SMTP_USER`, `SMTP_APP_PASSWORD`, `ADMIN_EMAILS`, `SITE_URL`, `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `VITE_DISCORD_INVITE_URL` (optional). Full list: `web/.env.example`.
 
 ## 4. Stack at a glance
 
@@ -133,6 +121,12 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-036 Daily enrichment: AI summary + kind (hackathon/contest/other) stored per event; digest doesn't use them yet.
 - D-037 Cross-platform dedupe: conservative rule-based merge, "listed on 2+ platforms" badge.
 - D-038 Place filter on a hand-kept city table (no geocoder); owner prefs in settings.yaml.
+- D-044 Built for real scale (1k–1M users); free tiers to start, nothing that cannot be upgraded.
+- D-045 Public browsing; sign in only for personal features; email magic link and Google.
+- D-046 Supabase Auth for email+password; our own session and database stay.
+- D-047 Web "fun theme" (charcoal, coral, cream, mascot).
+- D-048 Sessions can be ended server-side (`sessions_valid_after`); users can delete their account.
+- D-049 One-click unsubscribe deletes the account; branded HTML emails; name captured on sign-in form.
 
 ## 6. Known issues and open questions
 

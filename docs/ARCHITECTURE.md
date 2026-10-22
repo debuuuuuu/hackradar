@@ -1,6 +1,6 @@
 # HackRadar — Architecture
 
-_Last updated: 2026-10-14_ · Status: **planned** (no code yet).
+_Last updated: 2026-10-22_ · Status: **partly built**. Live: daily pipeline, Postgres, website with sign-in, email digests, Discord webhook, WhatsApp. Not built yet: Discord bot, discovery, per-user AI scoring, reminders, `/ask`.
 
 ## Components
 
@@ -79,6 +79,14 @@ deduplication never loses a link. Schema file: `pipeline/models.sql` (not yet wr
 - CallMeBot keys and emails encrypted with a key from GitHub Secrets / Vercel env (D-024).
 - Personal data never goes to AI; only public event text.
 - Embedding storage type (pgvector vs float array) — open; Neon supports pgvector (unverified on free tier).
+
+### Tables added after the first schema (see `pipeline/models.sql`)
+
+`logins` (one row per web sign-in), `login_tokens` (one-time email links, hashed, with IP blind index and the typed name), `places` (city table for the place filter), `sends` (one row per user, day and channel — a digest is never sent twice). `users` also holds `email_hash` (login lookup), `email_enc` (AES-GCM encrypted address), `sessions_valid_after` (sign-out-everywhere), and `onboarded_at` (user gets no digest until setup is saved). Migrations 0009–0012 (applied 2026-10-18).
+
+### Who sends what today (2026-10-22)
+
+The GitHub Actions job is the only sender. It reads each onboarded user's preferences, filters events by city/radius/format/topics (no AI scoring yet), and sends over each channel the user can use: email (verified sign-in address, `email_hash` set), Discord (their own webhook), WhatsApp (their CallMeBot key). The Vercel site handles sign-in and settings only — it never sends digests.
 
 ## Daily pipeline
 
