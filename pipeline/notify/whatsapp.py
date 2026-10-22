@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import httpx
 
-from pipeline.digest import Digest, DigestItem
+from pipeline.digest import Digest, DigestItem, drop_picks
 from pipeline.notify.discord import format_deadline
 from pipeline.notify.webhook_url import guard_http_logs
 
@@ -48,12 +48,14 @@ def short_text(digest: Digest, site_url: str, top: int = 3) -> str:
     if digest.empty:
         return f"HackRadar {digest.day}: Nothing new today. {site_url}"
     head = f"HackRadar {digest.day}: {digest.new_total} new, {digest.closing_total} closing soon."
-    items = [*digest.new, *digest.closing][:top]
+    picks = digest.picks[:PICKS_MAX]
+    new, new_gone = drop_picks(digest.new, picks)  # picks 4+ stay in the list below
+    closing, closing_gone = drop_picks(digest.closing, picks)
+    items = [*new, *closing][:top]
     shown = len(items)
-    total = digest.new_total + digest.closing_total
+    total = digest.new_total + digest.closing_total - new_gone - closing_gone
     lines = [head]
-    if digest.picks:
-        picks = digest.picks[:PICKS_MAX]
+    if picks:
         lines += ["Picked for you:", *(_pick_line(i + 1, p) for i, p in enumerate(picks))]
         lines.append(f"Everything else: {site_url.rstrip('/')}/events")
     lines += [_item_line(i + 1, item) for i, item in enumerate(items)]

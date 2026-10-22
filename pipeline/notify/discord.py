@@ -9,7 +9,7 @@ from collections.abc import Callable
 
 import httpx
 
-from pipeline.digest import Digest, DigestItem
+from pipeline.digest import Digest, DigestItem, drop_picks
 from pipeline.normalize import IST
 
 log = logging.getLogger(__name__)
@@ -97,14 +97,8 @@ def trust_flags(item: DigestItem) -> list[str]:
     return flags
 
 
-def _section(
-    title: str,
-    items: list[DigestItem],
-    total: int,
-    color: int,
-    budget: int,
-    fmt: Callable[[DigestItem], str] = format_item,
-) -> dict:
+def _fit(items: list[DigestItem], budget: int, fmt: Callable[[DigestItem], str]) -> list[str]:
+    """Formatted lines for as many leading items as fit the embed budget."""
     budget = min(budget, DESCRIPTION_LIMIT) - 40  # room for the "…and N more" line
     lines: list[str] = []
     length = 0
@@ -114,6 +108,18 @@ def _section(
             break
         lines.append(line)
         length += len(line) + 2
+    return lines
+
+
+def _section(
+    title: str,
+    items: list[DigestItem],
+    total: int,
+    color: int,
+    budget: int,
+    fmt: Callable[[DigestItem], str] = format_item,
+) -> dict:
+    lines = _fit(items, budget, fmt)
     if total > len(lines):
         lines.append(f"*…and {total - len(lines)} more*")
     return {"title": title, "description": "\n\n".join(lines), "color": color}
@@ -129,23 +135,30 @@ def render(digest: Digest) -> dict:
     header += f"\n-# {DISCLAIMER}"
     if digest.empty:
         return {"content": f"{header}\nNothing new today and nothing closing in the next 3 days."}
-    sections = []
+    counted = (digest.picks, digest.new_total, digest.closing_total, digest.contests_total)
+    budget = EMBEDS_TOTAL_BUDGET // max(sum(map(bool, counted)), 1)
+    embeds = []
+    new, closing, new_gone, closing_gone = digest.new, digest.closing, 0, 0
     if digest.picks:
-        title = f"⭐ Picked for you ({len(digest.picks)})"
-        sections.append((title, digest.picks, len(digest.picks), COLOR_PICKS, format_pick))
-    if digest.new:  # empty when every new event was picked above
+        lines = _fit(digest.picks, budget, format_pick)
+        if lines:  # only the picks that fit leave the lists below; the rest stay there
+            rendered = digest.picks[: len(lines)]
+            title = f"⭐ Picked for you ({len(lines)})"
+            embeds.append({"title": title, "description": "\n\n".join(lines), "color": COLOR_PICKS})
+            new, new_gone = drop_picks(digest.new, rendered)
+            closing, closing_gone = drop_picks(digest.closing, rendered)
+    new_left, closing_left = digest.new_total - new_gone, digest.closing_total - closing_gone
+    if new or new_left > 0:
         title = f"🆕 New ({digest.new_total})"
-        sections.append((title, digest.new, digest.new_total, COLOR_NEW, format_item))
-    if digest.closing:
+        embeds.append(_section(title, new, new_left, COLOR_NEW, budget))
+    if closing or closing_left > 0:
         title = f"⏰ Closing within 3 days ({digest.closing_total})"
-        sections.append((title, digest.closing, digest.closing_total, COLOR_CLOSING, format_item))
+        embeds.append(_section(title, closing, closing_left, COLOR_CLOSING, budget))
     if digest.contests_total:
         title = f"🧩 Contests & other ({digest.contests_total})"
-        sections.append(
-            (title, digest.contests, digest.contests_total, COLOR_CONTESTS, format_item)
+        embeds.append(
+            _section(title, digest.contests, digest.contests_total, COLOR_CONTESTS, budget)
         )
-    budget = EMBEDS_TOTAL_BUDGET // len(sections)
-    embeds = [_section(*s[:4], budget=budget, fmt=s[4]) for s in sections]
     return {"content": header, "embeds": embeds, "allowed_mentions": {"parse": []}}
 
 

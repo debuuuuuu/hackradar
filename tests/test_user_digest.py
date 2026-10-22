@@ -237,9 +237,9 @@ def test_picks_are_the_top_scored_new_and_closing_events_with_a_why(conn) -> Non
     assert [p.title for p in d.picks] == ["high", "closing", "low"]
     assert d.picks[0].why == "great fit"
     assert d.picks[1].why is None  # an empty stored reason never becomes an empty line
-    assert [i.title for i in d.new] == ["unscored"]
-    assert d.closing == []
-    assert d.new_total == 3 and d.closing_total == 1  # totals still count the picked events
+    assert {i.title for i in d.new} == {"low", "high", "unscored"}  # lists stay complete
+    assert [i.title for i in d.closing] == ["closing"]
+    assert d.new_total == 3 and d.closing_total == 1
     assert not d.empty
 
 
@@ -249,7 +249,7 @@ def test_picks_are_capped_at_top_n(conn) -> None:
         _score(conn, uid, _event(conn, f"e{n}", days_to_deadline=10 + n), 50 + n)
     d = items_for(conn, _recipient(conn, uid), None, NOW)
     assert [p.title for p in d.picks] == ["e6", "e5", "e4", "e3", "e2"]
-    assert [i.title for i in d.new] == ["e0", "e1"]
+    assert len(d.new) == 7  # picks are not removed from the lists
 
 
 def test_a_clashing_high_score_sorts_after_a_non_clashing_one(conn) -> None:

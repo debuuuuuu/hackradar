@@ -45,6 +45,17 @@ class DigestItem:
     clash: str | None = None
 
 
+def drop_picks(items: list[DigestItem], picks: list[DigestItem]) -> tuple[list[DigestItem], int]:
+    """`items` without the picks a channel rendered, and how many were dropped.
+
+    Each renderer lists only the picks it actually fits, so it removes just those here and
+    subtracts the count from the section total for its "N more" line.
+    """
+    ids = {p.event_id for p in picks if p.event_id is not None}
+    kept = [i for i in items if i.event_id not in ids]
+    return kept, len(items) - len(kept)
+
+
 @dataclass(frozen=True)
 class Digest:
     day: str  # IST date, e.g. "2026-10-15"

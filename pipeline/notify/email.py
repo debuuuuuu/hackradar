@@ -18,7 +18,7 @@ from email.message import EmailMessage
 from html import escape
 
 from pipeline.crypto import decrypt
-from pipeline.digest import Digest, DigestItem
+from pipeline.digest import Digest, DigestItem, drop_picks
 from pipeline.notify.discord import format_deadline
 from pipeline.notify.unsubscribe import unsubscribe_url
 
@@ -58,10 +58,12 @@ def render_body(digest: Digest, site_url: str | None, unsub_url: str | None = No
         if site_url:
             lines.append(f"Everything else: {site_url.rstrip('/')}/events")
         lines.append("")
-    if digest.new:
-        lines += ["New", *map(_item_block, digest.new), ""]
-    if digest.closing:
-        lines += ["Closing soon", *map(_item_block, digest.closing), ""]
+    new, _ = drop_picks(digest.new, digest.picks)  # every pick is rendered above
+    closing, _ = drop_picks(digest.closing, digest.picks)
+    if new:
+        lines += ["New", *map(_item_block, new), ""]
+    if closing:
+        lines += ["Closing soon", *map(_item_block, closing), ""]
     lines.append("Dates, prizes and fees are copied from each platform's listing. Confirm there.")
     lines.append("")
     if site_url:
@@ -139,7 +141,7 @@ def _picks_section(items: list[DigestItem], site: str | None) -> str:
 
 
 def _section(title: str, items: list[DigestItem], total: int) -> str:
-    if not items:
+    if not items and total <= 0:
         return ""
     more = f'<p style="margin:6px 0 0;font-size:13px;color:{_MUTE};">+{total - len(items)} more on the site</p>'
     return f'<p style="margin:18px 0 0;{_MONO}font-size:11px;letter-spacing:.06em;text-transform:uppercase;' f'color:{_MUTE};">{escape(title)}</p>' + "".join(
@@ -167,6 +169,8 @@ def render_html(digest: Digest, site_url: str | None, unsub_url: str | None = No
             f' Too chatty? <a href="{_safe_url(unsub_url)}" style="color:#9b2b2f;">Unsubscribe in one click</a>'
             " (this also deletes your account)."
         )
+    new, new_gone = drop_picks(digest.new, digest.picks)  # every pick is rendered above
+    closing, closing_gone = drop_picks(digest.closing, digest.picks)
     mascot = f'<span style="{_MONO}color:{_CORAL};">[^&#8255;^]</span>'
     if (
         site
@@ -187,8 +191,8 @@ def render_html(digest: Digest, site_url: str | None, unsub_url: str | None = No
         f'<p style="margin:0;{_MONO}font-size:12px;color:{_MUTE};">{escape(digest.day)} · {digest.new_total} new · '
         f"{digest.closing_total} closing within 3 days</p>"
         + _picks_section(digest.picks, site)
-        + _section("New", digest.new, digest.new_total)
-        + _section("Closing soon", digest.closing, digest.closing_total)
+        + _section("New", new, digest.new_total - new_gone)
+        + _section("Closing soon", closing, digest.closing_total - closing_gone)
         + _section("Contests and other", digest.contests, digest.contests_total)
         + button
         + f'<p style="margin:20px 0 0;font-size:12px;color:{_MUTE};">Dates, prizes and fees are copied from each '

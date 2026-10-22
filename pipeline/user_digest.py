@@ -155,7 +155,7 @@ def items_for(
     closing, closing_total = run(hack, CLOSING_WHERE, (today, soon))
     contests, contests_total = run(other, NEW_WHERE, (since, soon))
     open_total = run(hack, "", ())[1]
-    picks, new, closing = _picks(conn, r, new, closing, today.date(), cfg["top_n"])
+    picks = _picks(conn, r, new, closing, today.date(), cfg["top_n"])
     return Digest(
         day=today.date().isoformat(),
         new=new,
@@ -176,15 +176,15 @@ def _picks(
     closing: list[DigestItem],
     today: date,
     top_n: int,
-) -> tuple[list[DigestItem], list[DigestItem], list[DigestItem]]:
-    """The AI's best-fit events from today's lists, and those lists without them.
+) -> list[DigestItem]:
+    """The AI's best-fit events from today's lists (the lists themselves stay complete).
 
     Non-clashing first, then score high to low, then the existing deadline order. Events with no
     score row are never picked, so a user with no scores gets the digest unchanged.
     """
     ids = [i.event_id for i in (*new, *closing) if i.event_id is not None]
     if not ids:
-        return [], new, closing
+        return []
     scored = {
         eid: (score, reason or None)
         for eid, score, reason in conn.execute(
@@ -193,7 +193,7 @@ def _picks(
         )
     }
     if not scored:
-        return [], new, closing
+        return []
     periods = busy.periods_for(conn, r.user_id, today)
     dates = {
         row[0]: row[1:]
@@ -218,13 +218,7 @@ def _picks(
         )
         candidates.append((*sort_key, replace(item, why=why, clash=clash)))
     candidates.sort(key=lambda c: c[:4])
-    picks = [c[4] for c in candidates[:top_n]]
-    taken = {p.event_id for p in picks}
-    return (
-        picks,
-        [i for i in new if i.event_id not in taken],
-        [i for i in closing if i.event_id not in taken],
-    )
+    return [c[4] for c in candidates[:top_n]]
 
 
 def _last_sent_at(conn: psycopg.Connection, user_id: int) -> datetime | None:

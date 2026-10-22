@@ -143,3 +143,28 @@ def test_picks_block_comes_first_with_why_and_clash_marker():
 def test_no_picks_renders_as_before():
     payload = discord.render(digest(new=[item()], new_total=1))
     assert [e["title"] for e in payload["embeds"]] == ["🆕 New (1)"]
+
+
+def test_more_count_excludes_rendered_picks():
+    new = [item(title=f"N{n}", url=f"https://x.test/{n}", event_id=n) for n in range(10)]
+    picks = [item(title=f"N{n}", url=f"https://x.test/{n}", event_id=n) for n in range(3)]
+    payload = discord.render(digest(new=new, new_total=12, picks=picks))
+    assert payload["embeds"][1]["description"].endswith("*…and 2 more*")
+
+
+def test_picks_that_do_not_fit_stay_in_the_lists():
+    long = "w " * 300
+    new = [
+        item(
+            title=f"N{n}", url=f"https://x.test/{n}", event_id=n, summary=long, why=long, clash="X"
+        )
+        for n in range(5)
+    ]
+    payload = discord.render(digest(new=new, new_total=5, picks=list(new)))
+    assert sum(len(e["description"]) for e in payload["embeds"]) <= discord.EMBEDS_TOTAL_BUDGET
+    picks_desc = payload["embeds"][0]["description"]
+    new_desc = payload["embeds"][1]["description"]
+    for n in range(5):
+        in_picks = f"[N{n}](" in picks_desc
+        in_new = f"[N{n}](" in new_desc
+        assert in_picks != in_new or (not in_picks and "more" in new_desc)

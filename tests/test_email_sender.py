@@ -255,3 +255,15 @@ def test_html_and_text_show_picks_first_escaped_with_clash_dimmed(monkeypatch) -
 def test_no_picks_html_has_no_picked_block() -> None:
     assert "Picked for you" not in mail.render_html(_digest(), None)
     assert "Picked for you" not in mail.render_body(_digest(), None)
+
+
+def test_more_count_excludes_picks_and_no_double_slash() -> None:
+    base = _digest()
+    items = [
+        DigestItem(**{**base.new[0].__dict__, "title": f"E{n}", "event_id": n}) for n in range(10)
+    ]
+    d = Digest(**{**base.__dict__, "new": items, "new_total": 12, "picks": items[:3]})
+    html = mail.render_html(d, "https://hackradar.example/")
+    assert "+2 more on the site" in html
+    assert "//events" not in html.replace("https://", "")
+    assert html.count(">E0<") == 1  # a pick is not repeated in New

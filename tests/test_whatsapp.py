@@ -150,3 +150,22 @@ def test_short_text_leads_with_at_most_three_picks_and_a_why() -> None:
     assert "Pick 3" not in text
     assert f"{SITE}/events" in text
     assert len(text) <= whatsapp.MAX_CHARS
+
+
+def test_picks_beyond_the_shown_three_stay_in_the_list_and_more_is_exact() -> None:
+    items = [
+        DigestItem(**{**_item(f"P{n}", 20).__dict__, "event_id": n, "why": "w"}) for n in range(5)
+    ]
+    digest = Digest(
+        day="2026-10-16",
+        new=items,
+        new_total=12,
+        closing=[],
+        closing_total=0,
+        open_total=40,
+        picks=items,
+    )
+    text = whatsapp.short_text(digest, SITE + "/", top=3)
+    assert "P3" in text and "P4" in text  # picks 4 and 5 come back as list items
+    assert "and 7 more" in text  # 12 total - 3 rendered picks - 2 listed
+    assert "//events" not in text
