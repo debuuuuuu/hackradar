@@ -39,6 +39,10 @@ class DigestItem:
     dates_suspect: bool = False  # end before start, or registration closes after the end
     summary: str | None = None  # AI-written (D-036); never used for dates or prizes
     platforms: tuple[str, ...] = ()  # every source listing this event (dedupe)
+    event_id: int | None = None
+    # Per-user picks only (user_digest): the AI's one-line reason, and the busy period it hits.
+    why: str | None = None
+    clash: str | None = None
 
 
 @dataclass(frozen=True)
@@ -53,6 +57,7 @@ class Digest:
     contests_total: int = 0
     far_hidden: int = 0  # in-person hackathons outside the travel radius
     radius_km: int | None = None
+    picks: list[DigestItem] = field(default_factory=list)  # per-user "Picked for you"
 
     @property
     def empty(self) -> bool:
@@ -69,7 +74,8 @@ _SELECT = f"""
            COALESCE(e.end_date < e.start_date OR e.reg_deadline > e.end_date, false),
            e.summary,
            (SELECT array_agg(DISTINCT source ORDER BY source) FROM event_sources
-             WHERE event_id = e.id)
+             WHERE event_id = e.id),
+           e.id
       FROM events e
       JOIN LATERAL (SELECT url, source, registrations FROM event_sources
                      WHERE event_id = e.id ORDER BY first_seen_at LIMIT 1) s ON true
@@ -108,7 +114,7 @@ def build(conn: psycopg.Connection, since: datetime | None, now: datetime) -> Di
 
     def items(where: str, params: tuple) -> list[DigestItem]:
         rows = conn.execute(_SELECT + where + ORDER + " LIMIT %s", (*params, limit)).fetchall()
-        return [DigestItem(*r[:-1], tuple(r[-1])) for r in rows]
+        return [DigestItem(*r[:-2], tuple(r[-2]), event_id=r[-1]) for r in rows]
 
     def count(where: str, params: tuple) -> int:
         sql = f"SELECT count(*) FROM events e WHERE e.status = 'open'{where}"

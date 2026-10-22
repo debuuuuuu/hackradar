@@ -8,12 +8,12 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta
 
 import psycopg
 
-from pipeline import config, digest
+from pipeline import busy, config, digest
 from pipeline.digest import _SELECT, CLOSING_WHERE, NEW_WHERE, ORDER, Digest, DigestItem
 from pipeline.normalize import IST
 from pipeline.notify.webhook_url import redact
@@ -149,12 +149,13 @@ def items_for(
         total = conn.execute(
             f"SELECT count(*) FROM events e WHERE e.status = 'open'{base}", args
         ).fetchone()[0]
-        return [DigestItem(*row[:-1], tuple(row[-1])) for row in rows], total
+        return [DigestItem(*row[:-2], tuple(row[-2]), event_id=row[-1]) for row in rows], total
 
     new, new_total = run(hack, NEW_WHERE, (since, soon))
     closing, closing_total = run(hack, CLOSING_WHERE, (today, soon))
     contests, contests_total = run(other, NEW_WHERE, (since, soon))
     open_total = run(hack, "", ())[1]
+    picks, new, closing = _picks(conn, r, new, closing, today.date(), cfg["top_n"])
     return Digest(
         day=today.date().isoformat(),
         new=new,
@@ -164,6 +165,65 @@ def items_for(
         open_total=open_total,
         contests=contests,
         contests_total=contests_total,
+        picks=picks,
+    )
+
+
+def _picks(
+    conn: psycopg.Connection,
+    r: Recipient,
+    new: list[DigestItem],
+    closing: list[DigestItem],
+    today: date,
+    top_n: int,
+) -> tuple[list[DigestItem], list[DigestItem], list[DigestItem]]:
+    """The AI's best-fit events from today's lists, and those lists without them.
+
+    Non-clashing first, then score high to low, then the existing deadline order. Events with no
+    score row are never picked, so a user with no scores gets the digest unchanged.
+    """
+    ids = [i.event_id for i in (*new, *closing) if i.event_id is not None]
+    if not ids:
+        return [], new, closing
+    scored = {
+        eid: (score, reason or None)
+        for eid, score, reason in conn.execute(
+            "SELECT event_id, score, reason FROM scores WHERE user_id = %s AND event_id = ANY(%s)",
+            (r.user_id, ids),
+        )
+    }
+    if not scored:
+        return [], new, closing
+    periods = busy.periods_for(conn, r.user_id, today)
+    dates = {
+        row[0]: row[1:]
+        for row in conn.execute(
+            "SELECT id, start_date, end_date, submission_deadline FROM events WHERE id = ANY(%s)",
+            (list(scored),),
+        )
+    }
+    candidates: list[tuple[bool, int, bool, datetime, DigestItem]] = []
+    for item in (*new, *closing):
+        if item.event_id not in scored:
+            continue
+        score, why = scored[item.event_id]
+        start, end, submit = dates[item.event_id]
+        clash = busy.clash_label(item.mode, start, end, submit, periods)
+        no_deadline = item.deadline is None
+        sort_key = (
+            clash is not None,
+            -score,
+            no_deadline,
+            item.deadline or datetime.max.replace(tzinfo=IST),
+        )
+        candidates.append((*sort_key, replace(item, why=why, clash=clash)))
+    candidates.sort(key=lambda c: c[:4])
+    picks = [c[4] for c in candidates[:top_n]]
+    taken = {p.event_id for p in picks}
+    return (
+        picks,
+        [i for i in new if i.event_id not in taken],
+        [i for i in closing if i.event_id not in taken],
     )
 
 
