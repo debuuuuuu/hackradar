@@ -102,16 +102,16 @@ def score_all(conn: psycopg.Connection, provider: Provider | None = None, sleep=
         provider = ai.get_provider()
     live = {"conn": conn, "own": None}
 
-    def on_db(fn):
-        """Run fn(conn); Neon may drop the connection during the paced AI wait, so reconnect once."""
+    def on_db(fn, *args):
+        """Run fn(conn, *args); Neon may drop the connection during the AI wait: reconnect once."""
         try:
-            return fn(live["conn"])
+            return fn(live["conn"], *args)
         except psycopg.OperationalError:
             log.warning("database connection lost during scoring; reconnecting")
             if live["own"] is not None:
                 live["own"].close()
             live["own"] = live["conn"] = db.connect()
-            return fn(live["conn"])
+            return fn(live["conn"], *args)
 
     def pending(c, topics, users):
         events = shortlist(c, topics, limit)
@@ -127,7 +127,7 @@ def score_all(conn: psycopg.Connection, provider: Provider | None = None, sleep=
     written, called = 0, False
     try:
         for (topics, fmt), users in groups.items():
-            todo = on_db(lambda c: pending(c, topics, users))
+            todo = on_db(pending, topics, users)
             if not todo:
                 continue
             if called:
@@ -143,7 +143,7 @@ def score_all(conn: psycopg.Connection, provider: Provider | None = None, sleep=
                 for eid, r in results.items()
                 for uid in users
             ]
-            on_db(lambda c: save(c, rows))
+            on_db(save, rows)
             written += len(rows)
     finally:
         if live["own"] is not None:
