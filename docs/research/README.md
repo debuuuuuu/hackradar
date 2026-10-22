@@ -21,5 +21,6 @@ One file per finding/investigation: `YYYY-MM-DD-<topic>.md`. Newest first.
 | 2026-10-15 | [groq](2026-10-15-groq.md) | Groq models, no embeddings, free limits unverified |
 | 2026-10-15 | [secret-scan](2026-10-15-secret-scan.md) | gitleaks over 52 commits: no leaks; manual pattern hits were placeholders |
 | 2026-10-15 | [callmebot](2026-10-15-callmebot.md) | CallMeBot endpoint, activation and personal-use terms confirmed; length and rate limits unverified |
+| 2026-10-23 | [product-research](2026-10-23-product-research.md) | No competitor found with personal picks + busy dates + cross-platform profile; DPDP minors rule from ~May 2027; Supabase pauses after 7 idle days; Tavily 1k/mo free; Exa has no API free tier now; email free tiers 100–500/day |
 | 2026-10-18 | [vercel-deploy](2026-10-18-vercel-deploy.md) | Git builds failed until Root Directory was `web`; CLI-upload deploys worked |
 | 2026-10-16 | [supabase-auth](2026-10-16-supabase-auth.md) | Supabase Auth for email+password: free MAU, pause rule, keep-alive plan; card and default-email limits unverified |

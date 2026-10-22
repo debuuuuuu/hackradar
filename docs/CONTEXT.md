@@ -196,6 +196,8 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 
 **Newest research (2026-10-15):** [first live digest](research/2026-10-15-first-live-digest.md) · [Luma](research/2026-10-15-luma.md) · [Phase 2 sources](research/2026-10-15-phase2-sources.md)
 
+**Newest research (2026-10-23):** [product research: competitors, DPDP, free limits](research/2026-10-23-product-research.md)
+
 **Newest research (2026-10-16 to 18):** [Supabase Auth](research/2026-10-16-supabase-auth.md) · [Vercel deploy](research/2026-10-18-vercel-deploy.md)
 
 **Newest sessions:** [2026-10-23 product plan](sessions/2026-10-23-product-plan.md) · [2026-10-18 accounts and email launch](sessions/2026-10-18-accounts-email-launch.md) · [2026-10-18 fun theme](sessions/2026-10-18-fun-theme.md) · [2026-10-15 Phase 1 live](sessions/2026-10-15-phase1-live.md) · [2026-10-14 Phase 0 setup](sessions/2026-10-14-phase0-setup.md) · [2026-10-14 docs bootstrap](sessions/2026-10-14-docs-bootstrap.md)

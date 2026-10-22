@@ -150,6 +150,12 @@ Each step gets its own short spec and plan before building.
   (**unverified**; research note needed before the profile is promoted publicly). The 18+ checkbox is the
   interim answer (D-050).
 - Cost: AI calls scale with distinct tag sets × shortlist, not users × all events (D-051).
+- Research 2026-10-23 ([note](../../research/2026-10-23-product-research.md)): DPDP rules for under-18s apply from ~May 2027
+  (verifiable parental consent; no behavioural monitoring), so "learns from actions" (§6.1 step 4) must never run for minors.
+  Exa has no free API tier now; discovery starts on Tavily's free 1,000 credits/month. Email free tiers run out at a few
+  hundred daily users; choose the scale provider before ~400 users.
+- Prior art: indiahackathons.com already sends a weekly digest, so a plain digest is not a difference. The difference is the
+  "why" line, busy dates, and one profile across every platform.
 
 ## 9. How we'll know it works
 
