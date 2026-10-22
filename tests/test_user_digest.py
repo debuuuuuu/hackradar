@@ -297,13 +297,17 @@ def test_picks_failure_still_sends_the_normal_digest(conn, monkeypatch) -> None:
     assert rec.sent == [uid] and s.failed == 0
 
 
-def test_picks_failure_in_the_database_does_not_break_the_connection(conn, monkeypatch) -> None:
+def test_picks_sql_failure_leaves_the_connection_usable_and_the_digest_sent(conn, monkeypatch):
     uid = _user(conn)
-    _event(conn, "plain")
-    monkeypatch.setattr(user_digest.busy, "periods_for", lambda *a: 1 / 0)
-    _score(conn, uid, _event(conn, "scored2"), 80)
-    d = items_for(conn, _recipient(conn, uid), None, NOW)
-    assert d.picks == [] and len(d.new) == 2
+    _score(conn, uid, _event(conn, "scored"), 80)
+    monkeypatch.setattr(
+        user_digest.busy, "periods_for", lambda c, *a: c.execute("SELECT * FROM no_such_table")
+    )
+    rec = Recorder()
+    s = run_user_digests(conn, NOW, {"discord": rec})
+    assert rec.sent == [uid] and s.failed == 0 and s.sent == 1
+    sent = conn.execute("SELECT status FROM sends WHERE user_id = %s", (uid,)).fetchall()
+    assert sent == [("sent",)]
 
 
 def test_no_topics_means_no_picks_even_with_old_scores(conn) -> None:

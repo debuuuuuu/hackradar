@@ -173,20 +173,20 @@ def test_picks_beyond_the_shown_three_stay_in_the_list_and_more_is_exact() -> No
 
 def test_long_picks_never_cut_off_the_site_link_and_are_numbered_apart_from_the_list() -> None:
     picks = [
-        DigestItem(**{**_item("T" * 200, 20).__dict__, "why": "w" * 300, "clash": "c" * 40})
+        DigestItem(**{**_item("T" * 200, 20).__dict__, "why": "w" * 300, "clash": "c" * 80})
         for _ in range(3)
     ]
     digest = Digest(
         day="2026-10-16",
-        new=[_item("Plain", 21)],
-        new_total=4,
+        new=[_item("Plain", 21), *(_item("L" * 200 + str(n), 22) for n in range(3))],
+        new_total=9,
         closing=[],
         closing_total=0,
         open_total=40,
         picks=picks,
     )
     text = whatsapp.short_text(digest, SITE)
-    assert text.endswith(f"All details and sources: {SITE}")
+    assert text.endswith(f"\nAll details and sources: {SITE}")
+    assert len(text) <= whatsapp.MAX_CHARS
     assert "Pick 1:" in text and "Pick 3:" in text
-    assert "1. Plain" in text
     assert "w" * 91 not in text

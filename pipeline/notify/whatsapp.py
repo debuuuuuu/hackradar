@@ -63,9 +63,10 @@ def short_text(digest: Digest, site_url: str, top: int = 3) -> str:
     lines += [_item_line(i + 1, item) for i, item in enumerate(items)]
     if total > shown:
         lines.append(f"...and {total - shown} more.")
-    lines.append(f"All details and sources: {site_url}")
     text = "\n".join(lines)
-    return text if len(text) <= MAX_CHARS else text[: MAX_CHARS - 1] + "…"
+    tail = f"\nAll details and sources: {site_url}"  # never cut: trim the body above it instead
+    room = MAX_CHARS - len(tail)
+    return (text if len(text) <= room else text[: room - 1] + "…") + tail
 
 
 class WhatsAppSender:
