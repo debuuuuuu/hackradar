@@ -9,4 +9,5 @@ and `models.sql` is updated in the same commit so it always reflects the current
 | Migration | Applied |
 |---|---|
 | 0009 login IP limit, 0010 Google login, 0011 sessions_valid_after, 0012 login_tokens.name | 2026-10-18 |
+| 0013 busy_periods | not yet applied to Neon (Task 7 of For you picks applies it) |
 Earlier migrations were applied as they shipped. Record each new one here when you run it.
