@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import Icon from "../components/Icon.js";
 import Monitor from "../components/Monitor.js";
-import { fetchEvents, type EventRow } from "../lib/api.js";
+import { fetchEvents, fetchPicks, type EventRow, type Pick } from "../lib/api.js";
 import { formatIstDate, sourceLabel } from "../lib/format.js";
 import type { PrefsResponse } from "../lib/prefsForm.js";
 
@@ -20,6 +20,7 @@ export default function Today({ name }: TodayProps) {
   const firstName = name ? name.split(" ")[0] : "Builder";
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [picks, setPicks] = useState<Pick[]>([]);
   const [prefs, setPrefs] = useState<PrefsResponse["prefs"] | null>(null);
 
   // View state
@@ -49,6 +50,17 @@ export default function Today({ name }: TodayProps) {
         if (live) setLoading(false);
       });
 
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let live = true;
+    // A failed picks fetch just means no "Picked for you" block.
+    fetchPicks()
+      .then((r) => live && setPicks(r.picks))
+      .catch(() => undefined);
     return () => {
       live = false;
     };
@@ -259,6 +271,31 @@ export default function Today({ name }: TodayProps) {
             edit
           </Link>
         </p>
+      )}
+
+      {/* PICKED FOR YOU (AI scores, only when this person has some) */}
+      {picks.length > 0 && (
+        <section aria-labelledby="picked-h" style={{ marginBottom: 64 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "12px 24px", margin: "0 0 24px" }}>
+            <h2 className="h2" id="picked-h" style={{ color: "var(--chalk)" }}>
+              Picked for you
+            </h2>
+            <span className="note-hand">scored against your interests</span>
+          </div>
+          <ul className="list" style={{ listStyle: "none", margin: 0, background: "var(--cream)", color: "var(--ink)", borderRadius: 22, padding: "8px 28px" }}>
+            {picks.map((p) => (
+              <li
+                key={p.id}
+                style={{ position: "relative", padding: "14px 0", borderBottom: "1.5px dashed color-mix(in oklch, var(--ink-red) 35%, transparent)", opacity: p.clash ? 0.6 : 1 }}
+              >
+                <b style={{ font: "400 19px var(--serif)" }}>{p.title}</b>
+                {p.why && <p style={{ margin: "4px 0 0", fontSize: 14, color: "var(--ink-soft)" }}>{p.why}</p>}
+                {p.clash && <p style={{ margin: "4px 0 0", font: "500 13px var(--mono)", color: "var(--ink-red)" }}>Clashes with {p.clash}</p>}
+                <Link className="over" to={`/events/${p.id}`} aria-label={`Open ${p.title}`} />
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {/* TOP PICKS GRID */}
