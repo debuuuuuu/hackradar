@@ -132,7 +132,7 @@ def test_short_text_when_nothing_is_new_says_so() -> None:
 
 def test_short_text_leads_with_at_most_three_picks_and_a_why() -> None:
     picks = [
-        DigestItem(**{**_item(f"Pick {n}", 20).__dict__, "why": f"because {n}"}) for n in range(4)
+        DigestItem(**{**_item(f"Fit {n}", 20).__dict__, "why": f"because {n}"}) for n in range(4)
     ]
     digest = Digest(
         day="2026-10-16",
@@ -145,9 +145,9 @@ def test_short_text_leads_with_at_most_three_picks_and_a_why() -> None:
     )
     text = whatsapp.short_text(digest, SITE)
     assert "Picked for you" in text
-    assert text.index("Pick 0") < text.index("Plain")
+    assert text.index("Fit 0") < text.index("Plain")
     assert "because 0" in text and "because 2" in text
-    assert "Pick 3" not in text
+    assert "Fit 3" not in text
     assert f"{SITE}/events" in text
     assert len(text) <= whatsapp.MAX_CHARS
 
@@ -169,3 +169,24 @@ def test_picks_beyond_the_shown_three_stay_in_the_list_and_more_is_exact() -> No
     assert "P3" in text and "P4" in text  # picks 4 and 5 come back as list items
     assert "and 7 more" in text  # 12 total - 3 rendered picks - 2 listed
     assert "//events" not in text
+
+
+def test_long_picks_never_cut_off_the_site_link_and_are_numbered_apart_from_the_list() -> None:
+    picks = [
+        DigestItem(**{**_item("T" * 200, 20).__dict__, "why": "w" * 300, "clash": "c" * 40})
+        for _ in range(3)
+    ]
+    digest = Digest(
+        day="2026-10-16",
+        new=[_item("Plain", 21)],
+        new_total=4,
+        closing=[],
+        closing_total=0,
+        open_total=40,
+        picks=picks,
+    )
+    text = whatsapp.short_text(digest, SITE)
+    assert text.endswith(f"All details and sources: {SITE}")
+    assert "Pick 1:" in text and "Pick 3:" in text
+    assert "1. Plain" in text
+    assert "w" * 91 not in text

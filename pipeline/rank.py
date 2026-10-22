@@ -7,7 +7,7 @@ import os
 import re
 import time
 from collections import defaultdict
-from collections.abc import Sequence
+from collections.abc import Collection, Sequence
 from functools import cache
 
 import psycopg
@@ -15,7 +15,8 @@ import psycopg
 from pipeline import ai, config, db
 from pipeline.ai import score as ai_score
 from pipeline.ai import summarize
-from pipeline.ai.base import AIError, Provider
+from pipeline.ai.base import Provider, RateLimited
+from pipeline.notify.webhook_url import redact
 
 log = logging.getLogger(__name__)
 
@@ -40,28 +41,55 @@ def topic_hits(
     return sum(1 for t in topics if t in patterns and patterns[t].search(text))
 
 
-_EVENTS = """
-    SELECT e.id, e.title, e.organizer, e.themes,
-           (SELECT COALESCE(raw_json->>'details', raw_json->>'desc') FROM event_sources
-             WHERE event_id = e.id ORDER BY first_seen_at LIMIT 1),
-           e.summary
+_CANDIDATES = """
+    SELECT e.id, e.title, e.organizer, e.themes, e.summary
       FROM events e
      WHERE e.status = 'open' AND COALESCE(e.kind, 'hackathon') = 'hackathon'
      ORDER BY COALESCE(e.reg_deadline, e.submission_deadline, e.end_date) NULLS LAST, e.id
 """
 
+_DESCRIPTIONS = """
+    SELECT e.id, (SELECT COALESCE(raw_json->>'details', raw_json->>'desc') FROM event_sources
+                   WHERE event_id = e.id ORDER BY first_seen_at LIMIT 1)
+      FROM events e WHERE e.id = ANY(%s)
+"""
+
+# (id, title, organizer, themes, summary): open hackathons in deadline order, no long text.
+Candidate = tuple[int, str, str | None, list[str], str | None]
+
+
+def load_candidates(conn: psycopg.Connection) -> list[Candidate]:
+    """Open hackathons without their descriptions, soonest deadline first."""
+    return conn.execute(_CANDIDATES).fetchall()
+
+
+def _matches(candidates: Sequence[Candidate], topics: Sequence[str]) -> list[tuple[int, Candidate]]:
+    """Candidates with at least one topic hit, most hits first (stable: deadline order on ties)."""
+    hit = [(topic_hits(topics, c[1], c[3] or (), c[4]), c) for c in candidates]
+    return sorted(((n, c) for n, c in hit if n), key=lambda m: -m[0])
+
+
+def _texts(conn: psycopg.Connection, chosen: Sequence[Candidate]) -> list[summarize.EventText]:
+    """Fetch descriptions for just the chosen events."""
+    desc = dict(conn.execute(_DESCRIPTIONS, ([c[0] for c in chosen],)).fetchall())
+    return [summarize.EventText(c[0], c[1], c[2], c[3], desc.get(c[0])) for c in chosen]
+
 
 def shortlist(
-    conn: psycopg.Connection, topics: Sequence[str], limit: int
+    conn: psycopg.Connection,
+    topics: Sequence[str],
+    limit: int,
+    candidates: Sequence[Candidate] | None = None,
+    skip: Collection[int] = (),
 ) -> list[summarize.EventText]:
-    """Open hackathons matching at least one topic: most hits first, then soonest deadline."""
-    scored = []
-    for eid, title, organizer, themes, desc, summary in conn.execute(_EVENTS).fetchall():
-        hits = topic_hits(topics, title, themes or (), summary)
-        if hits:
-            scored.append((hits, summarize.EventText(eid, title, organizer, themes, desc)))
-    scored.sort(key=lambda s: -s[0])  # stable: deadline order from SQL breaks ties
-    return [ev for _, ev in scored[:limit]]
+    """Open hackathons matching at least one topic: most hits first, then soonest deadline.
+
+    Events in skip (already scored) are dropped before the limit, so new events are not starved.
+    """
+    if candidates is None:
+        candidates = load_candidates(conn)
+    chosen = [c for _, c in _matches(candidates, topics) if c[0] not in skip][:limit]
+    return _texts(conn, chosen)
 
 
 _GROUPS = """
@@ -85,19 +113,28 @@ _UPSERT = """
 """
 
 
-def score_all(conn: psycopg.Connection, provider: Provider | None = None, sleep=time.sleep) -> int:
+def score_all(
+    conn: psycopg.Connection,
+    provider: Provider | None = None,
+    sleep=time.sleep,
+    monotonic=time.monotonic,
+) -> int:
     """Score the topic shortlist once per (themes, format) group and store it for every user in it.
 
+    Largest groups (most users) go first. Scoring stops starting groups after rank.max_groups AI
+    calls or rank.max_seconds, and stops entirely on a rate limit; the rest wait for the next run.
     Events already scored for every user in a group are skipped, so a re-run costs no AI calls.
     A failed group is logged and skipped. Returns the number of score rows written.
     """
-    groups: dict[tuple[tuple[str, ...], str], list[int]] = defaultdict(list)
+    users_by_group: dict[tuple[tuple[str, ...], str], list[int]] = defaultdict(list)
     for uid, themes, fmt in conn.execute(_GROUPS).fetchall():
-        groups[(tuple(sorted(themes)), fmt)].append(uid)
-    if not groups:
+        users_by_group[(tuple(sorted(themes)), fmt)].append(uid)
+    if not users_by_group:
         return 0
+    groups = sorted(users_by_group.items(), key=lambda g: (-len(g[1]), g[0]))
     cfg = config.load("settings")
     limit, pause = cfg["rank"]["shortlist"], cfg["ai"].get("batch_pause_seconds", 0)
+    max_seconds, max_groups = cfg["rank"].get("max_seconds", 480), cfg["rank"].get("max_groups", 40)
     if provider is None:
         provider = ai.get_provider()
     live = {"conn": conn, "own": None}
@@ -113,41 +150,52 @@ def score_all(conn: psycopg.Connection, provider: Provider | None = None, sleep=
             live["own"] = live["conn"] = db.connect()
             return fn(live["conn"], *args)
 
-    def pending(c, topics, users):
-        events = shortlist(c, topics, limit)
+    def pending(c, candidates, topics, users):
+        matched = [m for _, m in _matches(candidates, topics)]
         done = {
-            r[0] for r in c.execute(_SCORED_FOR_ALL, ([e.id for e in events], users, len(users)))
+            r[0] for r in c.execute(_SCORED_FOR_ALL, ([m[0] for m in matched], users, len(users)))
         }
-        return [e for e in events if e.id not in done]
+        return _texts(c, [m for m in matched if m[0] not in done][:limit])
 
     def save(c, rows):
         with c.transaction(), c.cursor() as cur:
             cur.executemany(_UPSERT, rows)
 
-    written, called = 0, False
+    written, called, calls, left = 0, False, 0, 0
+    started = monotonic()
     try:
-        for (topics, fmt), users in groups.items():
-            todo = on_db(pending, topics, users)
-            if not todo:
-                continue
-            if called:
-                sleep(pause)
-            called = True
+        candidates = on_db(load_candidates)
+        for i, ((topics, fmt), users) in enumerate(groups):
+            if calls >= max_groups or monotonic() - started >= max_seconds:
+                left = len(groups) - i
+                break
             try:
+                todo = on_db(pending, candidates, topics, users)
+                if not todo:
+                    continue
+                if called:
+                    sleep(pause)
+                called = True
+                calls += 1
                 results = ai_score.score(provider, topics, fmt, todo)
-            except AIError as e:
-                log.error("scoring group %s failed: %s", topics, e)
-                continue
-            rows = [
-                (uid, eid, r.score, r.reason, provider.name)
-                for eid, r in results.items()
-                for uid in users
-            ]
-            on_db(save, rows)
-            written += len(rows)
+                rows = [
+                    (uid, eid, r.score, r.reason, provider.name)
+                    for eid, r in results.items()
+                    for uid in users
+                ]
+                on_db(save, rows)
+                written += len(rows)
+            except RateLimited as e:
+                left = len(groups) - i
+                log.error("scoring stopped, provider rate limited: %s", redact(str(e)))
+                break
+            except Exception as e:  # one bad group never stops the others
+                log.error("scoring group %s failed: %s", topics, redact(f"{type(e).__name__}: {e}"))
     finally:
         if live["own"] is not None:
             live["own"].close()
+    if left:
+        log.warning("%d topic groups left for the next run", left)
     log.info("wrote %d scores for %d topic groups", written, len(groups))
     return written
 

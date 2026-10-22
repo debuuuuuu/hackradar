@@ -40,6 +40,15 @@ def test_start_only_and_end_only_events_use_the_known_date() -> None:
     assert clash_label("offline", None, ist(11, 12), None, [EXAMS]) == "exams"
 
 
+def test_start_only_event_after_the_period_does_not_clash() -> None:
+    assert clash_label("offline", ist(11, 16), None, None, [EXAMS]) is None
+
+
+def test_unsorted_periods_earliest_start_wins() -> None:
+    later = Period(date(2026, 11, 12), date(2026, 11, 20), "trip")
+    assert clash_label("offline", ist(11, 13), ist(11, 14), None, [later, EXAMS]) == "exams"
+
+
 def test_ist_date_not_utc_date() -> None:
     # 2026-11-16 00:30 IST is 2026-11-15 19:00 UTC; the IST date is the 16th, so no clash.
     assert clash_label("offline", ist(11, 16, 0, 30), ist(11, 17), None, [EXAMS]) is None

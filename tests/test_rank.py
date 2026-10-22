@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import json
+import re
+from pathlib import Path
 
+from pipeline import config
 from pipeline.rank import shortlist, topic_hits
 
 
@@ -37,6 +40,13 @@ def test_topic_hits_generic_phrases_do_not_match() -> None:
     assert topic_hits(["beginner"], "National College Hackathon", [], None) == 0
     assert topic_hits(["data"], "bi-weekly meetup", [], None) == 0
     assert topic_hits(["beginner"], "First hackathon? Beginner friendly", [], None) == 1
+
+
+def test_topic_keys_match_the_web_topics_list() -> None:
+    ts = (Path(__file__).parents[1] / "web" / "server" / "prefs.ts").read_text(encoding="utf-8")
+    listed = re.search(r"export const TOPICS = \[([^\]]*)\]", ts)
+    assert listed, "TOPICS array not found in web/server/prefs.ts"
+    assert set(re.findall(r'"([^"]+)"', listed.group(1))) == set(config.load("topics"))
 
 
 # --- database tests -------------------------------------------------------------------------

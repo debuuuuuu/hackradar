@@ -9,8 +9,9 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from pipeline.ai import summarize
 from pipeline.ai.base import AIError, Provider
@@ -42,14 +43,43 @@ class Scored:
     reason: str
 
 
+def _defang(e: EventText) -> EventText:
+    """Drop angle brackets from the short fields so a title cannot close or fake an <event> tag."""
+
+    def strip(text: str) -> str:
+        return text.replace("<", "").replace(">", "")
+
+    return replace(
+        e,
+        title=strip(e.title),
+        organizer=strip(e.organizer) if e.organizer else e.organizer,
+        themes=tuple(strip(t) for t in e.themes),
+    )
+
+
 def build_user_prompt(topics: Sequence[str], fmt: str, events: Sequence[EventText]) -> str:
     """Interests, format and the events. Event text sits inside <event> blocks as untrusted data."""
+    events = [_defang(e) for e in events]
     head = f"Interests: {', '.join(topics)}\nPreferred format: {fmt}"
     return head + "\n\n" + summarize.build_user_prompt(events)
 
 
+# Beyond the summary rules: no links or handles, no numeric dates, no relative dates (dates come
+# from the source fields, and "tomorrow" is wrong by the time the digest is read).
+_EXTRA_BANNED = re.compile(
+    r"https?://|www\.|\.\w{2,}/|@"
+    r"|\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}"
+    r"|\b(?:tomorrow|tonight|this weekend|next week)\b",
+    re.I,
+)
+
+
 def _reason_ok(reason: str) -> bool:
-    return len(reason) <= REASON_MAX and not summarize.violates_rules(reason)
+    return (
+        len(reason) <= REASON_MAX
+        and not summarize.violates_rules(reason)
+        and not _EXTRA_BANNED.search(reason)
+    )
 
 
 def parse_reply(reply: str, expected_ids: Sequence[int]) -> dict[int, Scored]:
@@ -58,13 +88,20 @@ def parse_reply(reply: str, expected_ids: Sequence[int]) -> dict[int, Scored]:
         items = json.loads(reply)["events"]
     except (ValueError, KeyError, TypeError) as e:
         raise AIError(f"scores: reply is not the expected JSON: {e}") from e
+    if not isinstance(items, list):
+        raise AIError("scores: reply 'events' is not a list")
     wanted = set(expected_ids)
     out: dict[int, Scored] = {}
     for item in items:
         if not isinstance(item, dict):
             continue
         eid, score, reason = item.get("id"), item.get("score"), item.get("reason")
-        if eid not in wanted or type(score) is not int or not 0 <= score <= 100:
+        if (
+            type(eid) is not int
+            or eid not in wanted
+            or type(score) is not int
+            or not 0 <= score <= 100
+        ):
             continue
         reason = " ".join(reason.split()) if isinstance(reason, str) else ""
         if not _reason_ok(reason):

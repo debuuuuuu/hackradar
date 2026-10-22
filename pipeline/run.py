@@ -9,6 +9,7 @@ from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 
+import psycopg
 from dotenv import load_dotenv
 
 from pipeline import config, crypto, db, dedupe, digest, enrich, place, rank, user_digest
@@ -147,6 +148,16 @@ def send_user_digests(conn, errors: list[str]) -> int:
     return s.sent
 
 
+def ensure_alive(conn):
+    """The run's connection, or a fresh one if Neon dropped it during the long scoring wait."""
+    try:
+        conn.execute("SELECT 1")
+        return conn
+    except psycopg.OperationalError:
+        log.warning("database connection lost; reconnecting")
+        return db.connect()
+
+
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     load_dotenv()
@@ -155,16 +166,22 @@ def main() -> int:
     run_id: int | None = None
     status = "failed"
     try:
-        with db.connect() as conn:
+        with db.connect() as first:
+            conn = first
             run_id = db.start_run(conn, trigger)
             log.info("run %s started (trigger=%s)", run_id, trigger)
             source_counts, errors = fetch_and_store(conn)
             enrich.enrich_safely(conn, errors)
             rank.score_safely(conn, errors)
-            sent = send_digest(conn, run_id, errors)
-            sent += send_user_digests(conn, errors)
-            status = "partial" if errors else "success"
-            db.finish_run(conn, run_id, status, source_counts, errors, sent)
+            conn = ensure_alive(conn)
+            try:
+                sent = send_digest(conn, run_id, errors)
+                sent += send_user_digests(conn, errors)
+                status = "partial" if errors else "success"
+                db.finish_run(conn, run_id, status, source_counts, errors, sent)
+            finally:
+                if conn is not first:
+                    conn.close()
         log.info("run %s finished: %s", run_id, status)
         return 0
     finally:

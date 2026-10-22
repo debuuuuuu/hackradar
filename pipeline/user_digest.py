@@ -53,6 +53,7 @@ class Recipient:
     radius_km: int
     format: str  # online_near | online | in_person | anything
     priorities: dict[str, str]
+    has_themes: bool = True  # no topics chosen: no picks, whatever old scores exist
 
 
 @dataclass
@@ -72,14 +73,27 @@ def recipients(conn: psycopg.Connection, now: datetime) -> list[Recipient]:
     rows = conn.execute("""
         SELECT u.id, COALESCE(p.channels -> 'digest', '[]'::jsonb), u.discord_webhook_enc,
                u.email_enc, u.email_hash, u.callmebot_phone_enc, u.callmebot_key_enc,
-               p.home_city, p.radius_km, p.format, p.priorities
+               p.home_city, p.radius_km, p.format, p.priorities, cardinality(p.themes) > 0
           FROM users u
           JOIN preferences p ON p.user_id = u.id
          WHERE u.digest_enabled AND u.onboarded_at IS NOT NULL
          ORDER BY u.id
         """).fetchall()
     out = []
-    for uid, chans, hook, email, email_hash, phone, key, home, radius, fmt, prio in rows:
+    for (
+        uid,
+        chans,
+        hook,
+        email,
+        email_hash,
+        phone,
+        key,
+        home,
+        radius,
+        fmt,
+        prio,
+        has_themes,
+    ) in rows:
         usable = []
         for chan in chans:
             if chan == "discord" and hook:
@@ -102,6 +116,7 @@ def recipients(conn: psycopg.Connection, now: datetime) -> list[Recipient]:
                 radius_km=radius,
                 format=fmt,
                 priorities=prio,
+                has_themes=has_themes,
             )
         )
     return out
@@ -155,7 +170,12 @@ def items_for(
     closing, closing_total = run(hack, CLOSING_WHERE, (today, soon))
     contests, contests_total = run(other, NEW_WHERE, (since, soon))
     open_total = run(hack, "", ())[1]
-    picks = _picks(conn, r, new, closing, today.date(), cfg["top_n"])
+    try:
+        with conn.transaction():  # a savepoint: a failed query must not poison the digest queries
+            picks = _picks(conn, r, new, closing, today.date(), cfg["top_n"])
+    except Exception as exc:  # e.g. the scores table is not migrated yet: send without picks
+        log.error("user %s picks failed, sending without: %s", r.user_id, _safe(exc))
+        picks = []
     return Digest(
         day=today.date().isoformat(),
         new=new,
@@ -183,7 +203,7 @@ def _picks(
     score row are never picked, so a user with no scores gets the digest unchanged.
     """
     ids = [i.event_id for i in (*new, *closing) if i.event_id is not None]
-    if not ids:
+    if not ids or not r.has_themes:
         return []
     scored = {
         eid: (score, reason or None)

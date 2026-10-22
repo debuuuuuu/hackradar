@@ -8,6 +8,7 @@ from datetime import UTC, datetime, timedelta
 import httpx
 from psycopg.types.json import Jsonb
 
+from pipeline import user_digest
 from pipeline.digest import Digest
 from pipeline.user_digest import Recipient, enabled_kinds, items_for, recipients, run_user_digests
 
@@ -48,6 +49,7 @@ def _user(
     fmt: str = "anything",
     home: str = "pune",
     radius: int = 150,
+    themes: list[str] | None = None,
 ) -> int:
     uid = conn.execute(
         "INSERT INTO users (name, digest_enabled, onboarded_at, discord_webhook_enc)"
@@ -55,8 +57,9 @@ def _user(
         (enabled, NOW if onboarded else None),
     ).fetchone()[0]
     conn.execute(
-        "INSERT INTO preferences (user_id, home_city, radius_km, format, priorities, channels)"
-        " VALUES (%s, %s, %s, %s, %s, %s)",
+        "INSERT INTO preferences"
+        " (user_id, home_city, radius_km, format, priorities, channels, themes)"
+        " VALUES (%s, %s, %s, %s, %s, %s, %s)",
         (
             uid,
             home,
@@ -64,6 +67,7 @@ def _user(
             fmt,
             Jsonb(priorities or DEFAULT_PRIORITIES),
             Jsonb({"digest": channels or ["discord"]}),
+            themes if themes is not None else ["ai-ml"],
         ),
     )
     return uid
@@ -275,3 +279,35 @@ def test_a_clashing_high_score_sorts_after_a_non_clashing_one(conn) -> None:
 def test_picks_alone_do_not_make_an_empty_digest_non_empty() -> None:
     d = Digest(day="2026-10-16", new=[], new_total=0, closing=[], closing_total=0, open_total=0)
     assert d.picks == [] and d.empty
+
+
+def test_picks_failure_still_sends_the_normal_digest(conn, monkeypatch) -> None:
+    uid = _user(conn)
+    _score(conn, uid, _event(conn, "scored"), 80)
+
+    def boom(*a, **k):
+        raise RuntimeError("relation scores does not exist")
+
+    monkeypatch.setattr(user_digest, "_picks", boom)
+    d = items_for(conn, _recipient(conn, uid), None, NOW)
+    assert d.picks == [] and [i.title for i in d.new] == ["scored"]
+
+    rec = Recorder()
+    s = run_user_digests(conn, NOW, {"discord": rec})
+    assert rec.sent == [uid] and s.failed == 0
+
+
+def test_picks_failure_in_the_database_does_not_break_the_connection(conn, monkeypatch) -> None:
+    uid = _user(conn)
+    _event(conn, "plain")
+    monkeypatch.setattr(user_digest.busy, "periods_for", lambda *a: 1 / 0)
+    _score(conn, uid, _event(conn, "scored2"), 80)
+    d = items_for(conn, _recipient(conn, uid), None, NOW)
+    assert d.picks == [] and len(d.new) == 2
+
+
+def test_no_topics_means_no_picks_even_with_old_scores(conn) -> None:
+    uid = _user(conn, themes=[])
+    _score(conn, uid, _event(conn, "old-scored"), 90)
+    d = items_for(conn, _recipient(conn, uid), None, NOW)
+    assert d.picks == [] and [i.title for i in d.new] == ["old-scored"]

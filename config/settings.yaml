@@ -15,6 +15,8 @@ ai:
 
 rank:
   shortlist: 12          # topic-matched events sent to the AI per topic group (D-051)
+  max_seconds: 480       # stop starting topic groups after this long; the rest wait for the next run
+  max_groups: 40         # most AI calls per run (largest groups first)
 
 digest:
   top_n: 5
