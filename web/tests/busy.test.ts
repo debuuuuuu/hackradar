@@ -25,6 +25,11 @@ describe("validateBusy", () => {
     expect(validateBusy({ ...ok, label: "  exams  " }, TODAY)).toEqual(ok);
   });
 
+  it("turns control characters in the label into spaces", () => {
+    expect(validateBusy({ ...ok, label: "ex\u0000ams\n\u007f" }, TODAY).label).toBe("ex ams");
+    expect(field({ ...ok, label: "\u0000\n\t" })).toBe("label");
+  });
+
   it("accepts a single day, today as the end, and a 366-day span", () => {
     expect(field({ startsOn: "2026-11-10", endsOn: "2026-11-10", label: "x" })).toBeNull();
     expect(field({ startsOn: "2026-10-01", endsOn: TODAY, label: "x" })).toBeNull();

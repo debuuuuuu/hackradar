@@ -39,7 +39,7 @@ export function validateBusy(input: unknown, today: string): BusyInput {
   if (end < start) throw new ValidationError("endsOn", "The end date cannot be before the start date.");
   if (end - start > MAX_SPAN_DAYS) throw new ValidationError("endsOn", "A busy period can span at most 366 days.");
   if (end < (dayNumber(today) as number)) throw new ValidationError("endsOn", "The end date cannot be in the past.");
-  const text = typeof label === "string" ? label.trim() : "";
+  const text = typeof label === "string" ? label.replace(/[\u0000-\u001f\u007f]/g, " ").trim() : "";
   if (!text || text.length > MAX_LABEL) throw new ValidationError("label", `Give it a label of 1 to ${MAX_LABEL} characters.`);
   return { startsOn: startsOn as string, endsOn: endsOn as string, label: text };
 }

@@ -19,16 +19,17 @@ const ORIGIN = "https://hackradar.test";
 
 async function newUser(name = "Ann"): Promise<number> {
   const [row] = await query<{ id: number }>("INSERT INTO users (name) VALUES ($1) RETURNING id", [name]);
+  await query("INSERT INTO preferences (user_id, themes) VALUES ($1, ARRAY['ai-ml'])", [row.id]);
   return Number(row.id);
 }
 
 async function newEvent(
   title: string,
-  opts: { status?: string; mode?: string; start?: string; end?: string } = {},
+  opts: { status?: string; mode?: string; start?: string; end?: string; invite?: boolean; deadline?: string } = {},
 ): Promise<number> {
   const [row] = await query<{ id: number }>(
-    "INSERT INTO events (title, status, mode, start_date, end_date) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-    [title, opts.status ?? "open", opts.mode ?? "offline", opts.start ?? null, opts.end ?? null],
+    "INSERT INTO events (title, status, mode, start_date, end_date, invite_only, reg_deadline) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+    [title, opts.status ?? "open", opts.mode ?? "offline", opts.start ?? null, opts.end ?? null, opts.invite ?? false, opts.deadline ?? null],
   );
   return Number(row.id);
 }
@@ -86,6 +87,27 @@ describe("GET /api/me/picks", () => {
         { id: a, title: "Alpha", score: 80, why: "Matches your AI interest.", clash: null },
         { id: blank, title: "Blank", score: 60, why: null, clash: null },
       ]);
+    }),
+  );
+
+  dbIt("leaves out invite-only events and events already past their deadline", () =>
+    withSchema(async () => {
+      const me = await newUser();
+      const fine = await newEvent("Fine", { deadline: "2099-01-01T00:00:00Z" });
+      const invite = await newEvent("Invite", { invite: true });
+      const past = await newEvent("Past", { deadline: "2020-01-01T00:00:00Z" });
+      for (const id of [fine, invite, past]) await score(me, id, 80, "x");
+      const body = (await (await getPicks(me)).json()) as { picks: { id: number }[] };
+      expect(body.picks.map((p) => p.id)).toEqual([fine]);
+    }),
+  );
+
+  dbIt("returns no picks once the caller has cleared their topics", () =>
+    withSchema(async () => {
+      const me = await newUser();
+      await score(me, await newEvent("Alpha"), 80, "x");
+      await query("UPDATE preferences SET themes = '{}' WHERE user_id = $1", [me]);
+      expect(await (await getPicks(me)).json()).toEqual({ picks: [] });
     }),
   );
 

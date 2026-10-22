@@ -168,6 +168,38 @@ describe("getPrefs and savePrefs", () => {
       expect(raw.email_hash).toBeNull();
     }));
 
+  dbIt("changing topics or format deletes the user's scores; other changes keep them", () =>
+    withSchema(async () => {
+      const uid = await newUser();
+      const other = await newUser({ name: "Bob" });
+      const [{ id: ev }] = await query<{ id: number }>("INSERT INTO events (title) VALUES ('E') RETURNING id");
+      const seed = async () => {
+        await query("DELETE FROM scores");
+        for (const u of [uid, other]) await query("INSERT INTO scores (user_id, event_id, score) VALUES ($1, $2, 50)", [u, ev]);
+      };
+      const mine = async () => (await query("SELECT 1 FROM scores WHERE user_id = $1", [uid])).length;
+      await savePrefs(uid, valid({ topics: ["ai-ml", "web"], format: "online" }));
+
+      await seed();
+      await savePrefs(uid, valid({ topics: ["web", "ai-ml"], format: "online", homeCity: "mumbai", radiusKm: 50 }));
+      expect(await mine()).toBe(1); // reorder, city and radius: scores stay
+
+      await savePrefs(uid, valid({ topics: ["ai-ml"], format: "online" }));
+      expect(await mine()).toBe(0); // topics changed
+      expect((await query("SELECT 1 FROM scores WHERE user_id = $1", [other])).length).toBe(1);
+
+      await seed();
+      await savePrefs(uid, valid({ topics: ["ai-ml"], format: "in_person" }));
+      expect(await mine()).toBe(0); // format changed
+
+      await seed();
+      await savePrefs(uid, valid({ topics: [], format: "in_person" }));
+      expect(await mine()).toBe(0); // cleared topics
+      await seed();
+      await savePrefs(uid, valid({ topics: [], format: "in_person" }));
+      expect(await mine()).toBe(0); // still empty: never keep scores without topics
+    }));
+
   dbIt("omitted contact leaves stored data; empty string clears", () =>
     withSchema(async () => {
       await seedPlaces();

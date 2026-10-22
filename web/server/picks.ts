@@ -29,12 +29,19 @@ interface Row {
 
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null);
 
-/** The caller's scored open events, clash-labelled against their upcoming busy periods. */
+/**
+ * The caller's scored open events, clash-labelled against their upcoming busy periods. Same hard rules
+ * as the digest: no invite-only events, none already past their deadline, nothing without chosen topics.
+ * (The place and format filter is not applied here yet; clashes are labelled instead.)
+ */
 export async function getPicks(uid: number): Promise<Pick[]> {
   const rows = await query<Row>(
     `SELECT e.id, e.title, s.score, s.reason, e.mode, e.start_date, e.end_date, e.submission_deadline
        FROM scores s JOIN events e ON e.id = s.event_id
-      WHERE s.user_id = $1 AND e.status = 'open'`,
+       JOIN preferences p ON p.user_id = s.user_id AND cardinality(p.themes) > 0
+      WHERE s.user_id = $1 AND e.status = 'open' AND NOT e.invite_only
+        AND (COALESCE(e.reg_deadline, e.submission_deadline, e.end_date) IS NULL
+             OR COALESCE(e.reg_deadline, e.submission_deadline, e.end_date) >= now())`,
     [uid],
   );
   const periods = await query<{ startsOn: string; endsOn: string; label: string }>(
