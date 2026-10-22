@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import re
 import time
+from collections.abc import Callable
 
 import httpx
 
@@ -25,6 +26,7 @@ DISCLAIMER = (
 COLOR_NEW = 0x5865F2
 COLOR_CLOSING = 0xED4245
 COLOR_CONTESTS = 0x99AAB5
+COLOR_PICKS = 0xFEE75C
 KIND_LABEL = {"reg": "reg closes", "submit": "submit by", "ends": "ends"}
 _MD_SPECIAL = re.compile(r"([\\*_~`|\[\]>])")
 
@@ -67,6 +69,17 @@ def format_item(item: DigestItem) -> str:
     return f"{line}\n{' · '.join(flags)}" if flags else line
 
 
+def format_pick(item: DigestItem) -> str:
+    """A normal item line plus the AI's why. A clash is struck through, never hidden."""
+    head, _, rest = format_item(item).partition("\n")
+    lines = [f"~~{head}~~" if item.clash else head, rest]
+    if item.why:
+        lines.append(f"💡 {escape(' '.join(item.why.split()))}")
+    if item.clash:
+        lines.append(f"⚠️ Clashes with {escape(item.clash)}")
+    return "\n".join(lines)
+
+
 def trust_flags(item: DigestItem) -> list[str]:
     """Things to check before joining (D-031). Rules on source data only, never AI."""
     flags = []
@@ -84,12 +97,19 @@ def trust_flags(item: DigestItem) -> list[str]:
     return flags
 
 
-def _section(title: str, items: list[DigestItem], total: int, color: int, budget: int) -> dict:
+def _section(
+    title: str,
+    items: list[DigestItem],
+    total: int,
+    color: int,
+    budget: int,
+    fmt: Callable[[DigestItem], str] = format_item,
+) -> dict:
     budget = min(budget, DESCRIPTION_LIMIT) - 40  # room for the "…and N more" line
     lines: list[str] = []
     length = 0
     for item in items:
-        line = format_item(item)
+        line = fmt(item)
         if length + len(line) + 2 > budget:
             break
         lines.append(line)
@@ -110,16 +130,22 @@ def render(digest: Digest) -> dict:
     if digest.empty:
         return {"content": f"{header}\nNothing new today and nothing closing in the next 3 days."}
     sections = []
-    if digest.new_total:
-        sections.append((f"🆕 New ({digest.new_total})", digest.new, digest.new_total, COLOR_NEW))
-    if digest.closing_total:
+    if digest.picks:
+        title = f"⭐ Picked for you ({len(digest.picks)})"
+        sections.append((title, digest.picks, len(digest.picks), COLOR_PICKS, format_pick))
+    if digest.new:  # empty when every new event was picked above
+        title = f"🆕 New ({digest.new_total})"
+        sections.append((title, digest.new, digest.new_total, COLOR_NEW, format_item))
+    if digest.closing:
         title = f"⏰ Closing within 3 days ({digest.closing_total})"
-        sections.append((title, digest.closing, digest.closing_total, COLOR_CLOSING))
+        sections.append((title, digest.closing, digest.closing_total, COLOR_CLOSING, format_item))
     if digest.contests_total:
         title = f"🧩 Contests & other ({digest.contests_total})"
-        sections.append((title, digest.contests, digest.contests_total, COLOR_CONTESTS))
+        sections.append(
+            (title, digest.contests, digest.contests_total, COLOR_CONTESTS, format_item)
+        )
     budget = EMBEDS_TOTAL_BUDGET // len(sections)
-    embeds = [_section(*s, budget=budget) for s in sections]
+    embeds = [_section(*s[:4], budget=budget, fmt=s[4]) for s in sections]
     return {"content": header, "embeds": embeds, "allowed_mentions": {"parse": []}}
 
 

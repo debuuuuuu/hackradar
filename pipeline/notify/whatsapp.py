@@ -18,6 +18,7 @@ API_URL = "https://api.callmebot.com/whatsapp.php"
 MAX_CHARS = 1000  # self-imposed; CallMeBot's own limit is unverified
 DEFAULT_MAX_PER_RUN = 5  # unverified provider limit; kept low until confirmed
 TITLE_MAX = 80
+PICKS_MAX = 3
 
 
 class WhatsAppError(RuntimeError):
@@ -33,6 +34,15 @@ def _item_line(number: int, item: DigestItem) -> str:
     return f"{number}. {title} ({format_deadline(item)})"
 
 
+def _pick_line(number: int, item: DigestItem) -> str:
+    line = _item_line(number, item)
+    if item.why:
+        line += f" - {item.why}"
+    if item.clash:
+        line += f" [clashes with {item.clash}]"
+    return line
+
+
 def short_text(digest: Digest, site_url: str, top: int = 3) -> str:
     """A plain-text summary: counts, the first few items, and the site link. Never the full list."""
     if digest.empty:
@@ -41,7 +51,12 @@ def short_text(digest: Digest, site_url: str, top: int = 3) -> str:
     items = [*digest.new, *digest.closing][:top]
     shown = len(items)
     total = digest.new_total + digest.closing_total
-    lines = [head, *(_item_line(i + 1, item) for i, item in enumerate(items))]
+    lines = [head]
+    if digest.picks:
+        picks = digest.picks[:PICKS_MAX]
+        lines += ["Picked for you:", *(_pick_line(i + 1, p) for i, p in enumerate(picks))]
+        lines.append(f"Everything else: {site_url.rstrip('/')}/events")
+    lines += [_item_line(i + 1, item) for i, item in enumerate(items)]
     if total > shown:
         lines.append(f"...and {total - shown} more.")
     lines.append(f"All details and sources: {site_url}")

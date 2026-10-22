@@ -125,3 +125,21 @@ def test_listed_on_several_platforms_badge():
 def test_url_cannot_break_the_markdown_link():
     line = discord.format_item(item(url="https://x.com/a (b)"))
     assert line.startswith(r"**[Hack \[AI\] \*2026\*](https://x.com/a%20(b%29)**")
+
+
+def test_picks_block_comes_first_with_why_and_clash_marker():
+    ok = item(title="Fits", why="matches your AI topics")
+    bad = item(title="Clashy", why="good fit", clash="Exams *week*")
+    payload = discord.render(digest(new=[item()], new_total=1, picks=[ok, bad]))
+    embeds = payload["embeds"]
+    assert embeds[0]["title"].startswith("⭐ Picked for you")
+    text = embeds[0]["description"]
+    assert "matches your AI topics" in text
+    assert "~~" in text and r"Clashes with Exams \*week\*" in text
+    assert text.index("Fits") < text.index("Clashy")
+    assert embeds[1]["title"].startswith("🆕 New")
+
+
+def test_no_picks_renders_as_before():
+    payload = discord.render(digest(new=[item()], new_total=1))
+    assert [e["title"] for e in payload["embeds"]] == ["🆕 New (1)"]

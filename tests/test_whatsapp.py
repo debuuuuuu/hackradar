@@ -128,3 +128,25 @@ def test_short_text_when_nothing_is_new_says_so() -> None:
     text = whatsapp.short_text(digest, SITE)
     assert "Nothing new" in text
     assert SITE in text
+
+
+def test_short_text_leads_with_at_most_three_picks_and_a_why() -> None:
+    picks = [
+        DigestItem(**{**_item(f"Pick {n}", 20).__dict__, "why": f"because {n}"}) for n in range(4)
+    ]
+    digest = Digest(
+        day="2026-10-16",
+        new=[_item("Plain", 21)],
+        new_total=5,
+        closing=[],
+        closing_total=0,
+        open_total=40,
+        picks=picks,
+    )
+    text = whatsapp.short_text(digest, SITE)
+    assert "Picked for you" in text
+    assert text.index("Pick 0") < text.index("Plain")
+    assert "because 0" in text and "because 2" in text
+    assert "Pick 3" not in text
+    assert f"{SITE}/events" in text
+    assert len(text) <= whatsapp.MAX_CHARS

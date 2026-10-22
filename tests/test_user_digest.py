@@ -261,7 +261,8 @@ def test_a_clashing_high_score_sorts_after_a_non_clashing_one(conn) -> None:
         (NOW + timedelta(days=12), NOW + timedelta(days=13), clash),
     )
     conn.execute(
-        "INSERT INTO busy_periods (user_id, starts_on, ends_on, label) VALUES (%s, %s, %s, 'exams')",
+        "INSERT INTO busy_periods (user_id, starts_on, ends_on, label)"
+        " VALUES (%s, %s, %s, 'exams')",
         (uid, (NOW + timedelta(days=11)).date(), (NOW + timedelta(days=14)).date()),
     )
     _score(conn, uid, clash, 95)

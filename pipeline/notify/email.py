@@ -37,6 +37,15 @@ def _item_block(item: DigestItem) -> str:
     return f"- {item.title} ({format_deadline(item)})\n  {item.url}"
 
 
+def _pick_block(item: DigestItem) -> str:
+    lines = [_item_block(item)]
+    if item.why:
+        lines.append(f"  {item.why}")
+    if item.clash:
+        lines.append(f"  Clashes with {item.clash}")
+    return "\n".join(lines)
+
+
 def render_body(digest: Digest, site_url: str | None, unsub_url: str | None = None) -> str:
     """Plain-text body: new and closing events with their source links, then the footer."""
     lines = [
@@ -44,6 +53,11 @@ def render_body(digest: Digest, site_url: str | None, unsub_url: str | None = No
         f"New: {digest.new_total}. Closing within 3 days: {digest.closing_total}.",
         "",
     ]
+    if digest.picks:
+        lines += ["Picked for you", *map(_pick_block, digest.picks)]
+        if site_url:
+            lines.append(f"Everything else: {site_url.rstrip('/')}/events")
+        lines.append("")
     if digest.new:
         lines += ["New", *map(_item_block, digest.new), ""]
     if digest.closing:
@@ -90,6 +104,38 @@ def _row(item: DigestItem) -> str:
         f'color:{_INK};text-decoration:none;">{escape(item.title)}</a><br>'
         f'<span style="{_MONO}font-size:12px;color:{_MUTE};">{escape(_meta(item))}</span></div>'
     )
+
+
+def _pick_row(item: DigestItem) -> str:
+    """A normal row plus the why line; a clashing pick is dimmed, not dropped."""
+    extra = ""
+    if item.why:
+        extra += f'<br><span style="font-size:13px;font-style:italic;">{escape(item.why)}</span>'
+    if item.clash:
+        extra += (
+            f'<br><span style="{_MONO}font-size:12px;color:#9b2b2f;">'
+            f"Clashes with {escape(item.clash)}</span>"
+        )
+    row = _row(item)[: -len("</div>")] + extra + "</div>"
+    if item.clash:
+        row = f'<div style="opacity:.55;">{row}</div>'
+    return row
+
+
+def _picks_section(items: list[DigestItem], site: str | None) -> str:
+    if not items:
+        return ""
+    link = ""
+    if site:
+        link = (
+            f'<p style="margin:6px 0 0;font-size:13px;"><a href="{_safe_url(site + "/events")}" '
+            f'style="color:#9b2b2f;">Everything else on the site</a></p>'
+        )
+    head = (
+        f'<p style="margin:18px 0 0;{_MONO}font-size:11px;letter-spacing:.06em;'
+        f'text-transform:uppercase;color:{_MUTE};">Picked for you</p>'
+    )
+    return head + "".join(_pick_row(i) for i in items) + link
 
 
 def _section(title: str, items: list[DigestItem], total: int) -> str:
@@ -140,6 +186,7 @@ def render_html(digest: Digest, site_url: str | None, unsub_url: str | None = No
         '<p style="margin:0 0 4px;">I woke up early so you didn\'t have to. Fresh finds, still warm:</p>'
         f'<p style="margin:0;{_MONO}font-size:12px;color:{_MUTE};">{escape(digest.day)} · {digest.new_total} new · '
         f"{digest.closing_total} closing within 3 days</p>"
+        + _picks_section(digest.picks, site)
         + _section("New", digest.new, digest.new_total)
         + _section("Closing soon", digest.closing, digest.closing_total)
         + _section("Contests and other", digest.contests, digest.contests_total)
