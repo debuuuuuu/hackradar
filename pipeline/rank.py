@@ -1,15 +1,23 @@
-"""For you picks: cheap topic shortlist (Task 3 adds the AI scoring on top)."""
+"""For you picks: cheap topic shortlist, then AI fit scores per topic group (D-051)."""
 
 from __future__ import annotations
 
+import logging
+import os
 import re
+import time
+from collections import defaultdict
 from collections.abc import Sequence
 from functools import cache
 
 import psycopg
 
-from pipeline import config
+from pipeline import ai, config
+from pipeline.ai import score as ai_score
 from pipeline.ai import summarize
+from pipeline.ai.base import AIError, Provider
+
+log = logging.getLogger(__name__)
 
 
 @cache
@@ -54,3 +62,84 @@ def shortlist(
             scored.append((hits, summarize.EventText(eid, title, organizer, themes, desc)))
     scored.sort(key=lambda s: -s[0])  # stable: deadline order from SQL breaks ties
     return [ev for _, ev in scored[:limit]]
+
+
+_GROUPS = """
+    SELECT u.id, p.themes, p.format
+      FROM users u JOIN preferences p ON p.user_id = u.id
+     WHERE u.onboarded_at IS NOT NULL AND u.digest_enabled AND cardinality(p.themes) > 0
+     ORDER BY u.id
+"""
+
+_SCORED_FOR_ALL = """
+    SELECT event_id FROM scores WHERE event_id = ANY(%s) AND user_id = ANY(%s)
+     GROUP BY event_id HAVING count(*) = %s
+"""
+
+_UPSERT = """
+    INSERT INTO scores (user_id, event_id, score, reason, model, scored_at)
+    VALUES (%s, %s, %s, %s, %s, now())
+    ON CONFLICT (user_id, event_id) DO UPDATE
+       SET score = EXCLUDED.score, reason = EXCLUDED.reason,
+           model = EXCLUDED.model, scored_at = EXCLUDED.scored_at
+"""
+
+
+def score_all(conn: psycopg.Connection, provider: Provider | None = None, sleep=time.sleep) -> int:
+    """Score the topic shortlist once per (themes, format) group and store it for every user in it.
+
+    Events already scored for every user in a group are skipped, so a re-run costs no AI calls.
+    A failed group is logged and skipped. Returns the number of score rows written.
+    """
+    groups: dict[tuple[tuple[str, ...], str], list[int]] = defaultdict(list)
+    for uid, themes, fmt in conn.execute(_GROUPS).fetchall():
+        groups[(tuple(sorted(themes)), fmt)].append(uid)
+    if not groups:
+        return 0
+    cfg = config.load("settings")
+    limit, pause = cfg["rank"]["shortlist"], cfg["ai"].get("batch_pause_seconds", 0)
+    if provider is None:
+        provider = ai.get_provider()
+    written, called = 0, False
+    for (topics, fmt), users in groups.items():
+        events = shortlist(conn, topics, limit)
+        done = {
+            r[0]
+            for r in conn.execute(
+                _SCORED_FOR_ALL, ([e.id for e in events], users, len(users))
+            ).fetchall()
+        }
+        todo = [e for e in events if e.id not in done]
+        if not todo:
+            continue
+        if called:
+            sleep(pause)
+        called = True
+        try:
+            results = ai_score.score(provider, topics, fmt, todo)
+        except AIError as e:
+            log.error("scoring group %s failed: %s", topics, e)
+            continue
+        rows = [
+            (uid, eid, r.score, r.reason, provider.name)
+            for eid, r in results.items()
+            for uid in users
+        ]
+        with conn.transaction(), conn.cursor() as cur:
+            cur.executemany(_UPSERT, rows)
+        written += len(rows)
+    log.info("wrote %d scores for %d topic groups", written, len(groups))
+    return written
+
+
+def score_safely(conn: psycopg.Connection, errors: list[str]) -> int:
+    """For run.py: skip quietly without a key, record any failure, never raise."""
+    if not os.environ.get("GROQ_API_KEY"):
+        log.warning("GROQ_API_KEY not set; skipping scoring")
+        return 0
+    try:
+        return score_all(conn)
+    except Exception as e:  # scoring must never block the digest
+        log.exception("scoring failed")
+        errors.append(f"score: {type(e).__name__}: {e}")
+        return 0

@@ -16,3 +16,24 @@ def test_write_last_run_creates_dir(tmp_path):
     path = tmp_path / "data" / "last_run.json"
     write_last_run({"status": "success"}, path)
     assert json.loads(path.read_text()) == {"status": "success"}
+
+
+def test_main_scores_after_enrichment_and_before_user_digests(monkeypatch, tmp_path):
+    from contextlib import nullcontext
+
+    from pipeline import run
+
+    order = []
+    monkeypatch.setattr(run, "load_dotenv", lambda: None)
+    monkeypatch.setattr(run, "guard_http_logs", lambda: None)
+    monkeypatch.setattr(run, "write_last_run", lambda payload: None)
+    monkeypatch.setattr(run.db, "connect", lambda: nullcontext(object()))
+    monkeypatch.setattr(run.db, "start_run", lambda conn, trigger: 1)
+    monkeypatch.setattr(run.db, "finish_run", lambda *a: None)
+    monkeypatch.setattr(run, "fetch_and_store", lambda conn: ({}, []))
+    monkeypatch.setattr(run.enrich, "enrich_safely", lambda c, e: order.append("enrich"))
+    monkeypatch.setattr(run.rank, "score_safely", lambda c, e: order.append("score"))
+    monkeypatch.setattr(run, "send_digest", lambda c, r, e: 0)
+    monkeypatch.setattr(run, "send_user_digests", lambda c, e: order.append("users") or 0)
+    assert run.main() == 0
+    assert order == ["enrich", "score", "users"]

@@ -11,7 +11,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from pipeline import config, crypto, db, dedupe, digest, enrich, place, user_digest
+from pipeline import config, crypto, db, dedupe, digest, enrich, place, rank, user_digest
 from pipeline.normalize import IST, ist_day_start
 from pipeline.notify import discord
 from pipeline.notify import email as email_notify
@@ -160,6 +160,7 @@ def main() -> int:
             log.info("run %s started (trigger=%s)", run_id, trigger)
             source_counts, errors = fetch_and_store(conn)
             enrich.enrich_safely(conn, errors)
+            rank.score_safely(conn, errors)
             sent = send_digest(conn, run_id, errors)
             sent += send_user_digests(conn, errors)
             status = "partial" if errors else "success"
