@@ -12,7 +12,7 @@ from functools import cache
 
 import psycopg
 
-from pipeline import ai, config
+from pipeline import ai, config, db
 from pipeline.ai import score as ai_score
 from pipeline.ai import summarize
 from pipeline.ai.base import AIError, Provider
@@ -100,34 +100,54 @@ def score_all(conn: psycopg.Connection, provider: Provider | None = None, sleep=
     limit, pause = cfg["rank"]["shortlist"], cfg["ai"].get("batch_pause_seconds", 0)
     if provider is None:
         provider = ai.get_provider()
-    written, called = 0, False
-    for (topics, fmt), users in groups.items():
-        events = shortlist(conn, topics, limit)
-        done = {
-            r[0]
-            for r in conn.execute(
-                _SCORED_FOR_ALL, ([e.id for e in events], users, len(users))
-            ).fetchall()
-        }
-        todo = [e for e in events if e.id not in done]
-        if not todo:
-            continue
-        if called:
-            sleep(pause)
-        called = True
+    live = {"conn": conn, "own": None}
+
+    def on_db(fn):
+        """Run fn(conn); Neon may drop the connection during the paced AI wait, so reconnect once."""
         try:
-            results = ai_score.score(provider, topics, fmt, todo)
-        except AIError as e:
-            log.error("scoring group %s failed: %s", topics, e)
-            continue
-        rows = [
-            (uid, eid, r.score, r.reason, provider.name)
-            for eid, r in results.items()
-            for uid in users
-        ]
-        with conn.transaction(), conn.cursor() as cur:
+            return fn(live["conn"])
+        except psycopg.OperationalError:
+            log.warning("database connection lost during scoring; reconnecting")
+            if live["own"] is not None:
+                live["own"].close()
+            live["own"] = live["conn"] = db.connect()
+            return fn(live["conn"])
+
+    def pending(c, topics, users):
+        events = shortlist(c, topics, limit)
+        done = {
+            r[0] for r in c.execute(_SCORED_FOR_ALL, ([e.id for e in events], users, len(users)))
+        }
+        return [e for e in events if e.id not in done]
+
+    def save(c, rows):
+        with c.transaction(), c.cursor() as cur:
             cur.executemany(_UPSERT, rows)
-        written += len(rows)
+
+    written, called = 0, False
+    try:
+        for (topics, fmt), users in groups.items():
+            todo = on_db(lambda c: pending(c, topics, users))
+            if not todo:
+                continue
+            if called:
+                sleep(pause)
+            called = True
+            try:
+                results = ai_score.score(provider, topics, fmt, todo)
+            except AIError as e:
+                log.error("scoring group %s failed: %s", topics, e)
+                continue
+            rows = [
+                (uid, eid, r.score, r.reason, provider.name)
+                for eid, r in results.items()
+                for uid in users
+            ]
+            on_db(lambda c: save(c, rows))
+            written += len(rows)
+    finally:
+        if live["own"] is not None:
+            live["own"].close()
     log.info("wrote %d scores for %d topic groups", written, len(groups))
     return written
 
@@ -138,7 +158,9 @@ def score_safely(conn: psycopg.Connection, errors: list[str]) -> int:
         log.warning("GROQ_API_KEY not set; skipping scoring")
         return 0
     try:
-        return score_all(conn)
+        # Own short-lived connection: ranking never touches the one the digests use.
+        with db.connect() as own:
+            return score_all(own)
     except Exception as e:  # scoring must never block the digest
         log.exception("scoring failed")
         errors.append(f"score: {type(e).__name__}: {e}")

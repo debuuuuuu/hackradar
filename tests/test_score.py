@@ -135,12 +135,76 @@ def test_score_all_with_failing_provider_writes_nothing(conn):
     assert _rows(conn) == []
 
 
+def test_score_all_reconnects_once_when_a_write_hits_a_dropped_connection(conn, monkeypatch):
+    import psycopg
+
+    eid = _event(conn, "AI Sprint")
+    uid = _user(conn, "A", ["ai-ml"])
+
+    class Dropping:
+        """Proxy for the caller's conn whose first transaction() fails like a closed connection."""
+
+        def __init__(self, real):
+            self.real, self.failed = real, False
+
+        def transaction(self):
+            if not self.failed:
+                self.failed = True
+                raise psycopg.OperationalError("server closed the connection")
+            return self.real.transaction()
+
+        def __getattr__(self, name):
+            return getattr(self.real, name)
+
+    closed = []
+
+    class Fresh:
+        def __getattr__(self, name):
+            return getattr(conn, name)
+
+        def close(self):
+            closed.append(1)
+
+    monkeypatch.setattr(rank.db, "connect", lambda: Fresh())
+    assert rank.score_all(Dropping(conn), Fake(), sleep=lambda s: None) == 1
+    assert [(r[0], r[1]) for r in _rows(conn)] == [(uid, eid)]
+    assert closed == [1]
+
+
+def test_score_safely_uses_its_own_connection_and_leaves_the_callers_alone(monkeypatch):
+    from contextlib import contextmanager
+
+    monkeypatch.setenv("GROQ_API_KEY", "k")
+    events = []
+
+    class Caller:
+        def __getattr__(self, name):
+            events.append(name)  # any use of the caller's conn is a failure
+
+    own = object()
+
+    @contextmanager
+    def fake_connect():
+        events.append("open")
+        yield own
+        events.append("close")
+
+    seen = []
+    monkeypatch.setattr(rank.db, "connect", fake_connect)
+    monkeypatch.setattr(rank, "score_all", lambda c: seen.append(c) or 3)
+    assert rank.score_safely(Caller(), []) == 3
+    assert seen == [own] and events == ["open", "close"]
+
+
 def test_score_safely_skips_without_key_and_swallows_failures(monkeypatch):
+    from contextlib import nullcontext
+
     errors: list[str] = []
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
     assert rank.score_safely(object(), errors) == 0 and errors == []
 
     monkeypatch.setenv("GROQ_API_KEY", "k")
+    monkeypatch.setattr(rank.db, "connect", lambda: nullcontext(object()))
 
     def boom(conn):
         raise RuntimeError("db gone")
