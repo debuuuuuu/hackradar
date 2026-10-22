@@ -1,6 +1,6 @@
 # HackRadar — Product design
 
-_Date: 2026-10-23 · Status: draft for Debjit's approval · Supersedes nothing; sits above the phase specs._
+_Date: 2026-10-23 · Status: **approved by Debjit 2026-10-23** · Supersedes nothing; sits above the phase specs._
 
 ## 1. Intent
 

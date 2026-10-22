@@ -5,7 +5,7 @@ _Last updated: 2026-10-22_ · ~8 weeks part-time (evenings and weekends; estimat
 Each phase ends at a **gate**. Don't start the next phase until the gate passes, so there is always a
 working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 
-## Product plan (2026-10-23, draft awaiting approval)
+## Product plan (approved 2026-10-23)
 
 The [product design](superpowers/specs/2026-10-23-hackradar-product-design.md) sets the build order from here.
 It overlaps the phases below; each step gets its own plan before building.
