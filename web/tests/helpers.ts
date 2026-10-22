@@ -11,7 +11,7 @@ export const dbIt = it.skipIf(!process.env.TEST_DATABASE_URL);
 const MODELS = fileURLToPath(new URL("../../pipeline/models.sql", import.meta.url));
 
 /** Production tables a test must never touch. */
-export const GUARDED_TABLES = ["users", "preferences", "logins", "login_tokens", "user_events", "scores", "reminders_sent"];
+export const GUARDED_TABLES = ["users", "preferences", "logins", "login_tokens", "user_events", "scores", "reminders_sent", "busy_periods"];
 
 export type Querier = { query(text: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }> };
 
