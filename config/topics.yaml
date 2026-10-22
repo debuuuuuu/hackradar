@@ -1,10 +1,10 @@
 # Topic keywords for the For you shortlist (pipeline/rank.py). Keys match web/server/prefs.ts TOPICS.
 # Lowercase; matched case-insensitively on whole words, multi-word entries as phrases.
-ai-ml: [ai, ml, machine learning, llm, genai, generative ai, deep learning, nlp, computer vision]
+ai-ml: [ai, ml, machine learning, llm, genai, generative ai, artificial intelligence, deep learning, nlp, computer vision, chatbot]
 web3: [web3, blockchain, crypto, defi, nft, ethereum, solana, smart contract, dapp]
-web: [web, frontend, backend, full stack, fullstack, react, javascript, saas, api]
-data: [data, analytics, big data, data science, visualization, sql, bi]
+web: [web, frontend, backend, full stack, fullstack, react, javascript, typescript, saas, rest api]
+data: [data science, data analytics, data engineering, data analysis, big data, datathon, analytics, visualization, sql, power bi, business intelligence]
 hardware: [hardware, iot, robotics, embedded, arduino, drone, electronics, raspberry pi]
-security: [security, cybersecurity, ctf, privacy, encryption, hacking, infosec]
-design: [design, ui, ux, ui/ux, figma, product design, creative]
-beginner: [beginner, beginners, student, students, first-time, newbie, campus, college]
+security: [security, cybersecurity, ctf, encryption, infosec, appsec, pentest]
+design: [design, ui, ux, ui/ux, figma, product design]
+beginner: [beginner, beginners, beginner friendly, first-time, first hackathon, newbie, newbies]

@@ -33,6 +33,12 @@ def test_topic_hits_unknown_topic_ignored() -> None:
     assert topic_hits(["nope"], "AI", [], None) == 0
 
 
+def test_topic_hits_generic_phrases_do_not_match() -> None:
+    assert topic_hits(["beginner"], "National College Hackathon", [], None) == 0
+    assert topic_hits(["data"], "bi-weekly meetup", [], None) == 0
+    assert topic_hits(["beginner"], "First hackathon? Beginner friendly", [], None) == 1
+
+
 # --- database tests -------------------------------------------------------------------------
 
 
