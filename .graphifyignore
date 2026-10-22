@@ -1,0 +1,10 @@
+# Never let graphify read secrets or build output (on top of .gitignore).
+.env
+.env.*
+**/.env
+**/.env.*
+node_modules/
+web/dist/
+.venv/
+data/
+graphify-out/

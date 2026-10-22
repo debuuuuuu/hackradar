@@ -402,3 +402,10 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Debjit (2026-10-23) asked for a leaderboard of people. Self-reported counts are easy to fake, so the higher points need proof.
 - **Alternatives:** rank on registrations alone (easy to inflate); all-time only (newcomers never catch up).
 - **Status:** active. Open: point values are a first guess; review once real data exists.
+
+### D-053 · Graphify code graph committed to the repo (dev tool only)
+- **Date:** 2026-10-23
+- **Decision:** Use `graphifyy` 0.9.83 (pinned) to keep a code knowledge graph in `graphify-out/` (graph, HTML view, report). Built locally in code-only mode; no API calls. Cache and machine-specific files are gitignored. Research: `research/2026-10-23-graphify.md`.
+- **Why:** Debjit (2026-10-23) asked for it; agents can query the map instead of re-reading files, which fits the context-efficiency rules.
+- **Alternatives:** none considered; it is optional tooling and can be removed with `graphify uninstall --purge`.
+- **Status:** active. Open: `/graphify` skill install (changes `.claude/`) left for Debjit; docs not in the graph yet.

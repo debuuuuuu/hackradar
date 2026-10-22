@@ -37,3 +37,8 @@ skills-lock.json
 
 # Visual-companion mockups
 .superpowers/
+
+# graphify: commit the graph and report; local cache and machine paths stay out
+graphify-out/cache/
+graphify-out/manifest.json
+graphify-out/.graphify_root
