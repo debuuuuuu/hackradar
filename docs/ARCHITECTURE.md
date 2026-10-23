@@ -120,8 +120,9 @@ hackradar/
 ├── pipeline/
 │   ├── sources/        base.py devpost.py unstop.py devfolio.py  (planned: mlh.py luma.py discovery.py)
 │   ├── normalize.py  dedupe.py  place.py  enrich.py  config.py  crypto.py
-│   ├── ai/             base.py groq.py summarize.py  (planned: gemini.py claude.py, ranking)
-│   ├── digest.py  user_digest.py  sends.py  (planned: ranking.py reminders.py)
+│   ├── ai/             base.py groq.py summarize.py score.py  (planned: gemini.py claude.py)
+│   ├── rank.py  busy.py    # topic shortlist + AI scoring per tag group; busy-date clash rule
+│   ├── digest.py  user_digest.py  sends.py  (planned: reminders.py)
 │   ├── notify/         discord.py email.py whatsapp.py unsubscribe.py webhook_url.py
 │   ├── db.py  models.sql  migrations/ (0002–0012 + README)
 │   └── run.py          # python -m pipeline.run
