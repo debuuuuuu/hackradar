@@ -39,7 +39,8 @@ export function registerProfileRoutes(): void {
   // GET /api/profile/:handle — public profile
   addRoute("GET", "/api/profile/:handle", async (request, params) => {
     const session = sessionFromRequest(request);
-    const callerUid = session ? session.uid : undefined;
+    const caller = session ? await findUser(session.uid, session.iat) : null;
+    const callerUid = caller?.uid;
     try {
       const profile = await getPublicProfile(params.handle, callerUid);
       return json(profile);

@@ -261,7 +261,7 @@ describe("email sign-in", () => {
         "INSERT INTO users (name, onboarded_at) VALUES ('Ann', now()) RETURNING id",
       );
       const u = { id: Number(row.id) }; // pg returns bigint as a string
-      expect(await findUser(u.id)).toEqual({ uid: u.id, name: "Ann", onboarded: true, isAdmin: false });
+      expect(await findUser(u.id)).toEqual({ uid: u.id, name: "Ann", onboarded: true, isAdmin: false, handle: null });
       expect(await findUser(u.id + 999)).toBeNull();
     }));
 });
@@ -403,7 +403,7 @@ describe("auth routes", () => {
       const cookie = (uid: number) => `hr_session=${signSession({ uid }, process.env.SESSION_SECRET!)}`;
       const ok = await route(new Request(`${ORIGIN}/api/me`, { headers: { cookie: cookie(u.id) } }));
       expect(ok.status).toBe(200);
-      expect(await ok.json()).toEqual({ uid: u.id, name: "Ann", onboarded: false, isAdmin: false });
+      expect(await ok.json()).toEqual({ uid: u.id, name: "Ann", onboarded: false, isAdmin: false, handle: null });
       const gone = await route(new Request(`${ORIGIN}/api/me`, { headers: { cookie: cookie(u.id + 999) } }));
       expect(gone.status).toBe(401);
     }));

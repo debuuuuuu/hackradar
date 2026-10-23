@@ -19,6 +19,7 @@ import SignIn from "./pages/SignIn.js";
 import Terms from "./pages/Terms.js";
 
 const HANDLE_NUDGE_EXEMPT = new Set(["/welcome", "/terms", "/settings", "/signin"]);
+const HANDLE_NUDGE_KEY = "hr_handle_nudge_shown";
 
 export default function App() {
   const { state, signOut } = useMe();
@@ -31,8 +32,12 @@ export default function App() {
       state.status === "in" &&
       state.me.handle === null &&
       !HANDLE_NUDGE_EXEMPT.has(location.pathname) &&
-      !location.pathname.startsWith("/signin")
+      !location.pathname.startsWith("/signin") &&
+      !location.pathname.startsWith("/unsubscribe") &&
+      !location.pathname.startsWith("/u/") &&
+      !sessionStorage.getItem(HANDLE_NUDGE_KEY)
     ) {
+      sessionStorage.setItem(HANDLE_NUDGE_KEY, "1");
       void navigate("/welcome", { replace: false });
     }
   }, [state, location.pathname, navigate]);

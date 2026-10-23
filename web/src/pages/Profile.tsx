@@ -95,7 +95,7 @@ function buildWeekLabels(today: string): string[] {
   for (let i = 51; i >= 0; i--) {
     const dd = new Date(d);
     dd.setDate(d.getDate() - i * 7);
-    const iso = dd.toISOString().slice(0, 10);
+    const iso = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(dd);
     weeks.push(isoWeek(iso));
   }
   // Deduplicate while preserving order (edge: same week counted twice at year boundary)
@@ -322,8 +322,10 @@ function VisibilityToggle({ handle, initialPublic }: VisibilityToggleProps) {
   async function toggle() {
     setSaving(true);
     try {
-      const updated = await patchProfile({ profilePublic: !isPublic });
-      setIsPublic(updated.profilePublic);
+      await patchProfile({ profilePublic: !isPublic });
+      setIsPublic(!isPublic);
+    } catch {
+      // PATCH failed — leave toggle unchanged
     } finally {
       setSaving(false);
     }
