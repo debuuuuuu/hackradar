@@ -6,6 +6,7 @@ import { registerBusyRoutes } from "./busy-routes.js";
 import { registerPicksRoutes } from "./picks-routes.js";
 import { registerPrefsRoutes } from "./prefs-routes.js";
 import { registerSavesRoutes } from "./saves-routes.js";
+import { registerProfileRoutes } from "./profile-routes.js";
 
 export * from "./http.js";
 
@@ -17,4 +18,5 @@ registerPrefsRoutes();
 registerBusyRoutes();
 registerPicksRoutes();
 registerSavesRoutes();
+registerProfileRoutes();
 registerAdminRoutes();
