@@ -11,7 +11,7 @@ The [product design](superpowers/specs/2026-10-23-hackradar-product-design.md) s
 It overlaps the phases below; each step gets its own plan before building.
 
 - [x] Step 1 · "For you" picks: busy dates in Settings, topic shortlist, AI score + "why" line (D-051, D-054) — built 2026-10-23 on `feat/for-you-picks`; **not live until migration 0013 is applied to Neon and the PR is merged**
-- [ ] Step 2 · Save / Register / Add to Google Calendar + reminders — Phase 3
+- [x] Step 2 · Save / Register / Add to Google Calendar + reminders — built 2026-10-23 on `feat/save-register-calendar`; **pending: apply migration 0014 to Neon and merge PR**
 - [ ] Step 3 · Public profile `/u/<handle>`: ○ ● ★ grid, counts, Terms + 18+ checkbox (D-050), Terms page
 - [ ] Step 3b · Leaderboard `/leaderboard` (D-052)
 - [ ] Step 4 · Interest map for recruiters
@@ -86,14 +86,14 @@ It overlaps the phases below; each step gets its own plan before building.
 
 **Gate:** a saved event gets its 7/3/1-day reminders.
 
-- [ ] "Add to Google Calendar" link on digest items and emails (D-032)
-- [ ] Per-user calendar feed (`.ics`, tokenized URL) of saved events + `/calendar` command (D-032)
+- [x] "Add to Google Calendar" link on digest items and emails (D-032) — built 2026-10-23
+- [x] Per-user calendar feed (`.ics`, tokenized URL) of saved events (D-032) — built 2026-10-23
+- [x] `reminders.py`: offsets per status (Saved → reg deadline; Registered → start + submission), `reminders_sent` dedupe — built 2026-10-23
 
 - [ ] **Spike first:** Vercel Python function + Discord deferred response + follow-up (D-020)
 - [ ] `bot/` Vercel function `/api/interactions`: signature verification, PING, button handlers
 - [ ] Discord bot (not webhook) digest with ⭐ Save / ✖ Not interested buttons
 - [ ] `/save`, `/status`, `/saved` commands
-- [ ] `reminders.py`: offsets per status (Saved → reg deadline; Registered → start + submission), `reminders_sent` dedupe
 - [ ] Reminder buttons: Mark registered, Snooze 1 day
 - [ ] `/reminders 7,3,1` command
 - [x] `notify/whatsapp.py`: CallMeBot text (built; first live WhatsApp send unverified)

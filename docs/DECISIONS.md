@@ -403,6 +403,13 @@ Format: date · decision · why · alternatives rejected · status.
 - **Alternatives:** rank on registrations alone (easy to inflate); all-time only (newcomers never catch up).
 - **Status:** active. Open: point values are a first guess; review once real data exists.
 
+### D-055 · Save/register/calendar implementation choices
+- **Date:** 2026-10-23
+- **Decision:** (1) ICS calendar token format: `?token=<HMAC-SHA256(CAL_FEED_SECRET,userId)>&user=<uid>` — userId embedded in URL, not in the token, so the feed URL is stable and the token stays short. (2) `user_events` gains `won bool DEFAULT false` and `project_url text` (migration 0014) to support the leaderboard (D-052) from the save flow. (3) Email reminders `log+skip` with a TODO comment — `pipeline/notify/email.py` has no `send_reminder` function yet; adding it is the next email-channel work item. (4) WhatsApp `_gcal_suffix` uses plain `"   gcal: ..."` (3 spaces) rather than the designed `"📅 gcal: ..."` — cosmetic only, no test change needed. (5) Python `gcal_link` reuses the existing `IST` constant from `pipeline.normalize` rather than an inline `timezone(timedelta(...))` import.
+- **Why:** All five choices were the minimal-friction path: stable ICS URLs without DB lookups; migration-based schema evolution; avoid breaking the daily run when email is unconfigured; test-verified cosmetic choice; reuse existing codebase constant.
+- **Alternatives:** (1) encrypt userId in the token (more code, same security); (3) abort when email unsupported (breaks daily run); (5) inline timezone import (redundant with existing constant).
+- **Status:** active.
+
 ### D-054 · How "For you" picks work: clash rule, scoring budget and failure isolation
 - **Date:** 2026-10-23
 - **Decision:** (1) An event clashes with a busy period only if it is offline/hybrid and its start..end overlaps the period, or its submission deadline falls inside it; online events never clash by span. Clashing picks are greyed with the reason, not hidden. (2) Scoring runs in the daily job after enrichment and before sends, one AI call per distinct (topics, format) group, largest groups first, bounded by `rank.max_seconds` (480) and `rank.max_groups` (40); a rate-limit stops all scoring for the run; any other failure skips only that group. (3) Digest picks come only from today's New and Closing lists; each channel removes only the picks it actually shows. (4) Changing topics or format, or clearing topics, deletes the user's scores. (5) A failing picks query never stops the digest.

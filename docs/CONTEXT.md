@@ -8,13 +8,15 @@ _Last updated: 2026-10-23_
 [`sessions/`](sessions/README.md)** (last session's done/problems/next steps), then only the sub-docs the task needs (index in §7).
 
 - **Phase:** Phase 1 gate met (2026-10-22). Phase 2 (per-user AI scoring) not yet started. Phase 0 gate passed 2026-10-14.
-- **State (2026-10-22):** Live and running. Site at https://hackradar-two.vercel.app. Daily cron green every day since 2026-10-16. Email digests go to every onboarded user (5 of ~8 on 2026-10-22, 0 failed sends since 2026-10-19). Animated mascot favicon, save-button feedback, HTML emails with one-click unsubscribe, name asked on sign-in form — all on `main` and live.
+- **State (2026-10-23):** Live and running. Site at https://hackradar-two.vercel.app. Daily cron green every day since 2026-10-16. Step 1 ("For you" picks) and Step 2 (save/register/calendar + reminders) both built and reviewed; neither yet merged to `main`.
+- **Finished (2026-10-23, on `feat/save-register-calendar`):** Step 2 — save/register/status flow, ICS calendar feed, Google Calendar links in Discord/email/WhatsApp, 7/3/1/0-day reminders pipeline. D-055. [Session log](sessions/2026-10-23-save-register-calendar.md).
+- **Finished (2026-10-23, on `feat/for-you-picks`):** Step 1 — busy dates, AI scoring, picks in all digests + Today page. D-054. [Session log](sessions/2026-10-23-for-you-picks.md).
 - **Finished (2026-10-18, merged to `main`):** Accounts and email launch ([session](sessions/2026-10-18-accounts-email-launch.md), D-049). Migrations 0009–0012 applied on Neon. Animated mascot favicon (PR #5). Save-button now shows an error when rejected (PR #6). Supabase env vars added to Vercel production.
 - **Finished earlier (2026-10-18, PR #4):** Full web frontend "fun theme" (D-047, [design/DESIGN.md](design/DESIGN.md)); Google, Magic Link and Supabase password auth; onboarding flow; Settings with Discord webhook test and CallMeBot key; public events directory; Event Detail; Admin dashboard; animated mascot with quips; full accessibility.
 - **Finished (2026-10-15–16):** Devfolio source; place filter (Pune ± 150 km; D-038); dedupe + "listed on 2+ platforms" badge (D-037); AI summaries and Contests section; first live Discord digest (2026-10-15); trust signals (D-031); batched upserts; public landing page; Google sign-in; Supabase email+password sign-in (D-045, D-046).
 - **Product plan (approved 2026-10-23):** [design spec](superpowers/specs/2026-10-23-hackradar-product-design.md), plain-language page [design/hackradar-product.html](design/hackradar-product.html) (D-050 to D-052). Order: 1 "For you" picks + busy dates → 2 save/register/calendar + reminders → 3 public profile (○ ● ★ grid) → 3b leaderboard → 4 interest map → 5 LinkedIn/X discovery.
-- **Resume here:** step 1 ("For you" picks) is built and reviewed on branch `feat/for-you-picks` ([plan](superpowers/plans/2026-10-23-for-you-picks.md), D-054). Before merging: apply `pipeline/migrations/0013_busy_periods.sql` to Neon (otherwise scored users' picks queries fail; the digest still sends without picks), then watch the next daily run. Then step 2 (save/register/calendar + reminders). Collect friends' feedback on the emails.
-- **Open items:** Supabase keep-alive: GitHub secrets set 2026-10-23, but the `keepalive` table was never created in Supabase (query returns 404), so it still does nothing until SETUP.md §Supabase step 2 SQL is run; Google sign-in keys not on Vercel (disabled); Discord sign-in disabled (no client id/secret); Supabase auth record not deleted on account deletion; unsubscribe links never expire; Terms page not written (needed for D-050); web DB tests time out from a laptop against Neon (CI is the real check); Discord webhook leaked in an earlier session — rotate it.
+- **Resume here:** Step 1 and Step 2 are both built on separate branches, reviewed and ready to merge. **Before merging Step 1 (`feat/for-you-picks`):** apply `pipeline/migrations/0013_busy_periods.sql` to Neon, watch next daily run. **Before merging Step 2 (`feat/save-register-calendar`):** apply `pipeline/migrations/0014_user_events_won.sql` to Neon, add `CAL_FEED_SECRET` to Vercel env vars. Then Step 3: public profile at `/u/<handle>` (○ ● ★ grid, Terms + 18+ checkbox; spec §6.4). Collect friends' feedback on the emails and picks.
+- **Open items:** Migration 0013 and 0014 not applied to Neon; `CAL_FEED_SECRET` not set on Vercel; email reminder `send_reminder` not yet implemented in `pipeline/notify/email.py`; Supabase keep-alive table not created; Google sign-in keys not on Vercel; Discord sign-in disabled; Supabase auth record not deleted on account deletion; Terms page not written (D-050); Discord webhook leaked in an earlier session — rotate it.
 - **Web platform:** plan [superpowers/plans/2026-10-15-web-platform.md](superpowers/plans/2026-10-15-web-platform.md), spec [superpowers/specs/2026-10-15-user-onboarding-design.md](superpowers/specs/2026-10-15-user-onboarding-design.md) (D-039), design spec [design/DESIGN.md](design/DESIGN.md) (D-047). Run tests: `cd web && npx vitest run`.
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.
 
@@ -54,7 +56,7 @@ Open to anyone (D-044); friends and college peers are the first users. It is als
 | 0 | Setup | Manual run of `daily.yml` passes green | ✅ passed 2026-10-14 |
 | 1 | MVP digest | Real digest on Discord 3 days in a row | ✅ met (runs green 2026-10-16 to 22; channel contents not re-verified) |
 | 2 | AI + more sources | Digest ranked, no event listed twice | ⬜ |
-| 3 | Saves + reminders | Saved event gets its 7/3/1-day reminders | ⬜ |
+| 3 | Saves + reminders | Saved event gets its 7/3/1-day reminders | 🟨 built, pending merge + Neon migration |
 | 4 | Discovery + smarts | `/ask` answers reliably (see D-020) | ⬜ |
 | 5 | Dashboard + friends | 3 friends get their own digests and reminders | ⬜ |
 | 6 | Portfolio polish | Repo public-ready, demo ready | ⬜ |
@@ -183,6 +185,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 | [superpowers/specs/2026-10-15-user-onboarding-design.md](superpowers/specs/2026-10-15-user-onboarding-design.md) | Web onboarding and sign-in design |
 | [superpowers/specs/2026-10-23-hackradar-product-design.md](superpowers/specs/2026-10-23-hackradar-product-design.md) | **Product design:** what HackRadar is, picks, busy dates, profile, leaderboard, discovery, build order |
 | [superpowers/plans/2026-10-23-for-you-picks.md](superpowers/plans/2026-10-23-for-you-picks.md) | Step 1 build plan: busy dates, topic shortlist, AI scores with a why line, picks in digest and Today |
+| [superpowers/plans/2026-10-23-save-register-calendar.md](superpowers/plans/2026-10-23-save-register-calendar.md) | Step 2 build plan: save/register/status flow, ICS feed, Google Calendar links, reminders pipeline |
 | [design/hackradar-product.html](design/hackradar-product.html) | Plain-language product explainer page (published as a private artifact) |
 | [superpowers/plans/2026-10-15-product-launch.md](superpowers/plans/2026-10-15-product-launch.md) | Product launch plan (2026-10-15) |
 | [specs/auth.md](specs/auth.md) | Sign-in, sessions, unsubscribe and account deletion |
@@ -201,7 +204,7 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 
 **Newest research (2026-10-16 to 18):** [Supabase Auth](research/2026-10-16-supabase-auth.md) · [Vercel deploy](research/2026-10-18-vercel-deploy.md)
 
-**Newest sessions:** [2026-10-23 product plan](sessions/2026-10-23-product-plan.md) · [2026-10-18 accounts and email launch](sessions/2026-10-18-accounts-email-launch.md) · [2026-10-18 fun theme](sessions/2026-10-18-fun-theme.md) · [2026-10-15 Phase 1 live](sessions/2026-10-15-phase1-live.md) · [2026-10-14 Phase 0 setup](sessions/2026-10-14-phase0-setup.md) · [2026-10-14 docs bootstrap](sessions/2026-10-14-docs-bootstrap.md)
+**Newest sessions:** [2026-10-23 save/register/calendar](sessions/2026-10-23-save-register-calendar.md) · [2026-10-23 for-you-picks](sessions/2026-10-23-for-you-picks.md) · [2026-10-23 product plan](sessions/2026-10-23-product-plan.md) · [2026-10-18 accounts and email launch](sessions/2026-10-18-accounts-email-launch.md) · [2026-10-18 fun theme](sessions/2026-10-18-fun-theme.md) · [2026-10-15 Phase 1 live](sessions/2026-10-15-phase1-live.md) · [2026-10-14 Phase 0 setup](sessions/2026-10-14-phase0-setup.md) · [2026-10-14 docs bootstrap](sessions/2026-10-14-docs-bootstrap.md)
 
 **Original planning docs (repo root, kept for reference):** `HackRadar — Project Plan.md`, `HACKRADAR_MASTER_PROMPT.md`.
 
