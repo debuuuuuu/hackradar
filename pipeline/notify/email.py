@@ -19,6 +19,8 @@ from html import escape
 
 from pipeline.crypto import decrypt
 from pipeline.digest import Digest, DigestItem, drop_picks
+from pipeline.normalize import IST
+from pipeline.notify.calendar import gcal_link
 from pipeline.notify.discord import format_deadline
 from pipeline.notify.unsubscribe import unsubscribe_url
 
@@ -33,8 +35,18 @@ class EmailError(RuntimeError):
     """A send failed. The message never contains the address, password or message body."""
 
 
+def _gcal_url(item: DigestItem) -> str | None:
+    """Google Calendar link for an item's deadline day (IST), or None when there is no deadline."""
+    if item.deadline is None:
+        return None
+    date_str = item.deadline.astimezone(IST).strftime("%Y-%m-%d")
+    return gcal_link(item.title, date_str, None, item.url, item.city)
+
+
 def _item_block(item: DigestItem) -> str:
-    return f"- {item.title} ({format_deadline(item)})\n  {item.url}"
+    block = f"- {item.title} ({format_deadline(item)})\n  {item.url}"
+    cal = _gcal_url(item)
+    return f"{block}\n  Add to Google Calendar: {cal}" if cal else block
 
 
 def _pick_block(item: DigestItem) -> str:
@@ -100,11 +112,19 @@ def _row(item: DigestItem) -> str:
             f'<span style="float:right;background:{_INK};color:{_CREAM};border-radius:6px;'
             f'padding:1px 8px;font-size:13px;">{escape(format_deadline(item))}</span>'
         )
+    cal = _gcal_url(item)
+    cal_link = (
+        f'<br><a href="{_safe_url(cal)}" style="{_MONO}font-size:12px;color:#9b2b2f;">'
+        "&#128197; Add to Google Calendar</a>"
+        if cal
+        else ""
+    )
     return (
         f'<div style="padding:10px 0;border-top:1.5px dashed #c9a79f;">{badge}'
         f'<a href="{_safe_url(item.url)}" style="font-family:Georgia,serif;font-size:18px;'
         f'color:{_INK};text-decoration:none;">{escape(item.title)}</a><br>'
-        f'<span style="{_MONO}font-size:12px;color:{_MUTE};">{escape(_meta(item))}</span></div>'
+        f'<span style="{_MONO}font-size:12px;color:{_MUTE};">{escape(_meta(item))}</span>'
+        f"{cal_link}</div>"
     )
 
 

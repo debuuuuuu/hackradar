@@ -4,6 +4,7 @@ Newest first. One file per working session: `YYYY-MM-DD-<short-title>.md`.
 
 | Date | Session | Summary |
 |---|---|---|
+| 2026-10-23 | [save-register-calendar](2026-10-23-save-register-calendar.md) | Step 2 built: save/register/status flow, ICS feed, Google Calendar links in all channels, 7/3/1/0-day reminders; D-055; migration 0014 pending |
 | 2026-10-23 | [for-you-picks](2026-10-23-for-you-picks.md) | Step 1 built: busy dates, AI scoring, picks in all digests + Today page; D-054; migration 0013 pending |
 | 2026-10-23 | [product-plan](2026-10-23-product-plan.md) | Docs refresh, product design (picks, busy dates, public profile, leaderboard, LinkedIn/X), D-050 to D-052, docs audit |
 | 2026-10-18 | [fun-theme](2026-10-18-fun-theme.md) | Web frontend rebuilt in the fun theme (D-047) |

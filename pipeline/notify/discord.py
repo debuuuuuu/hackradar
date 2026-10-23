@@ -11,6 +11,7 @@ import httpx
 
 from pipeline.digest import Digest, DigestItem, drop_picks
 from pipeline.normalize import IST
+from pipeline.notify.calendar import gcal_link
 
 log = logging.getLogger(__name__)
 
@@ -66,7 +67,12 @@ def format_item(item: DigestItem) -> str:
             text = text[: SUMMARY_MAX - 1] + "…"
         line += f"\n*{escape(text)}*"
     flags = trust_flags(item)
-    return f"{line}\n{' · '.join(flags)}" if flags else line
+    result = f"{line}\n{' · '.join(flags)}" if flags else line
+    if item.deadline:  # Google Calendar link (D-032)
+        date_str = item.deadline.astimezone(IST).strftime("%Y-%m-%d")
+        cal = gcal_link(item.title, date_str, None, item.url, item.city)
+        result = f"{result}\n📅 [Add to Google Calendar]({cal})"
+    return result
 
 
 def format_pick(item: DigestItem) -> str:

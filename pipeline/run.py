@@ -173,6 +173,14 @@ def main() -> int:
             source_counts, errors = fetch_and_store(conn)
             enrich.enrich_safely(conn, errors)
             rank.score_safely(conn, errors)
+            try:
+                from pipeline.reminders import send_reminders
+
+                today_ist = datetime.now(IST).date()
+                reminder_stats = send_reminders(conn, today_ist)
+                log.info("reminders: %s", reminder_stats)
+            except Exception:
+                log.exception("reminders failed — continuing")
             conn = ensure_alive(conn)
             try:
                 sent = send_digest(conn, run_id, errors)
