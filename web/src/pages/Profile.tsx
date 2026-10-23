@@ -43,6 +43,12 @@ async function fetchProfile(url: string): Promise<PublicProfile> {
   return (await res.json()) as PublicProfile;
 }
 
+async function fetchOwnProfile(url: string): Promise<OwnProfile> {
+  const res = await fetch(url, { headers: { accept: "application/json" } });
+  if (!res.ok) throw new Error("request failed");
+  return (await res.json()) as OwnProfile;
+}
+
 async function patchProfile(body: { profilePublic?: boolean }): Promise<OwnProfile> {
   const res = await fetch("/api/me/profile", {
     method: "PATCH",
@@ -147,8 +153,7 @@ function NotFound({ handle }: { handle: string }) {
         Profile not found
       </h1>
       <p style={{ color: "var(--mute)", marginBottom: 32 }}>
-        No public profile exists for <strong style={{ color: "var(--chalk)" }}>@{handle}</strong>.
-        The handle may not exist, or their profile may be private.
+        No profile found for <strong style={{ color: "var(--chalk)" }}>@{handle}</strong>.
       </p>
       <Link to="/" className="btn solid">
         Back to hackathons
@@ -262,9 +267,9 @@ function ActivityGrid({ activity, isOwn, today }: ActivityGridProps) {
                 />
               ) : (
                 marks.map((m) => (
-                  <a
+                  <Link
                     key={m.eventId}
-                    href={`/events/${m.eventId}`}
+                    to={`/events/${m.eventId}`}
                     title={`${m.title} · ${m.mark}`}
                     style={{
                       display: "flex",
@@ -281,7 +286,7 @@ function ActivityGrid({ activity, isOwn, today }: ActivityGridProps) {
                     }}
                   >
                     {markSymbol(m.mark)}
-                  </a>
+                  </Link>
                 ))
               )}
             </div>
@@ -372,6 +377,12 @@ export default function Profile() {
     fetchProfile,
   );
 
+  // Secondary fetch for own profile visibility state — keyed only when isOwn is confirmed
+  const { data: ownData, isLoading: ownLoading } = useSWR(
+    data?.isOwn ? "/api/me/profile" : null,
+    fetchOwnProfile,
+  );
+
   const today = getIstToday();
 
   if (isLoading) return <SkeletonProfile />;
@@ -409,10 +420,21 @@ export default function Profile() {
         <CountBadge label="won" count={data.counts.won} />
       </div>
 
-      {/* Owner controls */}
+      {/* Owner controls — wait for ownData before rendering toggle */}
       {data.isOwn && (
         <div style={{ marginBottom: 32 }}>
-          <VisibilityToggle handle={data.handle} initialPublic={true} />
+          {ownLoading || ownData === undefined ? (
+            <div
+              style={{
+                height: 64,
+                borderRadius: 12,
+                background: "var(--coal)",
+                opacity: 0.4,
+              }}
+            />
+          ) : (
+            <VisibilityToggle handle={data.handle} initialPublic={ownData.profilePublic} />
+          )}
         </div>
       )}
 
