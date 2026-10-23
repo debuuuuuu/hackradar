@@ -11,6 +11,7 @@ import Unsubscribe from "./pages/Unsubscribe.js";
 import EventDetail from "./pages/EventDetail.js";
 import Events from "./pages/Events.js";
 import Home from "./pages/Home.js";
+import Leaderboard from "./pages/Leaderboard.js";
 import MyEvents from "./pages/MyEvents.js";
 import Onboarding from "./pages/Onboarding.js";
 import Profile from "./pages/Profile.js";
@@ -88,6 +89,7 @@ export default function App() {
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/u/:handle" element={<Profile />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
             <Route
               path="*"
               element={
