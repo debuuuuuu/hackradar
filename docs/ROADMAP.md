@@ -10,7 +10,7 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 The [product design](superpowers/specs/2026-10-23-hackradar-product-design.md) sets the build order from here.
 It overlaps the phases below; each step gets its own plan before building.
 
-- [ ] Step 1 · "For you" picks: busy dates in Settings, rule filters, AI score + "why" line (D-051) — Phase 2
+- [x] Step 1 · "For you" picks: busy dates in Settings, topic shortlist, AI score + "why" line (D-051, D-054) — built 2026-10-23 on `feat/for-you-picks`; **not live until migration 0013 is applied to Neon and the PR is merged**
 - [ ] Step 2 · Save / Register / Add to Google Calendar + reminders — Phase 3
 - [ ] Step 3 · Public profile `/u/<handle>`: ○ ● ★ grid, counts, Terms + 18+ checkbox (D-050), Terms page
 - [ ] Step 3b · Leaderboard `/leaderboard` (D-052)

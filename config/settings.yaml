@@ -13,6 +13,11 @@ ai:
   batch_pause_seconds: 30    # Groq counts reserved output too: ~3.2k tokens/call, limit 8,000/min
   max_events_per_run: 60     # daily cap on new/changed events enriched (5 batches ~ 75 s)
 
+rank:
+  shortlist: 12          # topic-matched events sent to the AI per topic group (D-051)
+  max_seconds: 480       # stop starting topic groups after this long; the rest wait for the next run
+  max_groups: 40         # most AI calls per run (largest groups first)
+
 digest:
   top_n: 5
   list_limit: 10            # Phase 1: max items per digest section

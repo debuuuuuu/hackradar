@@ -2,7 +2,7 @@ import httpx
 import pytest
 
 from pipeline import ai
-from pipeline.ai.base import AIError
+from pipeline.ai.base import AIError, RateLimited
 from pipeline.ai.groq import Groq
 
 
@@ -61,3 +61,23 @@ def test_missing_key_and_unknown_provider(monkeypatch):
     monkeypatch.setattr(ai.config, "load", lambda name: {"ai": {"batch_provider": "gemini"}})
     with pytest.raises(AIError, match="not implemented"):
         ai.get_provider()
+
+
+def test_final_429_raises_rate_limited(monkeypatch):
+    with pytest.raises(RateLimited):
+        make(lambda r: httpx.Response(429), monkeypatch).complete("s", "u")
+
+
+def test_long_retry_after_raises_rate_limited_without_sleeping(monkeypatch):
+    sleeps = []
+    with pytest.raises(RateLimited):
+        make(
+            lambda r: httpx.Response(429, headers={"retry-after": "3600"}), monkeypatch, sleeps
+        ).complete("s", "u")
+    assert sleeps == []
+
+
+def test_a_500_that_keeps_failing_is_not_rate_limited(monkeypatch):
+    with pytest.raises(AIError) as e:
+        make(lambda r: httpx.Response(500), monkeypatch).complete("s", "u")
+    assert not isinstance(e.value, RateLimited)

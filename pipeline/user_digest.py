@@ -8,12 +8,12 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta
 
 import psycopg
 
-from pipeline import config, digest
+from pipeline import busy, config, digest
 from pipeline.digest import _SELECT, CLOSING_WHERE, NEW_WHERE, ORDER, Digest, DigestItem
 from pipeline.normalize import IST
 from pipeline.notify.webhook_url import redact
@@ -53,6 +53,7 @@ class Recipient:
     radius_km: int
     format: str  # online_near | online | in_person | anything
     priorities: dict[str, str]
+    has_themes: bool = True  # no topics chosen: no picks, whatever old scores exist
 
 
 @dataclass
@@ -72,14 +73,27 @@ def recipients(conn: psycopg.Connection, now: datetime) -> list[Recipient]:
     rows = conn.execute("""
         SELECT u.id, COALESCE(p.channels -> 'digest', '[]'::jsonb), u.discord_webhook_enc,
                u.email_enc, u.email_hash, u.callmebot_phone_enc, u.callmebot_key_enc,
-               p.home_city, p.radius_km, p.format, p.priorities
+               p.home_city, p.radius_km, p.format, p.priorities, cardinality(p.themes) > 0
           FROM users u
           JOIN preferences p ON p.user_id = u.id
          WHERE u.digest_enabled AND u.onboarded_at IS NOT NULL
          ORDER BY u.id
         """).fetchall()
     out = []
-    for uid, chans, hook, email, email_hash, phone, key, home, radius, fmt, prio in rows:
+    for (
+        uid,
+        chans,
+        hook,
+        email,
+        email_hash,
+        phone,
+        key,
+        home,
+        radius,
+        fmt,
+        prio,
+        has_themes,
+    ) in rows:
         usable = []
         for chan in chans:
             if chan == "discord" and hook:
@@ -102,6 +116,7 @@ def recipients(conn: psycopg.Connection, now: datetime) -> list[Recipient]:
                 radius_km=radius,
                 format=fmt,
                 priorities=prio,
+                has_themes=has_themes,
             )
         )
     return out
@@ -149,12 +164,18 @@ def items_for(
         total = conn.execute(
             f"SELECT count(*) FROM events e WHERE e.status = 'open'{base}", args
         ).fetchone()[0]
-        return [DigestItem(*row[:-1], tuple(row[-1])) for row in rows], total
+        return [DigestItem(*row[:-2], tuple(row[-2]), event_id=row[-1]) for row in rows], total
 
     new, new_total = run(hack, NEW_WHERE, (since, soon))
     closing, closing_total = run(hack, CLOSING_WHERE, (today, soon))
     contests, contests_total = run(other, NEW_WHERE, (since, soon))
     open_total = run(hack, "", ())[1]
+    try:
+        with conn.transaction():  # a savepoint: a failed query must not poison the digest queries
+            picks = _picks(conn, r, new, closing, today.date(), cfg["top_n"])
+    except Exception as exc:  # e.g. the scores table is not migrated yet: send without picks
+        log.error("user %s picks failed, sending without: %s", r.user_id, _safe(exc))
+        picks = []
     return Digest(
         day=today.date().isoformat(),
         new=new,
@@ -164,7 +185,60 @@ def items_for(
         open_total=open_total,
         contests=contests,
         contests_total=contests_total,
+        picks=picks,
     )
+
+
+def _picks(
+    conn: psycopg.Connection,
+    r: Recipient,
+    new: list[DigestItem],
+    closing: list[DigestItem],
+    today: date,
+    top_n: int,
+) -> list[DigestItem]:
+    """The AI's best-fit events from today's lists (the lists themselves stay complete).
+
+    Non-clashing first, then score high to low, then the existing deadline order. Events with no
+    score row are never picked, so a user with no scores gets the digest unchanged.
+    """
+    ids = [i.event_id for i in (*new, *closing) if i.event_id is not None]
+    if not ids or not r.has_themes:
+        return []
+    scored = {
+        eid: (score, reason or None)
+        for eid, score, reason in conn.execute(
+            "SELECT event_id, score, reason FROM scores WHERE user_id = %s AND event_id = ANY(%s)",
+            (r.user_id, ids),
+        )
+    }
+    if not scored:
+        return []
+    periods = busy.periods_for(conn, r.user_id, today)
+    dates = {
+        row[0]: row[1:]
+        for row in conn.execute(
+            "SELECT id, start_date, end_date, submission_deadline FROM events WHERE id = ANY(%s)",
+            (list(scored),),
+        )
+    }
+    candidates: list[tuple[bool, int, bool, datetime, DigestItem]] = []
+    for item in (*new, *closing):
+        if item.event_id not in scored:
+            continue
+        score, why = scored[item.event_id]
+        start, end, submit = dates[item.event_id]
+        clash = busy.clash_label(item.mode, start, end, submit, periods)
+        no_deadline = item.deadline is None
+        sort_key = (
+            clash is not None,
+            -score,
+            no_deadline,
+            item.deadline or datetime.max.replace(tzinfo=IST),
+        )
+        candidates.append((*sort_key, replace(item, why=why, clash=clash)))
+    candidates.sort(key=lambda c: c[:4])
+    return [c[4] for c in candidates[:top_n]]
 
 
 def _last_sent_at(conn: psycopg.Connection, user_id: int) -> datetime | None:

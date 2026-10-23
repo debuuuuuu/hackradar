@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import httpx
 
-from pipeline.digest import Digest, DigestItem
+from pipeline.digest import Digest, DigestItem, drop_picks
 from pipeline.notify.discord import format_deadline
 from pipeline.notify.webhook_url import guard_http_logs
 
@@ -18,6 +18,8 @@ API_URL = "https://api.callmebot.com/whatsapp.php"
 MAX_CHARS = 1000  # self-imposed; CallMeBot's own limit is unverified
 DEFAULT_MAX_PER_RUN = 5  # unverified provider limit; kept low until confirmed
 TITLE_MAX = 80
+PICKS_MAX = 3
+WHY_MAX = 90  # keeps three picks well inside MAX_CHARS, so the closing site link is never cut
 
 
 class WhatsAppError(RuntimeError):
@@ -28,9 +30,19 @@ class CapReached(WhatsAppError):
     """The per-run message cap was hit; the message was not sent."""
 
 
-def _item_line(number: int, item: DigestItem) -> str:
+def _item_line(number: int, item: DigestItem, label: str | None = None) -> str:
     title = item.title if len(item.title) <= TITLE_MAX else item.title[: TITLE_MAX - 1] + "…"
-    return f"{number}. {title} ({format_deadline(item)})"
+    return f"{label or f'{number}.'} {title} ({format_deadline(item)})"
+
+
+def _pick_line(number: int, item: DigestItem) -> str:
+    line = _item_line(number, item, f"Pick {number}:")
+    if item.why:
+        why = item.why if len(item.why) <= WHY_MAX else item.why[: WHY_MAX - 1] + "…"
+        line += f" - {why}"
+    if item.clash:
+        line += f" [clashes with {item.clash}]"
+    return line
 
 
 def short_text(digest: Digest, site_url: str, top: int = 3) -> str:
@@ -38,15 +50,23 @@ def short_text(digest: Digest, site_url: str, top: int = 3) -> str:
     if digest.empty:
         return f"HackRadar {digest.day}: Nothing new today. {site_url}"
     head = f"HackRadar {digest.day}: {digest.new_total} new, {digest.closing_total} closing soon."
-    items = [*digest.new, *digest.closing][:top]
+    picks = digest.picks[:PICKS_MAX]
+    new, new_gone = drop_picks(digest.new, picks)  # picks 4+ stay in the list below
+    closing, closing_gone = drop_picks(digest.closing, picks)
+    items = [*new, *closing][:top]
     shown = len(items)
-    total = digest.new_total + digest.closing_total
-    lines = [head, *(_item_line(i + 1, item) for i, item in enumerate(items))]
+    total = digest.new_total + digest.closing_total - new_gone - closing_gone
+    lines = [head]
+    if picks:
+        lines += ["Picked for you:", *(_pick_line(i + 1, p) for i, p in enumerate(picks))]
+        lines.append(f"Everything else: {site_url.rstrip('/')}/events")
+    lines += [_item_line(i + 1, item) for i, item in enumerate(items)]
     if total > shown:
         lines.append(f"...and {total - shown} more.")
-    lines.append(f"All details and sources: {site_url}")
     text = "\n".join(lines)
-    return text if len(text) <= MAX_CHARS else text[: MAX_CHARS - 1] + "…"
+    tail = f"\nAll details and sources: {site_url}"  # never cut: trim the body above it instead
+    room = MAX_CHARS - len(tail)
+    return (text if len(text) <= room else text[: room - 1] + "…") + tail
 
 
 class WhatsAppSender:

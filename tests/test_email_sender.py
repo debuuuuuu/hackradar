@@ -222,3 +222,48 @@ def test_sender_for_builds_a_per_user_unsubscribe_link(monkeypatch) -> None:
     assert (
         unsubscribe_url("https://hackradar.example", key, 7) in FakeSMTP.sent[0]["List-Unsubscribe"]
     )
+
+
+def _picks_digest(site_url_item_clash: str | None = "Exams <week>") -> Digest:
+    base = _digest()
+    fits = DigestItem(**{**base.new[0].__dict__, "title": "Fits <b>", "why": "matches AI & web"})
+    bad = DigestItem(
+        **{
+            **base.new[0].__dict__,
+            "title": "Clashy",
+            "why": "also good",
+            "clash": site_url_item_clash,
+        }
+    )
+    return Digest(**{**base.__dict__, "picks": [fits, bad]})
+
+
+def test_html_and_text_show_picks_first_escaped_with_clash_dimmed(monkeypatch) -> None:
+    monkeypatch.setenv("SITE_URL", "https://hackradar.example")
+    d = _picks_digest()
+    html = mail.render_html(d, "https://hackradar.example")
+    text = mail.render_body(d, "https://hackradar.example")
+    assert html.index("Picked for you") < html.index("Hack Night")
+    assert "Fits &lt;b&gt;" in html and "matches AI &amp; web" in html
+    assert "Clashes with Exams &lt;week&gt;" in html and "opacity:.55" in html
+    assert 'href="https://hackradar.example/events"' in html
+    assert text.index("Picked for you") < text.index("New" + chr(10))
+    assert "Clashes with Exams <week>" in text and "matches AI & web" in text
+    assert "https://hackradar.example/events" in text
+
+
+def test_no_picks_html_has_no_picked_block() -> None:
+    assert "Picked for you" not in mail.render_html(_digest(), None)
+    assert "Picked for you" not in mail.render_body(_digest(), None)
+
+
+def test_more_count_excludes_picks_and_no_double_slash() -> None:
+    base = _digest()
+    items = [
+        DigestItem(**{**base.new[0].__dict__, "title": f"E{n}", "event_id": n}) for n in range(10)
+    ]
+    d = Digest(**{**base.__dict__, "new": items, "new_total": 12, "picks": items[:3]})
+    html = mail.render_html(d, "https://hackradar.example/")
+    assert "+2 more on the site" in html
+    assert "//events" not in html.replace("https://", "")
+    assert html.count(">E0<") == 1  # a pick is not repeated in New

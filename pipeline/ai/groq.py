@@ -9,9 +9,10 @@ import time
 import httpx
 
 from pipeline import config
-from pipeline.ai.base import AIError, Provider
+from pipeline.ai.base import AIError, Provider, RateLimited
 
 log = logging.getLogger(__name__)
+MAX_RETRY_AFTER = 60  # seconds; a longer ask means the quota is spent, so stop instead of waiting
 URL = "https://api.groq.com/openai/v1/chat/completions"
 
 
@@ -46,6 +47,8 @@ class Groq(Provider):
             resp = self._client.post(URL, json=body, headers=headers)
             if resp.status_code in (429, 500, 502, 503):
                 wait = float(resp.headers.get("retry-after", 2 ** (attempt + 1)))
+                if wait > MAX_RETRY_AFTER:
+                    raise RateLimited(f"groq HTTP {resp.status_code}: asked to wait {wait:.0f}s")
                 log.warning("groq %s, retrying in %.1fs", resp.status_code, wait)
                 self._sleep(wait)
                 continue
@@ -55,4 +58,6 @@ class Groq(Provider):
                 return resp.json()["choices"][0]["message"]["content"]
             except (KeyError, IndexError, ValueError) as e:
                 raise AIError(f"groq: unexpected response shape: {e}") from e
+        if resp.status_code == 429:
+            raise RateLimited(f"groq: rate limited after {self.retries} tries")
         raise AIError(f"groq: still failing after {self.retries} tries (HTTP {resp.status_code})")

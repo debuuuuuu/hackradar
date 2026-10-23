@@ -9,6 +9,10 @@ class AIError(RuntimeError):
     """Provider unavailable, rate-limited past retries, or returned something unusable."""
 
 
+class RateLimited(AIError):
+    """Rate limit or quota failure that survived retries; stop calling the provider."""
+
+
 class Provider(ABC):
     name: str
 
