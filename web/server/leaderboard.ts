@@ -29,8 +29,8 @@ export interface LeaderboardOptions {
 /** The shared scoring CASE expression — must match the HAVING clause exactly. */
 const SCORE_CASE = `
   CASE
-    WHEN ue.won AND ue.project_url IS NOT NULL THEN 10
-    WHEN ue.status = 'submitted' AND ue.project_url IS NOT NULL THEN 3
+    WHEN ue.won AND ue.project_url IS NOT NULL AND ue.status IN ('submitted','done') THEN 10
+    WHEN ue.status IN ('submitted','done') AND ue.project_url IS NOT NULL THEN 3
     WHEN ue.status = 'registered' THEN 1
     ELSE 0
   END`;
@@ -50,7 +50,7 @@ function buildScoredCte(opts: {
   const conditions: string[] = [];
 
   if (opts.period === "month") {
-    conditions.push(`ue.updated_at >= date_trunc('month', now() AT TIME ZONE 'Asia/Kolkata')`);
+    conditions.push(`ue.updated_at >= date_trunc('month', now() AT TIME ZONE 'Asia/Kolkata') AT TIME ZONE 'Asia/Kolkata'`);
   }
 
   if (opts.theme !== undefined && opts.theme !== "") {
@@ -74,11 +74,11 @@ WITH scored AS (
     u.handle,
     SUM(${SCORE_CASE})::int AS points,
     COUNT(*) FILTER (WHERE ue.status = 'registered')::int AS registered,
-    COUNT(*) FILTER (WHERE ue.status = 'submitted' AND ue.project_url IS NOT NULL)::int AS submitted,
-    COUNT(*) FILTER (WHERE ue.won AND ue.project_url IS NOT NULL)::int AS won,
+    COUNT(*) FILTER (WHERE ue.status IN ('submitted','done') AND ue.project_url IS NOT NULL)::int AS submitted,
+    COUNT(*) FILTER (WHERE ue.won AND ue.project_url IS NOT NULL AND ue.status IN ('submitted','done'))::int AS won,
     MIN(ue.updated_at) FILTER (WHERE
-      (ue.won AND ue.project_url IS NOT NULL) OR
-      (ue.status = 'submitted' AND ue.project_url IS NOT NULL) OR
+      (ue.won AND ue.project_url IS NOT NULL AND ue.status IN ('submitted','done')) OR
+      (ue.status IN ('submitted','done') AND ue.project_url IS NOT NULL) OR
       ue.status = 'registered'
     ) AS first_scored_at
   FROM users u
@@ -89,8 +89,8 @@ WITH scored AS (
   GROUP BY u.id, u.handle
   HAVING SUM(
     CASE
-      WHEN ue.won AND ue.project_url IS NOT NULL THEN 10
-      WHEN ue.status = 'submitted' AND ue.project_url IS NOT NULL THEN 3
+      WHEN ue.won AND ue.project_url IS NOT NULL AND ue.status IN ('submitted','done') THEN 10
+      WHEN ue.status IN ('submitted','done') AND ue.project_url IS NOT NULL THEN 3
       WHEN ue.status = 'registered' THEN 1
       ELSE 0
     END

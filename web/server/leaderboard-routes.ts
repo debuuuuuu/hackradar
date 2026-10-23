@@ -11,10 +11,10 @@ export function registerLeaderboardRoutes(): void {
     const theme = sp.get("theme") ?? undefined;
     const city = sp.get("city") ?? undefined;
 
-    const limitRaw = sp.get("limit");
-    const offsetRaw = sp.get("offset");
-    const limit = limitRaw !== null ? Math.min(Math.max(1, Number(limitRaw) || 50), 100) : 50;
-    const offset = offsetRaw !== null ? Math.max(0, Number(offsetRaw) || 0) : 0;
+    const rawLimit = Number(sp.get("limit") ?? "50");
+    const limit = Number.isFinite(rawLimit) ? Math.trunc(Math.min(Math.max(rawLimit, 1), 100)) : 50;
+    const rawOffset = Number(sp.get("offset") ?? "0");
+    const offset = Number.isFinite(rawOffset) ? Math.trunc(Math.max(rawOffset, 0)) : 0;
 
     // Resolve caller uid (optional — leaderboard is public)
     const session = sessionFromRequest(request);
