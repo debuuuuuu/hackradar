@@ -104,6 +104,8 @@ CREATE TABLE IF NOT EXISTS user_events (
     status        text        NOT NULL
                   CHECK (status IN ('saved', 'registered', 'submitted', 'done', 'dismissed')),
     snoozed_until timestamptz,
+    won           bool        NOT NULL DEFAULT false,
+    project_url   text,
     created_at    timestamptz NOT NULL DEFAULT now(),
     updated_at    timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (user_id, event_id)
