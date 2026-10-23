@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
+import useSWR from "swr";
 import Icon from "../components/Icon.js";
 import { fetchEvents, fetchPlaces, type EventRow, type Place } from "../lib/api.js";
 import { formatIstDate, sourceLabel } from "../lib/format.js";
@@ -22,27 +23,15 @@ export default function Events({
   const radius = Number(sp.get("radius")) || defaults.radius;
   const offset = Math.max(0, Number(sp.get("offset")) || 0);
 
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [data, setData] = useState<{ items: EventRow[]; total: number } | null>(null);
-  const [failed, setFailed] = useState(false);
   const [draft, setDraft] = useState(q);
 
-  useEffect(() => {
-    fetchPlaces().then(setPlaces, () => setPlaces([]));
-  }, []);
-
-  useEffect(() => {
-    let live = true;
-    setData(null);
-    setFailed(false);
-    fetchEvents({ q, kind, place, radius: place ? radius : undefined, limit: PAGE, offset }).then(
-      (d) => live && setData(d),
-      () => live && setFailed(true),
-    );
-    return () => {
-      live = false;
-    };
-  }, [q, kind, place, radius, offset]);
+  const { data: places = [] } = useSWR<Place[]>("places", fetchPlaces);
+  const eventsKey = JSON.stringify({ q, kind, place, radius: place ? radius : undefined, limit: PAGE, offset });
+  const { data, error: eventsError } = useSWR<{ items: EventRow[]; total: number }>(
+    eventsKey,
+    () => fetchEvents({ q, kind, place, radius: place ? radius : undefined, limit: PAGE, offset }),
+  );
+  const failed = Boolean(eventsError);
 
   function update(next: Record<string, string>) {
     const out = new URLSearchParams(sp);

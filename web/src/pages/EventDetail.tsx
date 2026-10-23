@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
+import useSWR from "swr";
 import { buildPrompt, chatgptUrl, claudeUrl } from "../../server/prompt.js";
 import Icon from "../components/Icon.js";
 import Monitor from "../components/Monitor.js";
@@ -8,25 +9,13 @@ import { formatIst, formatIstDate, sourceLabel } from "../lib/format.js";
 
 export default function EventDetail() {
   const { id = "" } = useParams();
-  const [event, setEvent] = useState<Detail | null>(null);
-  const [error, setError] = useState("");
+  const { data: event, error: fetchError } = useSWR<Detail>(id || null, fetchEvent);
+  const error = fetchError
+    ? fetchError.message === "not found"
+      ? "Event not found."
+      : "Could not load this event."
+    : "";
   const [copyStatus, setCopyStatus] = useState("");
-
-  useEffect(() => {
-    let live = true;
-    setEvent(null);
-    setError("");
-    setCopyStatus("");
-    fetchEvent(id).then(
-      (e) => live && setEvent(e),
-      (e: Error) =>
-        live &&
-        setError(e.message === "not found" ? "Event not found." : "Could not load this event."),
-    );
-    return () => {
-      live = false;
-    };
-  }, [id]);
 
   const prompt = useMemo(() => {
     if (!event) return "";
