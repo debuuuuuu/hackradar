@@ -1,5 +1,13 @@
 {
   "enabledPlugins": {
     "frontend-design@anthropic-plugin-directory": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(vercel deploy:*)"
+    ],
+    "soft_deny": [
+      "Bash(vercel deploy:* --prod)"
+    ]
   }
 }

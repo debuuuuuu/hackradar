@@ -423,3 +423,10 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** D-050 asks for a public profile behind Terms + 18+, showing only what the user did. Keeping ○ marks owner-only stops recruiters seeing skipped events. A 404 avoids handle enumeration. A nudge keeps onboarding friction low.
 - **Alternatives:** 403 for private profiles (confirms existence); splitting Terms and handle into two calls (a user could set a handle without accepting Terms); a hard redirect gate until a handle is set (blocks users who want to skip).
 - **Status:** active. Implemented 2026-10-23 on `feat/public-profile` (commits c4de192 to ea6f765).
+
+### D-057 · Leaderboard implementation choices
+- **Date:** 2026-10-24
+- **Decision:** (1) Points: registered=1, submitted=3 (project_url required), won=10 (won=true + project_url required). Submitted/won without a project link score 0 — the link is the anti-spam gate. Saved/dismissed always 0. (2) Tie-breaking: MIN(updated_at) of scoring rows ASC — "who earned it first". (3) Period boundary uses IST: `date_trunc('month', now() AT TIME ZONE 'Asia/Kolkata')`. (4) Interest filter via `preferences.themes && ARRAY[$theme]`; city filter via `preferences.home_city ILIKE $city`. (5) Signed-in user outside visible window: API returns `myRank`/`myRow` so frontend can pin "You are #N". (6) No migration needed — all required columns (`status`, `won`, `project_url`) are in `user_events` from migration 0014.
+- **Why:** Spec §6.6 defines the points and anti-spam intent. Project link requirement is the spec's "verified activity" gate. IST boundary is project-wide convention. Preference-table filters reuse existing data. myRank pinning keeps the page useful for users outside the top 50.
+- **Alternatives:** separate `points` column on users (adds write-time complexity, denormalised); Neo4j for rankings (overkill at this scale, spec says drawn in browser); per-city leaderboard pages (more infrastructure, filter is sufficient).
+- **Status:** active.
