@@ -402,3 +402,10 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Debjit (2026-10-23) asked for a leaderboard of people. Self-reported counts are easy to fake, so the higher points need proof.
 - **Alternatives:** rank on registrations alone (easy to inflate); all-time only (newcomers never catch up).
 - **Status:** active. Open: point values are a first guess; review once real data exists.
+
+### D-054 · How "For you" picks work: clash rule, scoring budget and failure isolation
+- **Date:** 2026-10-23
+- **Decision:** (1) An event clashes with a busy period only if it is offline/hybrid and its start..end overlaps the period, or its submission deadline falls inside it; online events never clash by span. Clashing picks are greyed with the reason, not hidden. (2) Scoring runs in the daily job after enrichment and before sends, one AI call per distinct (topics, format) group, largest groups first, bounded by `rank.max_seconds` (480) and `rank.max_groups` (40); a rate-limit stops all scoring for the run; any other failure skips only that group. (3) Digest picks come only from today's New and Closing lists; each channel removes only the picks it actually shows. (4) Changing topics or format, or clearing topics, deletes the user's scores. (5) A failing picks query never stops the digest.
+- **Why:** Debjit approved the product design (2026-10-23). The final review showed scoring could exceed the 30-minute job limit and a missing table could cost users their digest.
+- **Alternatives:** per-user AI calls (cost grows with users); hiding clashing events (lose the "why not"); removing all picks from lists up front (picks a channel cannot show vanished).
+- **Status:** active. Parked: copy scores between users with the same tags (needed near 100k users); web picks ignore place/format; picks for users with digests off; refreshing scores when event text changes. Needs migration 0013 on Neon.

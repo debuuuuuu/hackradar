@@ -192,3 +192,14 @@ CREATE TABLE IF NOT EXISTS sends (
     sent_at  timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (user_id, ist_date, channel)
 );
+
+-- Dates a user is unavailable (exams, trips); events that clash are flagged (migration 0013).
+CREATE TABLE IF NOT EXISTS busy_periods (
+    id        bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id   bigint NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    starts_on date   NOT NULL,
+    ends_on   date   NOT NULL,
+    label     text   NOT NULL,
+    CHECK (starts_on <= ends_on)
+);
+CREATE INDEX IF NOT EXISTS busy_periods_user_idx ON busy_periods (user_id);

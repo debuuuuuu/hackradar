@@ -8,6 +8,7 @@ from datetime import UTC, datetime, timedelta
 import httpx
 from psycopg.types.json import Jsonb
 
+from pipeline import user_digest
 from pipeline.digest import Digest
 from pipeline.user_digest import Recipient, enabled_kinds, items_for, recipients, run_user_digests
 
@@ -48,6 +49,7 @@ def _user(
     fmt: str = "anything",
     home: str = "pune",
     radius: int = 150,
+    themes: list[str] | None = None,
 ) -> int:
     uid = conn.execute(
         "INSERT INTO users (name, digest_enabled, onboarded_at, discord_webhook_enc)"
@@ -55,8 +57,9 @@ def _user(
         (enabled, NOW if onboarded else None),
     ).fetchone()[0]
     conn.execute(
-        "INSERT INTO preferences (user_id, home_city, radius_km, format, priorities, channels)"
-        " VALUES (%s, %s, %s, %s, %s, %s)",
+        "INSERT INTO preferences"
+        " (user_id, home_city, radius_km, format, priorities, channels, themes)"
+        " VALUES (%s, %s, %s, %s, %s, %s, %s)",
         (
             uid,
             home,
@@ -64,6 +67,7 @@ def _user(
             fmt,
             Jsonb(priorities or DEFAULT_PRIORITIES),
             Jsonb({"digest": channels or ["discord"]}),
+            themes if themes is not None else ["ai-ml"],
         ),
     )
     return uid
@@ -77,7 +81,7 @@ def _event(
     mode: str | None = "online",
     city: str | None = None,
     days_to_deadline: int = 10,
-) -> None:
+) -> int:
     eid = conn.execute(
         "INSERT INTO events (title, kind, mode, city, reg_deadline, first_seen_at)"
         " VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
@@ -88,6 +92,7 @@ def _event(
         " VALUES (%s, 'devpost', %s, %s, 'h')",
         (eid, title, f"https://example.com/{title}"),
     )
+    return eid
 
 
 class Recorder:
@@ -202,3 +207,111 @@ def test_failing_sender_logs_no_webhook_token(conn, caplog) -> None:
     assert summary.failed == 1
     assert "failed" in caplog.text
     assert token not in caplog.text
+
+
+# --- picks (For you) ----------------------------------------------------------------------
+
+
+def _score(conn, uid: int, eid: int, score: int, reason: str = "fits your AI interest") -> None:
+    conn.execute(
+        "INSERT INTO scores (user_id, event_id, score, reason, model) VALUES (%s, %s, %s, %s, 'm')",
+        (uid, eid, score, reason),
+    )
+
+
+def test_user_without_scores_has_no_picks_and_the_usual_lists(conn) -> None:
+    uid = _user(conn)
+    _event(conn, "plain-new")
+    d = items_for(conn, _recipient(conn, uid), None, NOW)
+    assert d.picks == []
+    assert [i.title for i in d.new] == ["plain-new"]
+    assert d.new[0].event_id is not None and d.new[0].why is None and d.new[0].clash is None
+
+
+def test_picks_are_the_top_scored_new_and_closing_events_with_a_why(conn) -> None:
+    uid = _user(conn)
+    low = _event(conn, "low", days_to_deadline=10)
+    high = _event(conn, "high", days_to_deadline=11)
+    closing = _event(conn, "closing", days_to_deadline=1)
+    _event(conn, "unscored", days_to_deadline=12)
+    _score(conn, uid, low, 20)
+    _score(conn, uid, high, 90, "great fit")
+    _score(conn, uid, closing, 60, "")
+    d = items_for(conn, _recipient(conn, uid), None, NOW)
+    assert [p.title for p in d.picks] == ["high", "closing", "low"]
+    assert d.picks[0].why == "great fit"
+    assert d.picks[1].why is None  # an empty stored reason never becomes an empty line
+    assert {i.title for i in d.new} == {"low", "high", "unscored"}  # lists stay complete
+    assert [i.title for i in d.closing] == ["closing"]
+    assert d.new_total == 3 and d.closing_total == 1
+    assert not d.empty
+
+
+def test_picks_are_capped_at_top_n(conn) -> None:
+    uid = _user(conn)
+    for n in range(7):
+        _score(conn, uid, _event(conn, f"e{n}", days_to_deadline=10 + n), 50 + n)
+    d = items_for(conn, _recipient(conn, uid), None, NOW)
+    assert [p.title for p in d.picks] == ["e6", "e5", "e4", "e3", "e2"]
+    assert len(d.new) == 7  # picks are not removed from the lists
+
+
+def test_a_clashing_high_score_sorts_after_a_non_clashing_one(conn) -> None:
+    uid = _user(conn)
+    clash = _event(conn, "clash", mode="offline", city="pune")
+    fine = _event(conn, "fine", days_to_deadline=11)
+    conn.execute(
+        "UPDATE events SET start_date = %s, end_date = %s WHERE id = %s",
+        (NOW + timedelta(days=12), NOW + timedelta(days=13), clash),
+    )
+    conn.execute(
+        "INSERT INTO busy_periods (user_id, starts_on, ends_on, label)"
+        " VALUES (%s, %s, %s, 'exams')",
+        (uid, (NOW + timedelta(days=11)).date(), (NOW + timedelta(days=14)).date()),
+    )
+    _score(conn, uid, clash, 95)
+    _score(conn, uid, fine, 40)
+    d = items_for(conn, _recipient(conn, uid), None, NOW)
+    assert [p.title for p in d.picks] == ["fine", "clash"]
+    assert d.picks[0].clash is None and d.picks[1].clash == "exams"
+
+
+def test_picks_alone_do_not_make_an_empty_digest_non_empty() -> None:
+    d = Digest(day="2026-10-16", new=[], new_total=0, closing=[], closing_total=0, open_total=0)
+    assert d.picks == [] and d.empty
+
+
+def test_picks_failure_still_sends_the_normal_digest(conn, monkeypatch) -> None:
+    uid = _user(conn)
+    _score(conn, uid, _event(conn, "scored"), 80)
+
+    def boom(*a, **k):
+        raise RuntimeError("relation scores does not exist")
+
+    monkeypatch.setattr(user_digest, "_picks", boom)
+    d = items_for(conn, _recipient(conn, uid), None, NOW)
+    assert d.picks == [] and [i.title for i in d.new] == ["scored"]
+
+    rec = Recorder()
+    s = run_user_digests(conn, NOW, {"discord": rec})
+    assert rec.sent == [uid] and s.failed == 0
+
+
+def test_picks_sql_failure_leaves_the_connection_usable_and_the_digest_sent(conn, monkeypatch):
+    uid = _user(conn)
+    _score(conn, uid, _event(conn, "scored"), 80)
+    monkeypatch.setattr(
+        user_digest.busy, "periods_for", lambda c, *a: c.execute("SELECT * FROM no_such_table")
+    )
+    rec = Recorder()
+    s = run_user_digests(conn, NOW, {"discord": rec})
+    assert rec.sent == [uid] and s.failed == 0 and s.sent == 1
+    sent = conn.execute("SELECT status FROM sends WHERE user_id = %s", (uid,)).fetchall()
+    assert sent == [("sent",)]
+
+
+def test_no_topics_means_no_picks_even_with_old_scores(conn) -> None:
+    uid = _user(conn, themes=[])
+    _score(conn, uid, _event(conn, "old-scored"), 90)
+    d = items_for(conn, _recipient(conn, uid), None, NOW)
+    assert d.picks == [] and [i.title for i in d.new] == ["old-scored"]

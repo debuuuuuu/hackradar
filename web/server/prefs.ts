@@ -211,6 +211,13 @@ export async function savePrefs(uid: number, prefs: Prefs, contact: ContactInput
     const user = await q<{ locked: boolean }>("SELECT email_hash IS NOT NULL AS locked FROM users WHERE id = $1 FOR UPDATE", [uid]);
     if (user.length === 0) throw new Error("user not found");
 
+    // Scores belong to a (topics, format) pair: when either changes, or the topics are cleared, the old
+    // scores no longer describe this person, so they must not show up as picks.
+    const old = await q<{ themes: string[]; format: string }>("SELECT themes, format FROM preferences WHERE user_id = $1 FOR UPDATE", [uid]);
+    const sameTopics = (a: string[], b: string[]) => a.length === b.length && [...a].sort().join("|") === [...b].sort().join("|");
+    const scoresStale = prefs.topics.length === 0 || !old[0] || old[0].format !== prefs.format || !sameTopics(old[0].themes, prefs.topics);
+    if (scoresStale) await q("DELETE FROM scores WHERE user_id = $1", [uid]);
+
     await q(
       `INSERT INTO preferences (user_id, home_city, radius_km, format, priorities, themes, include_social, channels)
        VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8::jsonb)

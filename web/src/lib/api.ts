@@ -25,3 +25,21 @@ export function fetchEvents(q: EventsQuery): Promise<{ items: EventRow[]; total:
 
 export const fetchEvent = (id: string): Promise<EventDetail> => get(`/api/events/${encodeURIComponent(id)}`);
 export const fetchPlaces = (): Promise<Place[]> => get("/api/places");
+
+export interface BusyPeriod {
+  id: number;
+  startsOn: string;
+  endsOn: string;
+  label: string;
+}
+
+export interface Pick {
+  id: number;
+  title: string;
+  score: number;
+  why: string | null;
+  clash: string | null;
+}
+
+export const fetchBusy = (): Promise<{ periods: BusyPeriod[] }> => get("/api/me/busy");
+export const fetchPicks = (): Promise<{ picks: Pick[] }> => get("/api/me/picks");

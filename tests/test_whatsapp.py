@@ -128,3 +128,65 @@ def test_short_text_when_nothing_is_new_says_so() -> None:
     text = whatsapp.short_text(digest, SITE)
     assert "Nothing new" in text
     assert SITE in text
+
+
+def test_short_text_leads_with_at_most_three_picks_and_a_why() -> None:
+    picks = [
+        DigestItem(**{**_item(f"Fit {n}", 20).__dict__, "why": f"because {n}"}) for n in range(4)
+    ]
+    digest = Digest(
+        day="2026-10-16",
+        new=[_item("Plain", 21)],
+        new_total=5,
+        closing=[],
+        closing_total=0,
+        open_total=40,
+        picks=picks,
+    )
+    text = whatsapp.short_text(digest, SITE)
+    assert "Picked for you" in text
+    assert text.index("Fit 0") < text.index("Plain")
+    assert "because 0" in text and "because 2" in text
+    assert "Fit 3" not in text
+    assert f"{SITE}/events" in text
+    assert len(text) <= whatsapp.MAX_CHARS
+
+
+def test_picks_beyond_the_shown_three_stay_in_the_list_and_more_is_exact() -> None:
+    items = [
+        DigestItem(**{**_item(f"P{n}", 20).__dict__, "event_id": n, "why": "w"}) for n in range(5)
+    ]
+    digest = Digest(
+        day="2026-10-16",
+        new=items,
+        new_total=12,
+        closing=[],
+        closing_total=0,
+        open_total=40,
+        picks=items,
+    )
+    text = whatsapp.short_text(digest, SITE + "/", top=3)
+    assert "P3" in text and "P4" in text  # picks 4 and 5 come back as list items
+    assert "and 7 more" in text  # 12 total - 3 rendered picks - 2 listed
+    assert "//events" not in text
+
+
+def test_long_picks_never_cut_off_the_site_link_and_are_numbered_apart_from_the_list() -> None:
+    picks = [
+        DigestItem(**{**_item("T" * 200, 20).__dict__, "why": "w" * 300, "clash": "c" * 80})
+        for _ in range(3)
+    ]
+    digest = Digest(
+        day="2026-10-16",
+        new=[_item("Plain", 21), *(_item("L" * 200 + str(n), 22) for n in range(3))],
+        new_total=9,
+        closing=[],
+        closing_total=0,
+        open_total=40,
+        picks=picks,
+    )
+    text = whatsapp.short_text(digest, SITE)
+    assert text.endswith(f"\nAll details and sources: {SITE}")
+    assert len(text) <= whatsapp.MAX_CHARS
+    assert "Pick 1:" in text and "Pick 3:" in text
+    assert "w" * 91 not in text
