@@ -329,7 +329,7 @@ export default function EventDetail() {
 
               {/* Save button — enabled for signed-in users */}
               {state.status === "in" && (
-                <SaveButton eventId={Number(id)} gcalLink={event.sources[0]?.url ?? ""} />
+                <SaveButton eventId={Number(id)} />
               )}
             </div>
           </div>
@@ -435,7 +435,7 @@ export default function EventDetail() {
   );
 }
 
-function SaveButton({ eventId, gcalLink }: { eventId: number; gcalLink: string }) {
+function SaveButton({ eventId }: { eventId: number }) {
   const { data, mutate } = useSWR("/api/me/events", fetchMyEvents);
   const isSaved = data?.items.some((e) => e.eventId === eventId) ?? false;
   const saved = data?.items.find((e) => e.eventId === eventId);
@@ -455,9 +455,9 @@ function SaveButton({ eventId, gcalLink }: { eventId: number; gcalLink: string }
         <Icon name="heart" size={18} />
         {isSaved ? "Saved ✓" : "Save event"}
       </button>
-      {isSaved && gcalLink && (
+      {isSaved && saved?.gcalLink && (
         <a
-          href={saved?.gcalLink ?? gcalLink}
+          href={saved.gcalLink}
           target="_blank"
           rel="noopener noreferrer"
           className="btn ghost"

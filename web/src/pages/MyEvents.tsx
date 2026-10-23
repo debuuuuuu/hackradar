@@ -19,7 +19,7 @@ function MyEventsContent({ name }: { name: string }) {
   const { data, mutate } = useSWR("/api/me/events", fetchMyEvents);
   const items = data?.items ?? [];
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
   const upcoming = items.filter((e) => !e.startDate || e.startDate >= today);
   const past = items.filter((e) => e.startDate && e.startDate < today);
 
