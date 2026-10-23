@@ -1,9 +1,22 @@
 # HackRadar — Roadmap
 
-_Last updated: 2026-10-14_ · ~8 weeks part-time (evenings and weekends; estimates).
+_Last updated: 2026-10-22_ · ~8 weeks part-time (evenings and weekends; estimates).
 
 Each phase ends at a **gate**. Don't start the next phase until the gate passes, so there is always a
 working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
+
+## Product plan (approved 2026-10-23)
+
+The [product design](superpowers/specs/2026-10-23-hackradar-product-design.md) sets the build order from here.
+It overlaps the phases below; each step gets its own plan before building.
+
+- [ ] Step 1 · "For you" picks: busy dates in Settings, rule filters, AI score + "why" line (D-051) — Phase 2
+- [ ] Step 2 · Save / Register / Add to Google Calendar + reminders — Phase 3
+- [ ] Step 3 · Public profile `/u/<handle>`: ○ ● ★ grid, counts, Terms + 18+ checkbox (D-050), Terms page
+- [ ] Step 3b · Leaderboard `/leaderboard` (D-052)
+- [ ] Step 4 · Interest map for recruiters
+- [ ] Step 5 · LinkedIn / X discovery — Phase 4
+- [ ] Later · Teammate finder, recruiter search, Google Calendar free/busy
 
 ## Phase 0 · Setup (week 1) — ✅ gate passed 2026-10-14
 
@@ -18,7 +31,7 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [x] `config/sources.yaml` and `config/settings.yaml` (2026-10-14)
 - [x] `.env.example` with every variable name (2026-10-14)
 - [x] Neon project created via MCP; `DATABASE_URL` in `.env` + GitHub secret (2026-10-14)
-- [ ] Discord webhook (needed at start of Phase 1)
+- [x] Discord webhook (2026-10-15)
 - [x] `pipeline/models.sql` (all 8 tables) applied on Neon (D-026) (2026-10-14)
 - [x] `pipeline/run.py` skeleton (writes `runs` row + `data/last_run.json`) (2026-10-14)
 - [x] `.github/workflows/daily.yml`: cron `17 23 * * *` + dispatch + keepalive to `status` branch (2026-10-14)
@@ -26,7 +39,7 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [x] Research note on `status`-branch activity — still unverified, fallback planned (github-cron note) (2026-10-14)
 - [x] **Gate:** manual `workflow_dispatch` run of `daily.yml` is green — run 38579261227 (2026-10-14)
 
-## Phase 1 · MVP digest (weeks 1–2) — 🟨 in progress
+## Phase 1 · MVP digest (weeks 1–2) — ✅ gate met (daily runs green 2026-10-16 to 2026-10-22; Discord channel contents not re-verified)
 
 **Gate:** a real digest arrives on Discord 3 days in a row.
 
@@ -40,12 +53,12 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [x] `notify/discord.py` + `digest.py`: webhook digest (New / Closing ≤3 days, sorted by deadline, no AI), "nothing new" message, Discord size limits, 429 retry (D-030) (2026-10-14)
 - [x] `DISCORD_WEBHOOK_URL` in `.env` + GitHub secret; first live digest delivered, run 7 (2026-10-15)
 - [x] Wire everything in `run.py`; per-source and Discord failures logged, never fatal (2026-10-14)
-- [ ] Cron + keepalive live
+- [x] Cron + keepalive live (scheduled runs green every day 2026-10-16 to 2026-10-22)
 - [x] Fix digest "new" cutoff (last run that sent a digest, by finished_at) (2026-10-15)
 - [x] Trust signals on digest lines: organiser, 👥 registrations, 💰 fee / 🔒 invite-only / ⚠️ flags (D-031) (2026-10-15)
 - [x] Batch upserts per source (one lookup + pipelined writes); store failure skips only that source (2026-10-15)
-- [ ] Watch 3 daily runs; fix anything flaky
-- [ ] **Gate:** 3 consecutive real digests on Discord
+- [x] Watch 3 daily runs; fix anything flaky (runs 12–13 had a missing-column error; fixed 2026-10-18 with migrations 0009–0012)
+- [x] **Gate:** 3 consecutive real digests on Discord (runs green; channel contents not re-verified)
 
 ## Phase 2 · AI + more sources (week 3) — ⬜
 
@@ -65,7 +78,7 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [x] "Listed on 2+ platforms" trust badge from dedupe (D-031)
 - [ ] `sources/luma.py`: curated calendar ICS feeds, hackathon keyword + future filter, fixture test (D-033)
 - [x] Place preferences + filter: static city table + radius (D-038); per-user prefs come with Phase 3
-- [ ] `notify/email.py`: Gmail SMTP HTML digest
+- [x] `notify/email.py`: Gmail SMTP HTML digest, with one-click unsubscribe (D-049) (2026-10-18)
 - [ ] Digest sections: top 5, closing ≤3 days, AI picks, other options
 - [ ] **Gate:** ranked digest, zero duplicates over a week of runs
 
@@ -83,8 +96,8 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 - [ ] `reminders.py`: offsets per status (Saved → reg deadline; Registered → start + submission), `reminders_sent` dedupe
 - [ ] Reminder buttons: Mark registered, Snooze 1 day
 - [ ] `/reminders 7,3,1` command
-- [ ] `notify/whatsapp.py`: CallMeBot text
-- [ ] Encryption of CallMeBot keys and emails (D-024)
+- [x] `notify/whatsapp.py`: CallMeBot text (built; first live WhatsApp send unverified)
+- [x] Encryption of CallMeBot keys and emails at rest (D-024)
 - [ ] **Gate:** a saved test event receives its 7/3/1 + same-day reminders
 
 ## Phase 4 · Discovery + smarts (week 5) — ⬜
@@ -106,11 +119,11 @@ working version. Status: ⬜ not started · 🟨 in progress · ✅ done.
 
 **Gate:** 3 friends get their own digests and reminders.
 
-- [ ] `web/` React + Vite app on Vercel
-- [ ] Discord OAuth login
+- [x] `web/` React + Vite app on Vercel (live at hackradar-two.vercel.app; GitHub pushes to `main` deploy it)
+- [ ] Discord OAuth login (built but disabled — needs `DISCORD_CLIENT_ID`/`DISCORD_CLIENT_SECRET` on Vercel)
 - [ ] Pages: All events, Saved, Deadline calendar, Settings, Admin health
 - [ ] `/join` command + onboarding flow
-- [ ] Per-user filters, channels, offsets, CallMeBot key in Settings
+- [x] Per-user filters, channels, offsets; Discord webhook and CallMeBot key in Settings
 - [ ] Email status links (signed tokens)
 - [ ] **Gate:** 3 friends receiving personal digests and reminders
 

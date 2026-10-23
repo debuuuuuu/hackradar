@@ -83,3 +83,12 @@ All reply with an ACK within 3 s; slow ones use a deferred response + follow-up 
 - Each user has own filters, scores, saves, reminders, channels.
 - AI summarizes each event once; only scoring is per user (D-015).
 - Personal data encrypted at rest (D-024); never sent to AI.
+
+## 8. Planned by the product design (2026-10-23)
+Full detail: [product design](../superpowers/specs/2026-10-23-hackradar-product-design.md).
+- **"For you" picks:** 3–5 ranked picks with a "why" line; only interest tags go to AI (D-051).
+- **Busy dates:** user marks exam weeks or trips; clashing events are greyed out.
+- **Public profile** `/u/<handle>`: ○ ● ★ activity grid, counts, interest map; Terms + 18+ checkbox (D-050).
+- **Leaderboard** `/leaderboard`: points from verified activity (D-052).
+- **LinkedIn / X discovery** via search APIs, no logins (D-008).
+- Note: the dashboard section above (§6) predates the built site; the live site is described in ARCHITECTURE.md.

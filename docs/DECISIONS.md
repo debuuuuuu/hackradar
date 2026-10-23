@@ -381,3 +381,24 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Debjit (2026-10-18) wanted unsubscribe to also delete the account, and the designed emails. A confirm step keeps link scanners from deleting accounts.
 - **Alternatives:** pause the digest only (`digest_enabled = false`) — rejected by Debjit; a new signing secret — not needed.
 - **Status:** active. Known: the link has no expiry, so anyone holding a user's email can delete that account. Digest has no "joke of the day" or top-pick stamp yet (no AI ranking in the digest).
+
+### D-050 · Public profiles by default, behind a Terms + 18+ checkbox; recruiters see only participation
+- **Date:** 2026-10-23
+- **Decision:** Each user gets a public profile at `/u/<handle>`. Setup shows one checkbox: agree to the Terms, confirm 18 or older, profile is public and can be made private anytime. Existing users see the checkbox once. The owner's activity grid shows three marks: ○ hackathon in your interests that you skipped, ● registered/attended, ★ submitted/won. Public and recruiter views show only ● and ★. Styled in the fun theme (D-047). Spec: `superpowers/specs/2026-10-23-hackradar-product-design.md`.
+- **Why:** Debjit (2026-10-23): the profile is a portfolio for recruiters; nobody using it today is under 18; recruiters should only see what the user actually did.
+- **Alternatives:** opt-in profiles (less sharing); asking age and keeping minors private (Debjit chose the 18+ checkbox for now).
+- **Status:** active. Open: write the Terms page (plain text, not legal advice); DPDP Act 2023 research note before public promotion (**unverified** rules).
+
+### D-051 · Interest tags may go to the AI for ranking; users with the same tags share one request
+- **Date:** 2026-10-23
+- **Decision:** The ranking AI receives a user's interest tags (topics, skills, format, prize floor, team/solo) and public event text only. Never name, email, handle, history or any ID. Users with identical tag sets are scored in one request. Hard filters (place, eligibility fields, busy periods, dismissed) run first without AI; the AI scores and writes the "why" line for the shortlist only.
+- **Why:** Debjit asked for a recommendation (2026-10-23). Tags describe likes, not identity, so this keeps the "no personal data to AI" rule; grouping keeps cost flat as users grow (D-044).
+- **Alternatives:** no tags to AI (no personal "why" line, plain tag matching only); per-user calls (cost grows with every user).
+- **Status:** active.
+
+### D-052 · Public leaderboard of people, ranked on points that need a project link
+- **Date:** 2026-10-23
+- **Decision:** `/leaderboard` ranks users with public profiles: registered 1 point, submitted 3, won 10; submitted and won only count with a project link. Boards: this month and all time, filterable by interest and city. Private profiles are never listed. Spec §6.6.
+- **Why:** Debjit (2026-10-23) asked for a leaderboard of people. Self-reported counts are easy to fake, so the higher points need proof.
+- **Alternatives:** rank on registrations alone (easy to inflate); all-time only (newcomers never catch up).
+- **Status:** active. Open: point values are a first guess; review once real data exists.
