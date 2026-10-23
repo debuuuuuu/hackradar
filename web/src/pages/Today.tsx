@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { Link } from "react-router";
 import Icon from "../components/Icon.js";
 import Monitor from "../components/Monitor.js";
-import { fetchEvents, fetchPicks, type EventRow, type Pick } from "../lib/api.js";
+import { fetchEvents, fetchMyEvents, fetchPicks, saveEvent, unsaveEvent, type EventRow, type Pick } from "../lib/api.js";
 import { formatIstDate, sourceLabel } from "../lib/format.js";
 import type { PrefsResponse } from "../lib/prefsForm.js";
 
@@ -22,6 +23,9 @@ export default function Today({ name }: TodayProps) {
   const [loading, setLoading] = useState(true);
   const [picks, setPicks] = useState<Pick[]>([]);
   const [prefs, setPrefs] = useState<PrefsResponse["prefs"] | null>(null);
+
+  const { data: saved, mutate: mutateSaved } = useSWR("/api/me/events", fetchMyEvents);
+  const savedIds = new Set((saved?.items ?? []).map((e) => e.eventId));
 
   // View state
   const [showMoreTops, setShowMoreTops] = useState(false);
@@ -326,18 +330,20 @@ export default function Today({ name }: TodayProps) {
                     <Icon name="code" size={32} />
                   </div>
 
-                  {/* TODO(backend): saved events and reminders API */}
                   <button
                     type="button"
-                    className="save-btn"
-                    title="Saving events is coming soon"
-                    disabled
-                    style={{ opacity: 0.8 }}
+                    className={`save-btn${savedIds.has(e.id) ? " saved" : ""}`}
+                    title={savedIds.has(e.id) ? "Unsave" : "Save event"}
+                    onClick={async () => {
+                      if (savedIds.has(e.id)) await unsaveEvent(e.id);
+                      else await saveEvent(e.id);
+                      await mutateSaved();
+                    }}
                   >
                     <svg viewBox="0 0 16 16" aria-hidden="true">
                       <path className="ln" d="M4 2h8v12l-4-3-4 3z" />
                     </svg>
-                    Save
+                    {savedIds.has(e.id) ? "Saved" : "Save"}
                   </button>
 
                   <div className="shot-body">

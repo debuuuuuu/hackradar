@@ -4,11 +4,13 @@ import useSWR from "swr";
 import { buildPrompt, chatgptUrl, claudeUrl } from "../../server/prompt.js";
 import Icon from "../components/Icon.js";
 import Monitor from "../components/Monitor.js";
-import { fetchEvent, type EventDetail as Detail } from "../lib/api.js";
+import { fetchEvent, fetchMyEvents, saveEvent, unsaveEvent, type EventDetail as Detail } from "../lib/api.js";
 import { formatIst, formatIstDate, sourceLabel } from "../lib/format.js";
+import { useMe } from "../lib/me.js";
 
 export default function EventDetail() {
   const { id = "" } = useParams();
+  const { state } = useMe();
   const { data: event, error: fetchError } = useSWR<Detail>(id || null, fetchEvent);
   const error = fetchError
     ? fetchError.message === "not found"
@@ -325,17 +327,10 @@ export default function EventDetail() {
                 </a>
               ))}
 
-              {/* TODO(backend): saved events and reminders API */}
-              <button
-                type="button"
-                className="btn ghost"
-                title="Saving events is coming soon"
-                disabled
-                style={{ opacity: 0.8 }}
-              >
-                <Icon name="heart" size={18} />
-                Save event
-              </button>
+              {/* Save button — enabled for signed-in users */}
+              {state.status === "in" && (
+                <SaveButton eventId={Number(id)} gcalLink={event.sources[0]?.url ?? ""} />
+              )}
             </div>
           </div>
         </div>
@@ -437,5 +432,40 @@ export default function EventDetail() {
         </p>
       </section>
     </div>
+  );
+}
+
+function SaveButton({ eventId, gcalLink }: { eventId: number; gcalLink: string }) {
+  const { data, mutate } = useSWR("/api/me/events", fetchMyEvents);
+  const isSaved = data?.items.some((e) => e.eventId === eventId) ?? false;
+  const saved = data?.items.find((e) => e.eventId === eventId);
+
+  async function toggle() {
+    if (isSaved) {
+      await unsaveEvent(eventId);
+    } else {
+      await saveEvent(eventId);
+    }
+    await mutate();
+  }
+
+  return (
+    <>
+      <button type="button" className="btn ghost" onClick={toggle}>
+        <Icon name="heart" size={18} />
+        {isSaved ? "Saved ✓" : "Save event"}
+      </button>
+      {isSaved && gcalLink && (
+        <a
+          href={saved?.gcalLink ?? gcalLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn ghost"
+        >
+          <Icon name="clock" size={18} />
+          Add to Google Calendar
+        </a>
+      )}
+    </>
   );
 }

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router";
+import useSWR from "swr";
 import Icon from "../components/Icon.js";
 import RequireMe from "../components/RequireMe.js";
+import { fetchMyEvents, updateEventStatus, unsaveEvent, type SavedEvent } from "../lib/api.js";
+import { formatIstDate } from "../lib/format.js";
 
-// TODO(backend): saved events and reminders API (/api/me/events, /api/me/saves, /api/me/history)
 export default function MyEvents() {
   return (
     <RequireMe>
@@ -14,6 +16,12 @@ export default function MyEvents() {
 
 function MyEventsContent({ name }: { name: string }) {
   const [tab, setTab] = useState<"up" | "went">("up");
+  const { data, mutate } = useSWR("/api/me/events", fetchMyEvents);
+  const items = data?.items ?? [];
+
+  const today = new Date().toISOString().slice(0, 10);
+  const upcoming = items.filter((e) => !e.startDate || e.startDate >= today);
+  const past = items.filter((e) => e.startDate && e.startDate < today);
 
   return (
     <div className="page" style={{ maxWidth: 1120, margin: "0 auto 96px" }}>
@@ -49,7 +57,7 @@ function MyEventsContent({ name }: { name: string }) {
           aria-selected={tab === "up"}
           onClick={() => setTab("up")}
         >
-          Coming up · 0
+          Coming up · {upcoming.length}
         </button>
         <button
           type="button"
@@ -59,58 +67,140 @@ function MyEventsContent({ name }: { name: string }) {
           aria-selected={tab === "went"}
           onClick={() => setTab("went")}
         >
-          Went to · 0
+          Went to · {past.length}
         </button>
       </div>
 
       {tab === "up" ? (
-        <div>
-          {/* Friendly empty state because backend is not yet implemented */}
-          <div
-            className="card-paper grid-paper"
-            style={{
-              padding: "48px 32px",
-              textAlign: "center",
-              border: "8px solid var(--coral)",
-              borderRadius: 24,
-            }}
-          >
-            <Icon name="heart" size={48} variant="coral" />
-            <h2 className="h2" style={{ color: "var(--ink-red)", marginTop: 12, marginBottom: 12 }}>
-              Saving events is coming soon
-            </h2>
-            <p className="lead" style={{ margin: "0 auto 24px", maxWidth: "48ch" }}>
-              We're building the personal saves, reminder schedules (7d, 3d, 1d), and calendar export for your registered hackathons.
-            </p>
-            {/* TODO(backend): Implement user_events table reads/writes */}
-            <Link className="btn solid" to="/">
-              Browse Today's picks
-            </Link>
-          </div>
-        </div>
+        <EventList events={upcoming} mutate={mutate} emptyMessage="Nothing saved yet — go find your next hack." />
       ) : (
+        <EventList events={past} mutate={mutate} emptyMessage="No past events yet." />
+      )}
+    </div>
+  );
+}
+
+function EventList({
+  events,
+  mutate,
+  emptyMessage,
+}: {
+  events: SavedEvent[];
+  mutate: () => Promise<unknown>;
+  emptyMessage: string;
+}) {
+  if (events.length === 0) {
+    return (
+      <div style={{ padding: "48px 0", textAlign: "center", color: "var(--chalk)" }}>
+        <Icon name="heart" size={40} variant="coral" />
+        <p style={{ marginTop: 16, fontSize: 18 }}>{emptyMessage}</p>
+        <Link className="btn solid" to="/" style={{ marginTop: 16, display: "inline-flex" }}>
+          Browse today's picks
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {events.map((e) => (
+        <EventCard key={e.eventId} event={e} mutate={mutate} />
+      ))}
+    </div>
+  );
+}
+
+function EventCard({ event: e, mutate }: { event: SavedEvent; mutate: () => Promise<unknown> }) {
+  const [askRegister, setAskRegister] = useState(false);
+  const sourceUrl = e.sources[0]?.url;
+
+  async function markRegistered() {
+    await updateEventStatus(e.eventId, { status: "registered" });
+    await mutate();
+    setAskRegister(false);
+  }
+
+  async function remove() {
+    await unsaveEvent(e.eventId);
+    await mutate();
+  }
+
+  return (
+    <div
+      className="card-paper"
+      style={{
+        padding: "20px 24px",
+        borderRadius: 16,
+        border: "1.5px solid var(--line-dark)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
         <div>
-          <div
-            className="card-paper grid-paper"
-            style={{
-              padding: "48px 32px",
-              textAlign: "center",
-              border: "8px solid var(--coral)",
-              borderRadius: 24,
-            }}
-          >
-            <Icon name="trophy" size={48} variant="coral" />
-            <h2 className="h2" style={{ color: "var(--ink-red)", marginTop: 12, marginBottom: 12 }}>
-              Your hackathon scrap book
-            </h2>
-            <p className="lead" style={{ margin: "0 auto 24px", maxWidth: "48ch" }}>
-              Keep track of past hackathons you attended, your team projects, and finalist stickers. Coming in the next release!
+          <h3 style={{ margin: 0, color: "var(--chalk)", fontSize: 18 }}>{e.title}</h3>
+          {e.regDeadline && (
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--mute)" }}>
+              Reg by {formatIstDate(e.regDeadline)}
             </p>
-            {/* TODO(backend): Implement attended event history logging */}
-            <Link className="btn solid" to="/">
-              Back to hackathons
-            </Link>
-          </div>
+          )}
+        </div>
+        <span
+          style={{
+            fontSize: 12,
+            padding: "3px 10px",
+            borderRadius: 99,
+            background: e.status === "registered" ? "var(--coral)" : "var(--coal)",
+            color: e.status === "registered" ? "var(--charcoal)" : "var(--mute)",
+            flexShrink: 0,
+          }}
+        >
+          {e.status}
+        </span>
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {sourceUrl && (
+          <a
+            href={sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn ghost"
+            style={{ fontSize: 13 }}
+            onClick={() => !askRegister && e.status === "saved" && setAskRegister(true)}
+          >
+            <Icon name="rocket" size={14} />
+            Register
+          </a>
+        )}
+        {e.gcalLink && (
+          <a
+            href={e.gcalLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn ghost"
+            style={{ fontSize: 13 }}
+          >
+            <Icon name="clock" size={14} />
+            Add to Google Calendar
+          </a>
+        )}
+        <button type="button" className="btn ghost" style={{ fontSize: 13 }} onClick={remove}>
+          <Icon name="heart" size={14} />
+          Unsave
+        </button>
+      </div>
+
+      {askRegister && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "var(--chalk)" }}>
+          <span>Mark as registered?</span>
+          <button type="button" className="btn solid" style={{ fontSize: 13, padding: "4px 14px" }} onClick={markRegistered}>
+            Yes
+          </button>
+          <button type="button" className="btn ghost" style={{ fontSize: 13, padding: "4px 14px" }} onClick={() => setAskRegister(false)}>
+            No
+          </button>
         </div>
       )}
     </div>
