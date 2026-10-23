@@ -18,6 +18,7 @@ export interface PublicUser {
   name: string;
   onboarded: boolean;
   isAdmin: boolean;
+  handle: string | null;
 }
 
 /** A same-site path only: one leading "/", no "//", no backslash, printable ASCII only. */
@@ -196,14 +197,14 @@ export const signInWithSupabase = (email: string, name: string) => signInWithVer
 
 /** `iat` is when the session cookie was issued; a cookie older than "sign out everywhere" is refused. */
 export async function findUser(uid: number, iat = Date.now()): Promise<PublicUser | null> {
-  const rows = await query<{ id: number; name: string; onboarded_at: Date | null; is_admin: boolean; valid_after: Date | null }>(
-    "SELECT id, name, onboarded_at, is_admin, sessions_valid_after AS valid_after FROM users WHERE id = $1",
+  const rows = await query<{ id: number; name: string; onboarded_at: Date | null; is_admin: boolean; valid_after: Date | null; handle: string | null }>(
+    "SELECT id, name, onboarded_at, is_admin, sessions_valid_after AS valid_after, handle FROM users WHERE id = $1",
     [uid],
   );
   if (rows.length === 0) return null;
   const r = rows[0];
   if (r.valid_after && iat < r.valid_after.getTime()) return null;
-  return { uid: Number(r.id), name: r.name, onboarded: r.onboarded_at !== null, isAdmin: r.is_admin };
+  return { uid: Number(r.id), name: r.name, onboarded: r.onboarded_at !== null, isAdmin: r.is_admin, handle: r.handle ?? null };
 }
 
 const MAX_NAME_LEN = 40;

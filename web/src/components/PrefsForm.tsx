@@ -63,7 +63,7 @@ type Status = { kind: "idle" } | { kind: "saving" } | { kind: "saved" } | { kind
 
 const hookHint = (isSet: boolean, typed: boolean): string => (isSet && typed ? "Save first, then test the new URL." : "");
 
-export default function PrefsForm({ mode, name }: { mode: Mode; name?: string }) {
+export default function PrefsForm({ mode, name, onDone }: { mode: Mode; name?: string; onDone?: () => void }) {
   const onboarding = mode === "onboarding";
   const [form, setForm] = useState<FormState | null>(null);
   const [places, setPlaces] = useState<Place[]>([]);
@@ -120,7 +120,11 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
       });
       if (res.ok) {
         if (onboarding) {
-          window.location.assign("/");
+          if (onDone) {
+            onDone();
+          } else {
+            window.location.assign("/");
+          }
           return;
         }
         const typedHook = form.discordWebhook.trim() !== "";
@@ -227,7 +231,7 @@ export default function PrefsForm({ mode, name }: { mode: Mode; name?: string })
       >
         <div>
           <p className="eyebrow" style={{ color: "var(--mute)" }}>
-            {onboarding ? "Step 3 of 3 · change any of it later in Settings" : "Your personal radar filters"}
+            {onboarding ? "Step 2 of 3 · change any of it later in Settings" : "Your personal radar filters"}
           </p>
           <h1 className="h1" style={{ color: "var(--chalk)", margin: 0 }}>
             {onboarding ? "What should we look out for?" : "Settings"}

@@ -416,3 +416,10 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Debjit approved the product design (2026-10-23). The final review showed scoring could exceed the 30-minute job limit and a missing table could cost users their digest.
 - **Alternatives:** per-user AI calls (cost grows with users); hiding clashing events (lose the "why not"); removing all picks from lists up front (picks a channel cannot show vanished).
 - **Status:** active. Parked: copy scores between users with the same tags (needed near 100k users); web picks ignore place/format; picks for users with digests off; refreshing scores when event text changes. Needs migration 0013 on Neon.
+
+### D-056 · Public profile design decisions
+- **Date:** 2026-10-23
+- **Decision:** Handle format `/^[a-z][a-z0-9-]{2,29}$/` (3 to 30 chars, starts with a letter). Reserved handles: admin, api, u, leaderboard, terms, settings, events, signin. `profile_public = false` returns 404 (not 403) so a private handle is not confirmed to exist. Activity ○ marks (scored but not registered) are owner-only and never appear in the public API response. Terms + 18+ are accepted atomically with the first handle set (or if already accepted); they cannot be split into two calls. Onboarding step 3 (handle) is skippable via "I'll do this later". The profile redirect (no handle goes to /welcome) is a nudge, not a hard gate; it exempts /welcome, /terms, /settings and /signin.
+- **Why:** D-050 asks for a public profile behind Terms + 18+, showing only what the user did. Keeping ○ marks owner-only stops recruiters seeing skipped events. A 404 avoids handle enumeration. A nudge keeps onboarding friction low.
+- **Alternatives:** 403 for private profiles (confirms existence); splitting Terms and handle into two calls (a user could set a handle without accepting Terms); a hard redirect gate until a handle is set (blocks users who want to skip).
+- **Status:** active. Implemented 2026-10-23 on `feat/public-profile` (commits c4de192 to ea6f765).

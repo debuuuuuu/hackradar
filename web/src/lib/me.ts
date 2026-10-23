@@ -5,6 +5,7 @@ export interface Me {
   name: string;
   onboarded: boolean;
   isAdmin: boolean;
+  handle: string | null;
 }
 
 export type MeState = { status: "loading" } | { status: "out" } | { status: "in"; me: Me };

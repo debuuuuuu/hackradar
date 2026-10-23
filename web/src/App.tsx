@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, Route, Routes } from "react-router";
+import { Link, Route, Routes, useLocation, useNavigate } from "react-router";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import Footer from "./components/Footer.js";
@@ -13,11 +13,34 @@ import Events from "./pages/Events.js";
 import Home from "./pages/Home.js";
 import MyEvents from "./pages/MyEvents.js";
 import Onboarding from "./pages/Onboarding.js";
+import Profile from "./pages/Profile.js";
 import Settings from "./pages/Settings.js";
 import SignIn from "./pages/SignIn.js";
+import Terms from "./pages/Terms.js";
+
+const HANDLE_NUDGE_EXEMPT = new Set(["/welcome", "/terms", "/settings", "/signin"]);
+const HANDLE_NUDGE_KEY = "hr_handle_nudge_shown";
 
 export default function App() {
   const { state, signOut } = useMe();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Nudge signed-in users without a handle to set one up (soft redirect, not a hard gate).
+  useEffect(() => {
+    if (
+      state.status === "in" &&
+      state.me.handle === null &&
+      !HANDLE_NUDGE_EXEMPT.has(location.pathname) &&
+      !location.pathname.startsWith("/signin") &&
+      !location.pathname.startsWith("/unsubscribe") &&
+      !location.pathname.startsWith("/u/") &&
+      !sessionStorage.getItem(HANDLE_NUDGE_KEY)
+    ) {
+      sessionStorage.setItem(HANDLE_NUDGE_KEY, "1");
+      void navigate("/welcome", { replace: false });
+    }
+  }, [state, location.pathname, navigate]);
 
   useEffect(() => {
     // Respect prefers-reduced-motion
@@ -63,6 +86,8 @@ export default function App() {
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signin/confirm" element={<ConfirmSignIn />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/u/:handle" element={<Profile />} />
+            <Route path="/terms" element={<Terms />} />
             <Route
               path="*"
               element={
