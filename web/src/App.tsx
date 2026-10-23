@@ -13,8 +13,10 @@ import Events from "./pages/Events.js";
 import Home from "./pages/Home.js";
 import MyEvents from "./pages/MyEvents.js";
 import Onboarding from "./pages/Onboarding.js";
+import Profile from "./pages/Profile.js";
 import Settings from "./pages/Settings.js";
 import SignIn from "./pages/SignIn.js";
+import Terms from "./pages/Terms.js";
 
 export default function App() {
   const { state, signOut } = useMe();
@@ -63,6 +65,8 @@ export default function App() {
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signin/confirm" element={<ConfirmSignIn />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/u/:handle" element={<Profile />} />
+            <Route path="/terms" element={<Terms />} />
             <Route
               path="*"
               element={
