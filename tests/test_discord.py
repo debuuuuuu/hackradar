@@ -37,7 +37,9 @@ def test_trust_signals():
     clean = discord.format_item(item(registrations=1234))
     assert "by Hack Club · submit by 18 Oct" in clean
     assert "👥 1,234" in clean
-    assert clean.count("\n") == 1  # no flag line when nothing to flag
+    # title, meta, then the calendar line; no flag line when nothing to flag
+    assert clean.count("\n") == 2
+    assert clean.split("\n")[2].startswith("📅 [Add to Google Calendar]")
 
     risky = item(organizer=None, entry_fee="₹350", invite_only=True, dates_suspect=True)
     flags = discord.format_item(risky).split("\n")[2]

@@ -11,6 +11,8 @@ from __future__ import annotations
 import httpx
 
 from pipeline.digest import Digest, DigestItem, drop_picks
+from pipeline.normalize import IST
+from pipeline.notify.calendar import gcal_link
 from pipeline.notify.discord import format_deadline
 from pipeline.notify.webhook_url import guard_http_logs
 
@@ -33,6 +35,14 @@ class CapReached(WhatsAppError):
 def _item_line(number: int, item: DigestItem, label: str | None = None) -> str:
     title = item.title if len(item.title) <= TITLE_MAX else item.title[: TITLE_MAX - 1] + "…"
     return f"{label or f'{number}.'} {title} ({format_deadline(item)})"
+
+
+def _gcal_suffix(item: DigestItem) -> str:
+    """Calendar link for the deadline day (IST) as a trailing line; empty without a deadline."""
+    if item.deadline is None:
+        return ""
+    date_str = item.deadline.astimezone(IST).strftime("%Y-%m-%d")
+    return f"\n   gcal: {gcal_link(item.title, date_str, None, item.url, item.city)}"
 
 
 def _pick_line(number: int, item: DigestItem) -> str:
@@ -60,7 +70,7 @@ def short_text(digest: Digest, site_url: str, top: int = 3) -> str:
     if picks:
         lines += ["Picked for you:", *(_pick_line(i + 1, p) for i, p in enumerate(picks))]
         lines.append(f"Everything else: {site_url.rstrip('/')}/events")
-    lines += [_item_line(i + 1, item) for i, item in enumerate(items)]
+    lines += [_item_line(i + 1, item) + _gcal_suffix(item) for i, item in enumerate(items)]
     if total > shown:
         lines.append(f"...and {total - shown} more.")
     text = "\n".join(lines)
