@@ -19,7 +19,8 @@
     "pg": "^8.23.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-router": "^7.18.4"
+    "react-router": "^7.18.4",
+    "swr": "^2.5.1"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",
