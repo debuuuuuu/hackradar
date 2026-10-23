@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, Route, Routes } from "react-router";
+import { Link, Route, Routes, useLocation, useNavigate } from "react-router";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import Footer from "./components/Footer.js";
@@ -18,8 +18,24 @@ import Settings from "./pages/Settings.js";
 import SignIn from "./pages/SignIn.js";
 import Terms from "./pages/Terms.js";
 
+const HANDLE_NUDGE_EXEMPT = new Set(["/welcome", "/terms", "/settings", "/signin"]);
+
 export default function App() {
   const { state, signOut } = useMe();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Nudge signed-in users without a handle to set one up (soft redirect, not a hard gate).
+  useEffect(() => {
+    if (
+      state.status === "in" &&
+      state.me.handle === null &&
+      !HANDLE_NUDGE_EXEMPT.has(location.pathname) &&
+      !location.pathname.startsWith("/signin")
+    ) {
+      void navigate("/welcome", { replace: false });
+    }
+  }, [state, location.pathname, navigate]);
 
   useEffect(() => {
     // Respect prefers-reduced-motion
