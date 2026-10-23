@@ -75,6 +75,11 @@ CREATE TABLE IF NOT EXISTS users (
 );
 -- Databases created before migration 0011 need the column added (CREATE TABLE IF NOT EXISTS skips them).
 ALTER TABLE users ADD COLUMN IF NOT EXISTS sessions_valid_after timestamptz;
+-- Public profile (migration 0015).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS handle text UNIQUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at timestamptz;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_public boolean NOT NULL DEFAULT true;
+CREATE INDEX IF NOT EXISTS users_handle_idx ON users (handle);
 
 -- Per-user filters and profile. Offset 0 = same-day morning alert (D-019).
 CREATE TABLE IF NOT EXISTS preferences (
