@@ -119,8 +119,8 @@ export default function InterestGraph({ data }: InterestGraphProps) {
             y1={src.y}
             x2={tgt.x}
             y2={tgt.y}
-            stroke="var(--ink)"
-            strokeOpacity={0.3}
+            stroke="var(--chalk)"
+            strokeOpacity={0.25}
             strokeWidth={1}
           />
         );
@@ -133,7 +133,11 @@ export default function InterestGraph({ data }: InterestGraphProps) {
         const showLabel = n.type === "user" || n.type === "theme";
         return (
           <g key={n.id} transform={`translate(${n.x},${n.y})`}>
-            <circle r={r} fill={nodeFill(n)} />
+            <circle
+              r={r}
+              fill={nodeFill(n)}
+              {...(n.type === "theme" ? { stroke: "var(--chalk)", strokeWidth: 1.5 } : {})}
+            />
             {/* Tooltip for all nodes; primary label for event nodes only */}
             <title>{n.label}</title>
             {showLabel && (

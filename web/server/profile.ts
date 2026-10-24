@@ -161,17 +161,18 @@ export async function getPublicProfile(
     counts: { registered: registeredCount, submitted: submittedCount, won: wonCount },
     activity,
     isOwn,
-    graphData: buildGraphData(activity),
+    graphData: buildGraphData(activity, handle),
   };
 }
 
-export function buildGraphData(activity: ActivityMark[]): GraphData {
-  if (activity.length === 0) return { nodes: [], edges: [] };
+export function buildGraphData(activity: ActivityMark[], handle: string): GraphData {
+  const scored = activity.filter(a => a.mark !== "skipped");
+  if (scored.length === 0) return { nodes: [], edges: [] };
 
-  // Count theme weights
+  // Count theme weights (deduplicated and normalised per event)
   const themeWeights = new Map<string, number>();
-  for (const item of activity) {
-    for (const t of item.themes) {
+  for (const item of scored) {
+    for (const t of new Set(item.themes.map(s => s.trim().toLowerCase()))) {
       themeWeights.set(t, (themeWeights.get(t) ?? 0) + 1);
     }
   }
@@ -180,7 +181,7 @@ export function buildGraphData(activity: ActivityMark[]): GraphData {
   const edges: GraphEdge[] = [];
 
   // User node
-  nodes.push({ id: "user", label: "you", type: "user", weight: activity.length });
+  nodes.push({ id: "user", label: handle, type: "user", weight: scored.length });
 
   // Theme nodes + user→theme edges
   for (const [t, count] of themeWeights) {
@@ -189,12 +190,11 @@ export function buildGraphData(activity: ActivityMark[]): GraphData {
   }
 
   // Event nodes + event→theme edges
-  for (const item of activity) {
-    if (item.mark === "skipped") continue;
+  for (const item of scored) {
     const weight = item.mark === "won" ? 3 : item.mark === "submitted" ? 2 : 1;
     const label = item.title.length > 30 ? item.title.slice(0, 30) + "…" : item.title;
     nodes.push({ id: `event:${item.eventId}`, label, type: "event", weight });
-    for (const t of item.themes) {
+    for (const t of new Set(item.themes.map(s => s.trim().toLowerCase()))) {
       edges.push({ source: `event:${item.eventId}`, target: `theme:${t}` });
     }
   }
