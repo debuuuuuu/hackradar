@@ -1,8 +1,12 @@
 import { randomBytes } from "node:crypto";
-import { afterEach, beforeEach, describe, expect } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { query } from "../server/db.js";
 import { route } from "../server/router.js";
 import { signSession } from "../server/session.js";
+
+// InterestGraph is a browser component — React rendering requires a DOM environment.
+// Visual verification is done via `npm run dev` (see task-2-brief.md Step 5).
+it.todo("InterestGraph renders SVG with correct node count");
 import { dbIt, withSchema } from "./helpers.js";
 
 const ORIGIN = "https://hackradar.test";
