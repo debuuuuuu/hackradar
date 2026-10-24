@@ -53,6 +53,9 @@ export default function Footer() {
               <Link to="/events">Open hackathons</Link>
             </li>
             <li>
+              <Link to="/leaderboard">Leaderboard</Link>
+            </li>
+            <li>
               <Link to="/settings">Your picks</Link>
             </li>
           </ul>

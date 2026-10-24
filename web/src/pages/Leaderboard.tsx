@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router";
 import useSWR from "swr";
+import Icon from "../components/Icon.js";
+import Monitor from "../components/Monitor.js";
 import { useMe } from "../lib/me.js";
 
 interface LeaderboardRow {
@@ -40,110 +42,28 @@ async function fetchLeaderboard([url, period, theme, city]: [string, string, str
 }
 
 function MedalBadge({ rank }: { rank: number }) {
-  if (rank === 1) {
-    return (
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 28,
-          height: 28,
-          borderRadius: "50%",
-          background: "var(--coral)",
-          color: "var(--charcoal)",
-          fontWeight: 700,
-          fontSize: 13,
-          flexShrink: 0,
-        }}
-      >
-        1
-      </span>
-    );
-  }
-  if (rank === 2) {
-    return (
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 28,
-          height: 28,
-          borderRadius: "50%",
-          background: "var(--ink)",
-          color: "var(--chalk)",
-          fontWeight: 700,
-          fontSize: 13,
-          flexShrink: 0,
-        }}
-      >
-        2
-      </span>
-    );
-  }
-  if (rank === 3) {
-    return (
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 28,
-          height: 28,
-          borderRadius: "50%",
-          background: "#f5f0e8",
-          color: "var(--charcoal)",
-          fontWeight: 700,
-          fontSize: 13,
-          flexShrink: 0,
-        }}
-      >
-        3
-      </span>
-    );
-  }
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 28,
-        height: 28,
-        color: "var(--mute)",
-        fontWeight: 400,
-        fontSize: 13,
-        flexShrink: 0,
-      }}
-    >
-      {rank}
-    </span>
-  );
+  const cls =
+    rank === 1 ? "gold" :
+    rank === 2 ? "silver" :
+    rank === 3 ? "bronze" :
+    "plain";
+  return <span className={`lb-medal ${cls}`}>{rank}</span>;
 }
 
 function RowItem({ row }: { row: LeaderboardRow }) {
+  const topCls = row.rank === 1 ? " top1" : "";
+  const meCls = row.isMe ? " me" : "";
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "12px 16px",
-        borderRadius: 12,
-        border: row.isMe ? "1.5px solid var(--coral)" : "1.5px solid var(--line-dark)",
-        background: row.isMe ? "rgba(255,95,70,0.05)" : "transparent",
-      }}
-    >
+    <div className={`lb-row${topCls}${meCls}`}>
       <MedalBadge rank={row.rank} />
-      <Link
-        to={`/u/${row.handle}`}
-        style={{ color: "var(--chalk)", fontWeight: 600, fontSize: 15, flex: 1, textDecoration: "none" }}
-      >
+      <Link className="lb-handle" to={`/u/${row.handle}`}>
         @{row.handle}
+        {row.won > 0 && (
+          <Icon name="trophy" size={15} style={{ marginLeft: 6, verticalAlign: "-2px" }} variant="coral" />
+        )}
       </Link>
-      <span style={{ fontWeight: 700, color: "var(--coral-text)" }}>{row.points} pts</span>
-      <span style={{ fontSize: 13, color: "var(--mute)", whiteSpace: "nowrap" }}>
+      <span className="lb-pts">{row.points} pts</span>
+      <span className="lb-stats">
         {row.registered}R · {row.submitted}S · {row.won}W
       </span>
     </div>
@@ -160,7 +80,7 @@ export default function Leaderboard() {
 
   const { data, isLoading } = useSWR<LeaderboardResponse>(
     ["/api/leaderboard", period, theme, city],
-    fetchLeaderboard
+    fetchLeaderboard,
   );
 
   function handleCityChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -176,12 +96,17 @@ export default function Leaderboard() {
 
   return (
     <div className="page" style={{ maxWidth: 720, margin: "0 auto 96px" }}>
-      <header style={{ margin: "8px 0 28px" }}>
-        <h1 className="h1" style={{ color: "var(--chalk)", margin: "0 0 8px" }}>
+      {/* Header */}
+      <header style={{ margin: "8px 0 32px" }}>
+        <p className="note-hand" style={{ margin: "0 0 10px" }}>
+          <Icon name="trophy" size={22} />
+          who's building the most
+        </p>
+        <h1 className="h1" style={{ color: "var(--chalk)", margin: "0 0 10px" }}>
           Leaderboard
         </h1>
         <p className="lead dark" style={{ margin: 0 }}>
-          Top hackathon builders on HackRadar.
+          Points for registering, submitting, and winning hackathons on HackRadar.
         </p>
       </header>
 
@@ -212,19 +137,12 @@ export default function Leaderboard() {
       </div>
 
       {/* Filters */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 28 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 28 }}>
         <select
+          className="lb-filter"
           value={theme}
           onChange={(e) => setTheme(e.target.value)}
-          style={{
-            background: "var(--card-bg, var(--charcoal))",
-            color: "var(--chalk)",
-            border: "1.5px solid var(--line-dark)",
-            borderRadius: 8,
-            padding: "7px 12px",
-            fontSize: 14,
-            cursor: "pointer",
-          }}
+          aria-label="Filter by theme"
         >
           {THEME_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -233,37 +151,33 @@ export default function Leaderboard() {
           ))}
         </select>
         <input
+          className="lb-filter"
           type="text"
           placeholder="Filter by city…"
           value={cityInput}
           onChange={handleCityChange}
-          style={{
-            background: "var(--card-bg, var(--charcoal))",
-            color: "var(--chalk)",
-            border: "1.5px solid var(--line-dark)",
-            borderRadius: 8,
-            padding: "7px 12px",
-            fontSize: 14,
-            outline: "none",
-            minWidth: 160,
-          }}
+          aria-label="Filter by city"
+          style={{ minWidth: 160 }}
         />
       </div>
 
       {/* Content */}
       {isLoading ? (
-        <p style={{ color: "var(--mute)" }}>Loading…</p>
+        <p className="lead dark">Loading…</p>
       ) : rows.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "48px 0", color: "var(--chalk)" }}>
-          <p style={{ fontSize: 16, marginBottom: 16 }}>
-            No one here yet. Be the first to appear — participate in a hackathon!
+        <div style={{ textAlign: "center", padding: "48px 0" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+            <Monitor size={80} sleepy />
+          </div>
+          <p className="lead dark" style={{ margin: "0 0 20px", textAlign: "center" }}>
+            No one here yet — participate in a hackathon to appear.
           </p>
           <Link to="/" className="btn solid">
             Browse hackathons
           </Link>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className="lb-list">
           {rows.map((row) => (
             <RowItem key={row.handle} row={row} />
           ))}
@@ -273,29 +187,14 @@ export default function Leaderboard() {
       {/* Pinned self strip */}
       {data?.myRank != null && data.myRow && (
         <>
-          <hr style={{ border: "none", borderTop: "1px solid var(--line-dark)", margin: "24px 0" }} />
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              padding: "12px 16px",
-              borderRadius: 12,
-              border: "1.5px solid var(--coral)",
-              background: "rgba(255,95,70,0.05)",
-            }}
-          >
-            <span style={{ color: "var(--coral-text)", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-              You · #{data.myRank}
-            </span>
-            <Link
-              to={`/u/${data.myRow.handle}`}
-              style={{ color: "var(--chalk)", fontWeight: 600, fontSize: 15, flex: 1, textDecoration: "none" }}
-            >
+          <hr className="lb-divider" />
+          <div className="lb-row me">
+            <span className="lb-you">You · #{data.myRank}</span>
+            <Link className="lb-handle" to={`/u/${data.myRow.handle}`}>
               @{data.myRow.handle}
             </Link>
-            <span style={{ fontWeight: 700, color: "var(--coral-text)" }}>{data.myRow.points} pts</span>
-            <span style={{ fontSize: 13, color: "var(--mute)", whiteSpace: "nowrap" }}>
+            <span className="lb-pts">{data.myRow.points} pts</span>
+            <span className="lb-stats">
               {data.myRow.registered}R · {data.myRow.submitted}S · {data.myRow.won}W
             </span>
           </div>
@@ -304,8 +203,8 @@ export default function Leaderboard() {
 
       {/* Not signed in hint */}
       {state.status === "out" && (
-        <p style={{ marginTop: 24, fontSize: 13, color: "var(--mute)", textAlign: "center" }}>
-          <Link to="/signin" style={{ color: "var(--coral-text)" }}>Sign in</Link> to see your rank.
+        <p className="notice" style={{ marginTop: 24, textAlign: "center" }}>
+          <Link to="/signin">Sign in</Link> to track your rank and earn points.
         </p>
       )}
     </div>

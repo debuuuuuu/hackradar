@@ -167,23 +167,9 @@ function NotFound({ handle }: { handle: string }) {
 
 function CountBadge({ label, count }: { label: string; count: number }) {
   return (
-    <div
-      style={{
-        display: "inline-flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 2,
-        padding: "10px 20px",
-        borderRadius: 99,
-        border: "1.5px solid var(--line-dark)",
-        background: "var(--card)",
-        minWidth: 90,
-      }}
-    >
-      <span style={{ fontSize: 22, fontWeight: 700, color: "var(--chalk)", lineHeight: 1 }}>{count}</span>
-      <span style={{ fontSize: 12, color: "var(--mute)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-        {label}
-      </span>
+    <div className="count-badge">
+      <strong>{count}</strong>
+      <span>{label}</span>
     </div>
   );
 }
@@ -212,15 +198,7 @@ function ActivityGrid({ activity, isOwn, today }: ActivityGridProps) {
 
   if (!hasAny) {
     return (
-      <div
-        style={{
-          padding: "40px 24px",
-          textAlign: "center",
-          borderRadius: 12,
-          border: "1.5px solid var(--line-dark)",
-          color: "var(--mute)",
-        }}
-      >
+      <div className="activity-empty">
         <p style={{ fontSize: 32, margin: "0 0 8px" }}>○</p>
         <p style={{ margin: 0 }}>No activity in the last 52 weeks.</p>
       </div>
@@ -258,35 +236,15 @@ function ActivityGrid({ activity, isOwn, today }: ActivityGridProps) {
               }}
             >
               {marks.length === 0 ? (
-                <div
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 6,
-                    background: "var(--coal)",
-                    opacity: 0.4,
-                  }}
-                  title={wk}
-                />
+                <div className="activity-cell empty" title={wk} />
               ) : (
                 marks.map((m) => (
                   <Link
                     key={m.eventId}
                     to={`/events/${m.eventId}`}
                     title={`${m.title} · ${m.mark}`}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 28,
-                      height: 28,
-                      borderRadius: 6,
-                      fontSize: 15,
-                      color: markColor(m.mark),
-                      background: "var(--coal)",
-                      textDecoration: "none",
-                      border: m.mark === "won" ? "1.5px solid var(--coral)" : "1.5px solid transparent",
-                    }}
+                    className={`activity-cell${m.mark === "won" ? " won" : ""}`}
+                    style={{ color: markColor(m.mark) }}
                   >
                     {markSymbol(m.mark)}
                   </Link>
@@ -296,7 +254,7 @@ function ActivityGrid({ activity, isOwn, today }: ActivityGridProps) {
           );
         })}
       </div>
-      <div style={{ marginTop: 12, display: "flex", gap: 16, fontSize: 12, color: "var(--mute)" }}>
+      <div className="activity-legend">
         <span>
           <span style={{ color: "var(--chalk)" }}>●</span> registered / submitted
         </span>
@@ -335,38 +293,22 @@ function VisibilityToggle({ handle, initialPublic }: VisibilityToggleProps) {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 16,
-        padding: "16px 20px",
-        borderRadius: 12,
-        border: "1.5px solid var(--line-dark)",
-        background: "var(--card)",
-        flexWrap: "wrap",
-      }}
-    >
-      <div style={{ flex: 1 }}>
-        <p style={{ margin: 0, fontWeight: 600, color: "var(--chalk)" }}>
-          Profile visibility
-        </p>
-        <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--mute)" }}>
-          {isPublic
-            ? `Anyone can see /u/${handle}`
-            : "Only you can see this profile"}
-        </p>
+    <div className="profile-visibility">
+      <div className="vis-info">
+        <p>Profile visibility</p>
+        <small>
+          {isPublic ? `Anyone can see /u/${handle}` : "Only you can see this profile"}
+        </small>
       </div>
       <button
         type="button"
         className={`btn ${isPublic ? "solid" : "ghost"}`}
-        style={{ fontSize: 14, opacity: saving ? 0.6 : 1 }}
         disabled={saving}
         onClick={toggle}
       >
         {saving ? "Saving…" : isPublic ? "Public" : "Private"}
       </button>
-      <Link to="/settings" className="btn ghost" style={{ fontSize: 13 }}>
+      <Link to="/settings" className="btn ghost">
         Change handle
       </Link>
     </div>
@@ -406,13 +348,11 @@ export default function Profile() {
   return (
     <div className="page fade-in" style={{ maxWidth: 860, margin: "0 auto 96px", padding: "0 16px" }}>
       {/* Header */}
-      <header style={{ margin: "48px 0 32px" }}>
-        <h1 className="h1" style={{ color: "var(--chalk)", margin: "0 0 6px" }}>
+      <header className="profile-header">
+        <h1 className="h1" style={{ color: "var(--chalk)", margin: 0 }}>
           {data.name}
         </h1>
-        <p style={{ font: "18px/1.4 var(--hand)", color: "var(--coral-text)", margin: 0 }}>
-          @{data.handle}
-        </p>
+        <p className="handle">@{data.handle}</p>
       </header>
 
       {/* Counts */}
