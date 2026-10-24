@@ -121,7 +121,11 @@ function EventCard({ event: e, mutate }: { event: SavedEvent; mutate: () => Prom
   }
 
   async function remove() {
-    await unsaveEvent(e.eventId);
+    try {
+      await unsaveEvent(e.eventId);
+    } catch {
+      // 404 = already gone; fall through and refresh
+    }
     await mutate();
   }
 

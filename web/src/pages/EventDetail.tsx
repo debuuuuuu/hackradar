@@ -441,10 +441,14 @@ function SaveButton({ eventId }: { eventId: number }) {
   const saved = data?.items.find((e) => e.eventId === eventId);
 
   async function toggle() {
-    if (isSaved) {
-      await unsaveEvent(eventId);
-    } else {
-      await saveEvent(eventId);
+    try {
+      if (isSaved) {
+        await unsaveEvent(eventId);
+      } else {
+        await saveEvent(eventId);
+      }
+    } catch {
+      // 404 on unsave = already gone; fall through and refresh
     }
     await mutate();
   }
