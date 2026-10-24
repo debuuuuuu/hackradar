@@ -58,6 +58,26 @@ export default function Nav({ state, signOut }: NavProps) {
             <em className="cap">saved and went</em>
           </Link>
           <Link
+            className={`navlink ${isHere("/leaderboard") ? "here" : ""}`}
+            to="/leaderboard"
+            aria-current={isHere("/leaderboard") ? "page" : undefined}
+          >
+            <span>leaderboard</span>
+            {loopSvg}
+            <em className="cap">top hackers</em>
+          </Link>
+          {state.me.handle && (
+            <Link
+              className={`navlink ${isHere(`/u/${state.me.handle}`) ? "here" : ""}`}
+              to={`/u/${state.me.handle}`}
+              aria-current={isHere(`/u/${state.me.handle}`) ? "page" : undefined}
+            >
+              <span>my profile</span>
+              {loopSvg}
+              <em className="cap">public page</em>
+            </Link>
+          )}
+          <Link
             className={`navlink ${isHere("/settings") || isHere("/welcome") ? "here" : ""}`}
             to={state.me.onboarded ? "/settings" : "/welcome"}
             aria-current={isHere("/settings") || isHere("/welcome") ? "page" : undefined}

@@ -668,6 +668,25 @@ export default function Landing() {
             </Link>
           </div>
 
+          {/* Features list */}
+          <ul className="chan" style={{ marginTop: 20 }}>
+            <li>
+              <Icon name="trophy" size={28} />
+              Leaderboard — see who's building the most
+            </li>
+            <li>
+              <Icon name="people" size={28} />
+              Public profile — show off your wins
+            </li>
+            <li>
+              <Icon name="calendar" size={28} />
+              Reminders — never miss a deadline
+            </li>
+          </ul>
+          <Link className="btn ghost" to="/leaderboard" style={{ marginTop: 8 }}>
+            See the leaderboard
+          </Link>
+
           {/* Sample phone card */}
           <div className="msg" aria-label="Sample morning message">
             <div className="msg-top">
