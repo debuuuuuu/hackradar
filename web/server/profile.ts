@@ -169,10 +169,17 @@ export function buildGraphData(activity: ActivityMark[], handle: string): GraphD
   const scored = activity.filter(a => a.mark !== "skipped");
   if (scored.length === 0) return { nodes: [], edges: [] };
 
-  // Count theme weights (deduplicated and normalised per event)
-  const themeWeights = new Map<string, number>();
+  // Count theme weights; deduplicate case-insensitively, preserve first-seen casing.
+  const themeWeights = new Map<string, number>(); // key: original casing
+  const themeKey = new Map<string, string>();      // lowercase → original casing
   for (const item of scored) {
-    for (const t of new Set(item.themes.map(s => s.trim().toLowerCase()))) {
+    const seen = new Set<string>();
+    for (const raw of item.themes) {
+      const lower = raw.trim().toLowerCase();
+      if (seen.has(lower)) continue;
+      seen.add(lower);
+      if (!themeKey.has(lower)) themeKey.set(lower, raw.trim());
+      const t = themeKey.get(lower)!;
       themeWeights.set(t, (themeWeights.get(t) ?? 0) + 1);
     }
   }
@@ -194,7 +201,12 @@ export function buildGraphData(activity: ActivityMark[], handle: string): GraphD
     const weight = item.mark === "won" ? 3 : item.mark === "submitted" ? 2 : 1;
     const label = item.title.length > 30 ? item.title.slice(0, 30) + "…" : item.title;
     nodes.push({ id: `event:${item.eventId}`, label, type: "event", weight });
-    for (const t of new Set(item.themes.map(s => s.trim().toLowerCase()))) {
+    const seen = new Set<string>();
+    for (const raw of item.themes) {
+      const lower = raw.trim().toLowerCase();
+      if (seen.has(lower)) continue;
+      seen.add(lower);
+      const t = themeKey.get(lower) ?? raw.trim();
       edges.push({ source: `event:${item.eventId}`, target: `theme:${t}` });
     }
   }
