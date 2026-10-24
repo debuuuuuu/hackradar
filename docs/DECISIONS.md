@@ -430,3 +430,10 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Spec §6.6 defines the points and anti-spam intent. Project link requirement is the spec's "verified activity" gate. IST boundary is project-wide convention. Preference-table filters reuse existing data. myRank pinning keeps the page useful for users outside the top 50.
 - **Alternatives:** separate `points` column on users (adds write-time complexity, denormalised); Neo4j for rankings (overkill at this scale, spec says drawn in browser); per-city leaderboard pages (more infrastructure, filter is sufficient).
 - **Status:** active.
+
+### D-058 · Interest graph implementation choices
+- **Date:** 2026-10-24
+- **Decision:** (1) Library: d3-force only, not full d3, for layout physics without the full bundle weight. (2) Render: SVG in React via useEffect + useState, not canvas; accessible and inspectable. Simulation is stopped on unmount. (3) Graph data is computed on the server in `getPublicProfile`, not a separate endpoint, so one round-trip serves the page. (4) Event nodes show their title only on hover (SVG `<title>`), so many events do not clutter the graph. (5) Themes come from `events.themes`; no separate interest table, because the pipeline already populates that column. (6) `GraphNode`/`GraphEdge`/`GraphData` are defined in both `web/server/profile.ts` and `web/src/types/profile.ts`; client code never imports server files.
+- **Why:** Step 4 needs a recruiter-facing interest map on the public profile with no extra endpoint and no heavy dependency. Reusing `events.themes` avoids a second source of truth.
+- **Alternatives:** full d3 bundle (heavier); canvas render (not inspectable, harder to test); separate `/api/.../graph` endpoint (extra round-trip); a separate interests table (duplicates pipeline data); always-visible event labels (clutter).
+- **Status:** active.
