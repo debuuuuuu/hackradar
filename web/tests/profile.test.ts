@@ -28,10 +28,11 @@ async function newUser(opts?: { handle?: string; profilePublic?: boolean; termsA
   return uid;
 }
 
-async function newEvent(): Promise<number> {
+async function newEvent(opts?: { themes?: string[] }): Promise<number> {
+  const themes = opts?.themes ?? [];
   const [row] = await query<{ id: number }>(
-    "INSERT INTO events (title, status, start_date) VALUES ($1, 'open', now()) RETURNING id",
-    ["Test Hack"],
+    "INSERT INTO events (title, status, start_date, themes) VALUES ($1, 'open', now(), $2) RETURNING id",
+    ["Test Hack", themes],
   );
   return Number(row.id);
 }
@@ -176,6 +177,54 @@ describe("profile API", () => {
 
       const res = await call("PATCH", uid2, "/api/me/profile", { handle: "taken", termsAccepted: true });
       expect(res.status).toBe(409);
+    }));
+
+  // graphData tests
+  dbIt("graphData has theme node for each distinct theme in activity", () =>
+    withSchema(async () => {
+      const uid = await newUser({ handle: "graphuser", profilePublic: true });
+      const eid = await newEvent({ themes: ["AI", "Web3"] });
+      await addUserEvent(uid, eid, "registered");
+
+      const res = await call("GET", null, "/api/profile/graphuser");
+      expect(res.status).toBe(200);
+      const body = await res.json() as { graphData: { nodes: Array<{ id: string; type: string }>; edges: Array<{ source: string; target: string }> } };
+      const { nodes, edges } = body.graphData;
+
+      const ids = nodes.map(n => n.id);
+      expect(ids).toContain("user");
+      expect(ids).toContain("theme:AI");
+      expect(ids).toContain("theme:Web3");
+
+      expect(edges.some(e => e.source === "user" && e.target === "theme:AI")).toBe(true);
+      expect(edges.some(e => e.source === "user" && e.target === "theme:Web3")).toBe(true);
+    }));
+
+  dbIt("graphData is empty nodes/edges when user has no activity", () =>
+    withSchema(async () => {
+      await newUser({ handle: "emptyuser", profilePublic: true });
+
+      const res = await call("GET", null, "/api/profile/emptyuser");
+      expect(res.status).toBe(200);
+      const body = await res.json() as { graphData: { nodes: unknown[]; edges: unknown[] } };
+      expect(body.graphData.nodes).toHaveLength(0);
+      expect(body.graphData.edges).toHaveLength(0);
+    }));
+
+  dbIt("event with empty themes contributes event node but no theme edges", () =>
+    withSchema(async () => {
+      const uid = await newUser({ handle: "nothemeuser", profilePublic: true });
+      const eid = await newEvent({ themes: [] });
+      await addUserEvent(uid, eid, "registered");
+
+      const res = await call("GET", null, "/api/profile/nothemeuser");
+      expect(res.status).toBe(200);
+      const body = await res.json() as { graphData: { nodes: Array<{ id: string; type: string }>; edges: Array<{ source: string; target: string }> } };
+      const { nodes, edges } = body.graphData;
+
+      expect(nodes.some(n => n.id === `event:${eid}`)).toBe(true);
+      expect(nodes.some(n => n.type === "theme")).toBe(false);
+      expect(edges.some(e => e.source === `event:${eid}`)).toBe(false);
     }));
 
   // 11. Public GET omits "skipped" marks from activity
