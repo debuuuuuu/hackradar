@@ -4,7 +4,15 @@
   },
   "permissions": {
     "allow": [
-      "Bash(vercel deploy:*)"
+      "Bash(vercel deploy:*)",
+      "Bash(npm test)",
+      "Bash(npm test *)",
+      "mcp__Neon__list_branches",
+      "mcp__Neon__list_projects",
+      "mcp__Neon__get_connection_string",
+      "mcp__Neon__describe_project",
+      "mcp__Neon__get_database_tables",
+      "mcp__Neon__describe_table_schema"
     ],
     "soft_deny": [
       "Bash(vercel deploy:* --prod)"

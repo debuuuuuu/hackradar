@@ -334,7 +334,8 @@ export default function Today({ name }: TodayProps) {
                     type="button"
                     className={`save-btn${savedIds.has(e.id) ? " saved" : ""}`}
                     title={savedIds.has(e.id) ? "Unsave" : "Save event"}
-                    onClick={async () => {
+                    onClick={async (ev) => {
+                      ev.stopPropagation();
                       if (savedIds.has(e.id)) await unsaveEvent(e.id);
                       else await saveEvent(e.id);
                       await mutateSaved();
