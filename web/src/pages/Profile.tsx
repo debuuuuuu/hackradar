@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import useSWR from "swr";
+import InterestGraph from "../components/InterestGraph.js";
+import type { GraphData } from "../types/profile.js";
 
 // Types mirrored from web/server/profile.ts
 interface ActivityMark {
@@ -23,6 +25,7 @@ interface PublicProfile {
   counts: ProfileCounts;
   activity: ActivityMark[];
   isOwn: boolean;
+  graphData: GraphData;
 }
 
 interface OwnProfile {
@@ -447,6 +450,16 @@ export default function Profile() {
         </h2>
         <ActivityGrid activity={data.activity} isOwn={data.isOwn} today={today} />
       </section>
+
+      {/* Interest graph */}
+      {data.graphData.nodes.length > 0 && (
+        <section className="profile-graph">
+          <h2 className="h3" style={{ color: "var(--chalk)", margin: "0 0 16px" }}>
+            Interest graph
+          </h2>
+          <InterestGraph data={data.graphData} />
+        </section>
+      )}
     </div>
   );
 }

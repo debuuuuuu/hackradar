@@ -1,6 +1,6 @@
 # HackRadar — CONTEXT (single source of truth)
 
-_Last updated: 2026-10-23_
+_Last updated: 2026-10-24_
 
 ## 1. Resume here
 
@@ -17,7 +17,7 @@ _Last updated: 2026-10-23_
 - **Finished earlier (2026-10-18, PR #4):** Full web frontend "fun theme" (D-047, [design/DESIGN.md](design/DESIGN.md)); Google, Magic Link and Supabase password auth; onboarding flow; Settings with Discord webhook test and CallMeBot key; public events directory; Event Detail; Admin dashboard; animated mascot with quips; full accessibility.
 - **Finished (2026-10-15–16):** Devfolio source; place filter (Pune ± 150 km; D-038); dedupe + "listed on 2+ platforms" badge (D-037); AI summaries and Contests section; first live Discord digest (2026-10-15); trust signals (D-031); batched upserts; public landing page; Google sign-in; Supabase email+password sign-in (D-045, D-046).
 - **Product plan (approved 2026-10-23):** [design spec](superpowers/specs/2026-10-23-hackradar-product-design.md), plain-language page [design/hackradar-product.html](design/hackradar-product.html) (D-050 to D-052). Order: 1 "For you" picks + busy dates → 2 save/register/calendar + reminders → 3 public profile (○ ● ★ grid) → 3b leaderboard → 4 interest map → 5 LinkedIn/X discovery.
-- **Resume here:** Steps 1–3 merged to `main`. Step 3b built on `feat/leaderboard` — merge PR then deploy. **Next after merge:** Step 4 — interest graph / recruiter view (spec §6.4 interest graph). **Open items below.**
+- **Resume here:** Step 4 interest graph is complete on `feat/interest-graph` (commits f7f2cb5, bf8ba46), pending PR + merge. Step 3b (leaderboard, `feat/leaderboard`) also still needs its PR merged. **Next after merge:** Step 5 — LinkedIn / X discovery. **Open items below.** [Session log](sessions/2026-10-24-interest-graph.md)
 - **Open items:** `CAL_FEED_SECRET` not set on Vercel (ICS feeds broken until added); email reminder `send_reminder` not yet implemented in `pipeline/notify/email.py`; Supabase keep-alive table not created; Google sign-in keys not on Vercel; Discord sign-in disabled; Supabase auth record not deleted on account deletion; Discord webhook leaked in an earlier session — rotate it.
 - **Web platform:** plan [superpowers/plans/2026-10-15-web-platform.md](superpowers/plans/2026-10-15-web-platform.md), spec [superpowers/specs/2026-10-15-user-onboarding-design.md](superpowers/specs/2026-10-15-user-onboarding-design.md) (D-039), design spec [design/DESIGN.md](design/DESIGN.md) (D-047). Run tests: `cd web && npx vitest run`.
 - **Watch out:** cron fires 23:17 UTC = next IST day; use IST for all "today" logic.

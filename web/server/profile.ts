@@ -11,7 +11,17 @@ export interface ActivityMark {
   startDate: string;        // IST ISO date "YYYY-MM-DD"
   mark: "registered" | "submitted" | "won" | "skipped";
   projectUrl?: string;
+  themes: string[];
 }
+
+export interface GraphNode {
+  id: string;       // "user" | "theme:<label>" | "event:<eventId>"
+  label: string;
+  type: "user" | "theme" | "event";
+  weight: number;   // theme: count of events; event: 1=registered,2=submitted,3=won
+}
+export interface GraphEdge { source: string; target: string }
+export interface GraphData { nodes: GraphNode[]; edges: GraphEdge[] }
 
 export interface ProfileCounts {
   registered: number;
@@ -25,6 +35,7 @@ export interface PublicProfile {
   counts: ProfileCounts;
   activity: ActivityMark[];
   isOwn: boolean;
+  graphData: GraphData;
 }
 
 export interface OwnProfile {
@@ -66,12 +77,13 @@ export async function getPublicProfile(
   const eventRows = await query<{
     event_id: number;
     title: string;
+    themes: string[];
     start_date: string | null;
     status: string;
     won: boolean;
     project_url: string | null;
   }>(
-    `SELECT ue.event_id, e.title,
+    `SELECT ue.event_id, e.title, e.themes,
             to_char(e.start_date AT TIME ZONE 'Asia/Kolkata', 'YYYY-MM-DD') AS start_date,
             ue.status, ue.won, ue.project_url
      FROM user_events ue
@@ -106,6 +118,7 @@ export async function getPublicProfile(
       title: row.title,
       startDate: row.start_date ?? "",
       mark,
+      themes: row.themes ?? [],
     };
     if (row.project_url) item.projectUrl = row.project_url;
     activity.push(item);
@@ -137,6 +150,7 @@ export async function getPublicProfile(
         title: row.title,
         startDate: row.start_date ?? "",
         mark: "skipped",
+        themes: [],
       });
     }
   }
@@ -147,7 +161,45 @@ export async function getPublicProfile(
     counts: { registered: registeredCount, submitted: submittedCount, won: wonCount },
     activity,
     isOwn,
+    graphData: buildGraphData(activity, handle),
   };
+}
+
+export function buildGraphData(activity: ActivityMark[], handle: string): GraphData {
+  const scored = activity.filter(a => a.mark !== "skipped");
+  if (scored.length === 0) return { nodes: [], edges: [] };
+
+  // Count theme weights (deduplicated and normalised per event)
+  const themeWeights = new Map<string, number>();
+  for (const item of scored) {
+    for (const t of new Set(item.themes.map(s => s.trim().toLowerCase()))) {
+      themeWeights.set(t, (themeWeights.get(t) ?? 0) + 1);
+    }
+  }
+
+  const nodes: GraphNode[] = [];
+  const edges: GraphEdge[] = [];
+
+  // User node
+  nodes.push({ id: "user", label: handle, type: "user", weight: scored.length });
+
+  // Theme nodes + user→theme edges
+  for (const [t, count] of themeWeights) {
+    nodes.push({ id: `theme:${t}`, label: t, type: "theme", weight: count });
+    edges.push({ source: "user", target: `theme:${t}` });
+  }
+
+  // Event nodes + event→theme edges
+  for (const item of scored) {
+    const weight = item.mark === "won" ? 3 : item.mark === "submitted" ? 2 : 1;
+    const label = item.title.length > 30 ? item.title.slice(0, 30) + "…" : item.title;
+    nodes.push({ id: `event:${item.eventId}`, label, type: "event", weight });
+    for (const t of new Set(item.themes.map(s => s.trim().toLowerCase()))) {
+      edges.push({ source: `event:${item.eventId}`, target: `theme:${t}` });
+    }
+  }
+
+  return { nodes, edges };
 }
 
 export async function getOwnProfile(uid: number): Promise<OwnProfile> {
