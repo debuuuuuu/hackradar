@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import Icon from "../components/Icon.js";
 import Monitor, { type MonitorMood } from "../components/Monitor.js";
 import PasswordSignIn, { type SupabaseCfg } from "../components/PasswordSignIn.js";
@@ -84,8 +84,13 @@ export default function SignIn() {
           <h1 className="h1" id="si-h" style={{ fontSize: "54px" }}>
             Hey, builder.
           </h1>
-          <p className="lead" style={{ marginBottom: 20 }}>
+          <p className="lead" style={{ marginBottom: 8 }}>
             Sign in and we'll do the hackathon hunting. Browsing stays free without an account.
+          </p>
+          <p style={{ margin: "0 0 20px", font: "19px var(--hand)", color: "#7a4b47" }}>
+            <Link to="/leaderboard">See the leaderboard</Link>
+            {" · "}
+            <Link to="/events">Browse open hackathons</Link>
           </p>
 
           {expired && (
