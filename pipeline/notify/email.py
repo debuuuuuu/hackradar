@@ -323,7 +323,7 @@ def send_reminder(
         '<tr><td style="padding:0 4px 14px;font-family:Georgia,serif;font-size:22px;color:#ede6dc;">'
         f'<span style="{_MONO}color:{_CORAL};">[^&#8255;^]</span> HackRadar</td></tr>'
         f'<tr><td style="background:{_CREAM};border-radius:14px;border-top:6px solid {_CORAL};'
-        f'padding:26px 26px 22px;font-family:Helvetica,Arial,sans-serif;color:{_SOFT};'
+        f"padding:26px 26px 22px;font-family:Helvetica,Arial,sans-serif;color:{_SOFT};"
         f'font-size:15px;line-height:1.5;">'
         f'<p style="margin:0 0 4px;font-size:22px;color:{_INK};">\U0001f514 Reminder</p>'
         f'<p style="margin:0 0 16px;font-family:Georgia,serif;font-size:20px;color:{_INK};">'
