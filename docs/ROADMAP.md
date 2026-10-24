@@ -13,8 +13,8 @@ It overlaps the phases below; each step gets its own plan before building.
 - [x] Step 1 · "For you" picks: busy dates in Settings, topic shortlist, AI score + "why" line (D-051, D-054) — built 2026-10-23 on `feat/for-you-picks`; **not live until migration 0013 is applied to Neon and the PR is merged**
 - [x] Step 2 · Save / Register / Add to Google Calendar + reminders — built 2026-10-23 on `feat/save-register-calendar`; **pending: apply migration 0014 to Neon and merge PR**
 - [x] Step 3 · Public profile `/u/<handle>`: ○ ● ★ grid, counts, Terms + 18+ checkbox (D-050), Terms page — built 2026-10-24 on `feat/public-profile`; migration 0015 applied to Neon, PR #13 merged
-- [x] Step 3b · Leaderboard `/leaderboard` (D-052, D-057) — built 2026-10-24 on `feat/leaderboard`
-- [x] Step 4 · Interest map for recruiters — built 2026-10-24 on `feat/interest-graph`; pending PR + merge
+- [x] Step 3b · Leaderboard `/leaderboard` (D-052, D-057) — built 2026-10-24 on `feat/leaderboard`, PR #14 merged
+- [x] Step 4 · Interest map for recruiters — built 2026-10-24 on `feat/interest-graph`, PR #15 merged
 - [ ] Step 5 · LinkedIn / X discovery — Phase 4
 - [ ] Later · Teammate finder, recruiter search, Google Calendar free/busy
 
