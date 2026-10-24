@@ -74,12 +74,17 @@ def _send_via_channel(
         key = decrypt(recipient["callmebot_key_enc"], enc_key)
         plain = f"\U0001f514 {title}: {field_label} {days_label}. {event_url}"
         WhatsAppSender().send_text(phone, key, plain)
-    elif channel == "email":
-        # TODO: wire to email when send_reminder is added to pipeline/notify/email.py
-        log.info(
-            "email reminder skipped (send_reminder not yet implemented): user=%s event=%s",
-            recipient.get("user_id"),
-            title,
+    elif channel == "email" and recipient.get("email_enc"):
+        from pipeline.notify import email as email_notify
+
+        email_notify.send_reminder(
+            recipient=recipient,
+            enc_key=enc_key,
+            title=title,
+            event_url=event_url,
+            date_field=date_field,
+            date_value=date_value,
+            offset_days=offset_days,
         )
 
 

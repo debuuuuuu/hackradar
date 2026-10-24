@@ -267,3 +267,72 @@ def test_more_count_excludes_picks_and_no_double_slash() -> None:
     assert "+2 more on the site" in html
     assert "//events" not in html.replace("https://", "")
     assert html.count(">E0<") == 1  # a pick is not repeated in New
+
+
+# --- send_reminder ---
+
+
+def test_send_reminder_decrypts_address_and_sends() -> None:
+    from datetime import date
+
+    key = os.urandom(32)
+    recipient = {"user_id": 99, "email_enc": _encrypt("remind@example.com", key)}
+    mail.send_reminder(
+        recipient=recipient,
+        enc_key=key,
+        title="Hack the Planet",
+        event_url="https://devpost.com/hack-the-planet",
+        date_field="reg_deadline",
+        date_value=date(2026, 11, 1),
+        offset_days=7,
+        smtp_factory=FakeSMTP,
+    )
+    assert len(FakeSMTP.sent) == 1
+    msg = FakeSMTP.sent[0]
+    assert msg["To"] == "remind@example.com"
+    assert "Hack the Planet" in msg["Subject"]
+    assert "in 7 days" in msg["Subject"]
+    body = msg.get_body(preferencelist=("plain",)).get_content()
+    assert "Hack the Planet" in body
+    assert "https://devpost.com/hack-the-planet" in body
+    assert "Registration closes" in body
+
+
+def test_send_reminder_raises_when_no_email_enc() -> None:
+    from datetime import date
+
+    key = os.urandom(32)
+    with pytest.raises(mail.EmailError, match="no email address"):
+        mail.send_reminder(
+            recipient={"user_id": 1},
+            enc_key=key,
+            title="Test",
+            event_url="https://example.com",
+            date_field="start_date",
+            date_value=date(2026, 11, 1),
+            offset_days=1,
+            smtp_factory=FakeSMTP,
+        )
+    assert FakeSMTP.sent == []
+
+
+def test_send_reminder_html_is_multipart_with_event_link() -> None:
+    from datetime import date
+
+    key = os.urandom(32)
+    recipient = {"user_id": 5, "email_enc": _encrypt("a@example.com", key)}
+    mail.send_reminder(
+        recipient=recipient,
+        enc_key=key,
+        title="Space Hack",
+        event_url="https://devpost.com/space-hack",
+        date_field="start_date",
+        date_value=date(2026, 12, 15),
+        offset_days=3,
+        smtp_factory=FakeSMTP,
+    )
+    msg = FakeSMTP.sent[0]
+    html = msg.get_body(preferencelist=("html",)).get_content()
+    assert "Space Hack" in html
+    assert "https://devpost.com/space-hack" in html
+    assert "in 3 days" in html

@@ -14,6 +14,7 @@ import os
 import smtplib
 import ssl
 from collections.abc import Callable
+from datetime import date
 from email.message import EmailMessage
 from html import escape
 
@@ -260,6 +261,106 @@ def send_digest(
             smtp.send_message(msg)
     except (smtplib.SMTPException, OSError) as exc:
         # The library's messages can echo the server reply; keep only the type.
+        raise EmailError(f"SMTP send failed: {type(exc).__name__}") from None
+
+
+def send_reminder(
+    recipient: dict,
+    enc_key: bytes,
+    title: str,
+    event_url: str,
+    date_field: str,
+    date_value: date,
+    offset_days: int,
+    *,
+    smtp_factory=smtplib.SMTP,
+) -> None:
+    """Send a single reminder email for one saved/registered event."""
+    if not recipient.get("email_enc"):
+        raise EmailError("no email address on file")
+    address = decrypt(recipient["email_enc"], enc_key)
+
+    site_url = os.environ.get("SITE_URL") or None
+    user_id = recipient.get("user_id")
+    unsub = unsubscribe_url(site_url, enc_key, user_id) if site_url and user_id else None
+
+    days_label = {0: "today", 1: "tomorrow", 3: "in 3 days", 7: "in 7 days"}.get(
+        offset_days, f"in {offset_days} days"
+    )
+    field_label = {
+        "reg_deadline": "registration closes",
+        "start_date": "starts",
+        "submission_deadline": "submission closes",
+    }.get(date_field, date_field)
+
+    subject = f"\U0001f514 {title} — {field_label} {days_label}"
+
+    plain = f"{title}\n{field_label.capitalize()} {days_label} ({date_value}).\n{event_url}\n"
+    if site_url:
+        plain += f"\nManage reminders: {site_url.rstrip('/')}/settings\n"
+    if unsub:
+        plain += f"\nLeave HackRadar: {unsub}\n"
+
+    leave = (
+        f'<p style="margin:12px 0 0;font-size:12px;color:{_MUTE};">'
+        f'<a href="{_safe_url(unsub)}" style="color:#9b2b2f;">Unsubscribe</a>'
+        " (this also deletes your account).</p>"
+        if unsub
+        else ""
+    )
+    manage = (
+        f'<p style="margin:8px 0 0;font-size:12px;color:{_MUTE};">'
+        f'<a href="{_safe_url(site_url.rstrip("/") + "/settings")}" style="color:#9b2b2f;">'
+        "Manage reminders</a></p>"
+        if site_url
+        else ""
+    )
+    html = (
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"'
+        ' style="background:#1f1e1d;padding:28px 12px;">'
+        '<tr><td align="center"><table role="presentation" width="100%" cellpadding="0"'
+        ' cellspacing="0" style="max-width:560px;">'
+        '<tr><td style="padding:0 4px 14px;font-family:Georgia,serif;font-size:22px;color:#ede6dc;">'
+        f'<span style="{_MONO}color:{_CORAL};">[^&#8255;^]</span> HackRadar</td></tr>'
+        f'<tr><td style="background:{_CREAM};border-radius:14px;border-top:6px solid {_CORAL};'
+        f'padding:26px 26px 22px;font-family:Helvetica,Arial,sans-serif;color:{_SOFT};'
+        f'font-size:15px;line-height:1.5;">'
+        f'<p style="margin:0 0 4px;font-size:22px;color:{_INK};">\U0001f514 Reminder</p>'
+        f'<p style="margin:0 0 16px;font-family:Georgia,serif;font-size:20px;color:{_INK};">'
+        f"{escape(title)}</p>"
+        f'<p style="margin:0 0 8px;">{escape(field_label.capitalize())} '
+        f"<strong>{escape(days_label)}</strong> ({escape(str(date_value))}).</p>"
+        f'<p style="margin:0 0 16px;"><a href="{_safe_url(event_url)}"'
+        f' style="display:inline-block;background:{_CORAL};color:#fff;text-decoration:none;'
+        f'font-weight:bold;font-size:15px;padding:10px 22px;border-radius:999px;">'
+        "Open event page &rarr;</a></p>"
+        + manage
+        + leave
+        + f'<p style="margin:16px 0 0;font-size:12px;color:{_MUTE};">Dates come from each'
+        " platform&#39;s listing. Confirm there.</p>"
+        "</td></tr></table></td></tr></table>"
+    )
+
+    user = os.environ.get("SMTP_USER")
+    password = os.environ.get("SMTP_APP_PASSWORD")
+    if not user or not password:
+        raise EmailError("SMTP_USER or SMTP_APP_PASSWORD is not set")
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = f"HackRadar <{user}>"
+    msg["To"] = address
+    if unsub:
+        msg["List-Unsubscribe"] = f"<{unsub}>"
+    msg.set_content(plain)
+    msg.add_alternative(html, subtype="html")
+
+    try:
+        with smtp_factory(SMTP_HOST, SMTP_PORT, timeout=TIMEOUT_SECONDS) as smtp:
+            smtp.starttls(context=ssl.create_default_context())
+            smtp.login(user, password)
+            smtp.send_message(msg)
+    except (smtplib.SMTPException, OSError) as exc:
         raise EmailError(f"SMTP send failed: {type(exc).__name__}") from None
 
 
