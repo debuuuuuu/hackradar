@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 import useSWR from "swr";
 import { buildPrompt, chatgptUrl, claudeUrl } from "../../server/prompt.js";
@@ -6,7 +6,7 @@ import Icon from "../components/Icon.js";
 import Monitor from "../components/Monitor.js";
 import { fetchEvent, fetchMyEvents, saveEvent, unsaveEvent, type EventDetail as Detail } from "../lib/api.js";
 import { formatIst, formatIstDate, sourceLabel } from "../lib/format.js";
-import { useMe } from "../lib/me.js";
+import { useMe, type MeState } from "../lib/me.js";
 
 export default function EventDetail() {
   const { id = "" } = useParams();
@@ -327,10 +327,8 @@ export default function EventDetail() {
                 </a>
               ))}
 
-              {/* Save button — enabled for signed-in users */}
-              {state.status === "in" && (
-                <SaveButton eventId={Number(id)} />
-              )}
+              {/* Save button — shown in all auth states */}
+              <SaveButton eventId={Number(id)} meState={state} />
             </div>
           </div>
         </div>
@@ -435,10 +433,19 @@ export default function EventDetail() {
   );
 }
 
-function SaveButton({ eventId }: { eventId: number }) {
+function SaveButton({ eventId, meState }: { eventId: number; meState: MeState }) {
   const { data, mutate } = useSWR("/api/me/events", fetchMyEvents);
   const isSaved = data?.items.some((e) => e.eventId === eventId) ?? false;
   const saved = data?.items.find((e) => e.eventId === eventId);
+
+  // Auto-save if user just signed in after clicking "Sign in to save"
+  useEffect(() => {
+    if (meState.status !== "in") return;
+    const pending = sessionStorage.getItem("hr_pending_save");
+    if (pending !== String(eventId)) return;
+    sessionStorage.removeItem("hr_pending_save");
+    saveEvent(eventId).then(() => mutate()).catch(() => mutate());
+  }, [meState.status, eventId, mutate]);
 
   async function toggle() {
     try {
@@ -451,6 +458,29 @@ function SaveButton({ eventId }: { eventId: number }) {
       // 404 on unsave = already gone; fall through and refresh
     }
     await mutate();
+  }
+
+  if (meState.status === "loading") {
+    return (
+      <button type="button" className="btn ghost" disabled>
+        <Icon name="heart" size={18} />
+        Save event
+      </button>
+    );
+  }
+
+  if (meState.status === "out") {
+    const nextParam = encodeURIComponent(`/events/${eventId}`);
+    return (
+      <a
+        className="btn ghost"
+        href={`/signin?next=${nextParam}`}
+        onClick={() => sessionStorage.setItem("hr_pending_save", String(eventId))}
+      >
+        <Icon name="heart" size={18} />
+        Sign in to save
+      </a>
+    );
   }
 
   return (

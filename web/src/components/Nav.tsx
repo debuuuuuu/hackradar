@@ -119,7 +119,7 @@ export default function Nav({ state, signOut }: NavProps) {
             {loopSvg}
             <em className="cap">no sign-in needed</em>
           </Link>
-          <Link className={`navlink ${isHere("/signin") && loc.pathname !== "/signin" ? "here" : ""}`} to="/signin">
+          <Link className={`navlink ${isHere("/signin") && loc.pathname !== "/signin" ? "here" : ""}`} to="/signin?next=/">
             <span>your picks</span>
             {loopSvg}
             <em className="cap">about 2 minutes</em>

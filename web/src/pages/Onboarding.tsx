@@ -174,7 +174,6 @@ function HandleStep() {
             type="button"
             className="btn ghost"
             onClick={() => {
-              sessionStorage.setItem("hr_handle_nudge_shown", "1");
               window.location.assign("/");
             }}
           >

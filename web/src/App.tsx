@@ -20,25 +20,22 @@ import SignIn from "./pages/SignIn.js";
 import Terms from "./pages/Terms.js";
 
 const HANDLE_NUDGE_EXEMPT = new Set(["/welcome", "/terms", "/settings", "/signin"]);
-const HANDLE_NUDGE_KEY = "hr_handle_nudge_shown";
 
 export default function App() {
   const { state, signOut } = useMe();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Nudge signed-in users without a handle to set one up (soft redirect, not a hard gate).
+  // Hard gate: redirect to onboarding until onboarded is true.
   useEffect(() => {
     if (
       state.status === "in" &&
-      state.me.handle === null &&
+      !state.me.onboarded &&
       !HANDLE_NUDGE_EXEMPT.has(location.pathname) &&
       !location.pathname.startsWith("/signin") &&
       !location.pathname.startsWith("/unsubscribe") &&
-      !location.pathname.startsWith("/u/") &&
-      !sessionStorage.getItem(HANDLE_NUDGE_KEY)
+      !location.pathname.startsWith("/u/")
     ) {
-      sessionStorage.setItem(HANDLE_NUDGE_KEY, "1");
       void navigate("/welcome", { replace: false });
     }
   }, [state, location.pathname, navigate]);

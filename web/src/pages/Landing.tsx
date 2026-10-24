@@ -250,7 +250,7 @@ export default function Landing() {
                 We check Devpost, Unstop, Devfolio and MLH every morning, keep what's near you and fits what you like, and send it to Discord, WhatsApp or email.
               </p>
               <div className="cta-row">
-                <Link className="btn solid" to="/signin">
+                <Link className="btn solid" to="/signin?next=/">
                   Sign in for personal picks
                 </Link>
                 <a className="btn ghost" href="#board">
