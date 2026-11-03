@@ -108,9 +108,11 @@ It overlaps the phases below; each step gets its own plan before building.
 - [ ] Test Exa no-key access from a GitHub Actions runner; research note
 - [ ] `sources/discovery.py`: Tavily (~10 queries/day) → Exa → Serper; Jina Reader fetch
 - [ ] AI extraction prompt for discovered posts; drop posts without a registration link
-- [ ] Embeddings (Gemini) + TF-IDF fallback
-- [ ] Ranking: blend AI score with similarity to saves, away from dismissals
+- [ ] Recommender Stage 1 (D-059, [RECOMMENDER.md](RECOMMENDER.md)): research note on Gemini embedding free limits; embeddings (Gemini) + TF-IDF fallback; HNSW index; pgvector top-k retrieval into the shortlist
+- [ ] Recommender Stage 2: blend AI score with similarity to saves, away from dismissals (`rank.blend` weights)
 - [ ] "Because you saved X" digest lines
+- [ ] `impressions` log + signed click redirect (training data for Stage 3)
+- [ ] Recommender Stage 3: `train.yml` weekly LightGBM LambdaRank, `ranker_models` table, promotion rule, A/B split. Switch on only after the data gate (≥ 5,000 impressions, ≥ 300 positives, 50+ users)
 - [ ] `/ask` with Groq + small DB context
 - [ ] `/filters`, `/digest now`, `/pause`, `/resume`
 - [ ] **Gate:** `/ask` reliable under deferred flow

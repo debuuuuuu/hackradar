@@ -145,6 +145,9 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 - D-050 Public profiles by default behind a Terms + 18+ checkbox; recruiters see only participation.
 - D-051 Only interest tags go to the ranking AI; users with the same tags share one request.
 - D-052 Public leaderboard of people; submitted/won points need a project link.
+- D-054 to D-058 Implementation choices for saves/calendar, picks, profile, leaderboard, interest graph.
+- D-059 Staged recommender: LLM score → embeddings → feedback blend → LightGBM LambdaRank (proposed).
+- D-060 MIT license.
 
 ## 6. Known issues and open questions
 
@@ -183,6 +186,8 @@ Full log with reasons and alternatives: [DECISIONS.md](DECISIONS.md).
 | [ROADMAP.md](ROADMAP.md) | Phases, gates, task checklists, status |
 | [DECISIONS.md](DECISIONS.md) | Decision log (ADR-lite) |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Components, data flow diagram, data model, pipeline steps |
+| [RECOMMENDER.md](RECOMMENDER.md) | Recommendation engine: built LLM scoring + planned embeddings, feedback blend, LightGBM ranker (D-059) |
+| [../README.md](../README.md) | Public project README (portfolio-facing, Mermaid diagrams); MIT `LICENSE` (D-060) |
 | [SETUP.md](SETUP.md) | One-time account/key setup and where each secret goes |
 | [specs/features.md](specs/features.md) | Digest, saves/status, reminders, learning, commands, dashboard, multi-user |
 | [specs/sources.md](specs/sources.md) | Each source: endpoint, method, robots.txt, fields, quirks |

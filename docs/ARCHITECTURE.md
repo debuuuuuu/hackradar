@@ -101,7 +101,8 @@ One job, ~5–10 min. A failing source or AI call is logged and skipped, never f
 5. **Detect changes.** New or hash-changed events go to AI. Past events marked closed.
 6. **Summarize.** Gemini, 10–15 events per call; then embeddings.
 7. **Score per user.** Rule filters (location, mode, eligibility, invite_only) first; then AI score blended
-   with similarity to saves, minus similarity to dismissals.
+   with similarity to saves, minus similarity to dismissals. Built today: LLM score per interest group only.
+   Staged design (embeddings, blend, LightGBM ranker): [RECOMMENDER.md](RECOMMENDER.md) (D-059).
 8. **Reminders.** Offsets from user settings (default 7/3/1 + same day). Date by status: Saved → reg
    deadline; Registered → start + submission deadline; Submitted → result date if known. Skip anything in
    `reminders_sent`.

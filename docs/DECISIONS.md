@@ -437,3 +437,17 @@ Format: date · decision · why · alternatives rejected · status.
 - **Why:** Step 4 needs a recruiter-facing interest map on the public profile with no extra endpoint and no heavy dependency. Reusing `events.themes` avoids a second source of truth.
 - **Alternatives:** full d3 bundle (heavier); canvas render (not inspectable, harder to test); separate `/api/.../graph` endpoint (extra round-trip); a separate interests table (duplicates pipeline data); always-visible event labels (clutter).
 - **Status:** active.
+
+### D-059 · Staged recommendation engine: LLM score → embeddings → feedback blend → learned ranker
+- **Date:** 2026-11-03
+- **Decision:** The recommender grows in four stages, and each one falls back to the one before it. (0) Today's LLM fit score per interest group (D-051, D-054) stays the base. (1) Gemini event embeddings at 768 dims in `events.embedding`, with a TF-IDF fallback (D-035), used for pgvector top-k retrieval alongside the keyword shortlist. (2) A hand-weighted blend of LLM score, similarity to saves, similarity to dismissals and similarity to topics, plus "Because you saved X" lines. User vectors are built locally, so saves never go to any AI. (3) LightGBM LambdaRank trained weekly on CPU in a new `train.yml` GitHub Actions workflow, stored in a `ranker_models` table, promoted only if NDCG@5 on the last 14 days beats the active ranker by ≥ 2 % relative. Stage 3 needs a new `impressions` log and a click redirect, and stays off until there are ≥ 5,000 impressions, ≥ 300 positive labels and 50+ users (thresholds unverified). There are no user-identity features. Full design: [RECOMMENDER.md](RECOMMENDER.md).
+- **Why:** Debjit asked for a documented ML recommender (2026-11-03) and chose the hybrid, staged path with CPU training in GitHub Actions. Each stage is useful by itself, costs nothing extra to run, and matches the data we actually have: with few users, a learned model would overfit, so it waits for the data gate.
+- **Alternatives:** two-tower neural retrieval (needs much more data and a GPU); collaborative filtering / matrix factorisation (events live only weeks, so every item is cold); a managed ML service (new vendor and cost); hand-weighted formula forever (never learns from behaviour).
+- **Status:** proposed (Stage 0 active; Stages 1–3 not built).
+
+### D-060 · MIT license
+- **Date:** 2026-11-03
+- **Decision:** The repository is licensed under MIT (`LICENSE` at the repo root).
+- **Why:** Debjit chose it (2026-11-03). The repo is public and a portfolio piece (D-017); MIT is the common, permissive choice.
+- **Alternatives:** AGPL-3.0 (protects against hosted clones, but is less friendly for a portfolio); no license (all rights reserved by default).
+- **Status:** active.
